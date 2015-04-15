@@ -93,7 +93,7 @@ int main(int argc, char **argv)
 
         // Visualize
         if (visualize)
-            visualization::visualize(world);
+            visualization::visualize(world, robot_id);
 
         r.sleep();
     }
