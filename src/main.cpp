@@ -12,6 +12,19 @@
 #include <ros/publisher.h>
 #include <ros/node_handle.h>
 
+#include <geometry_msgs/Twist.h>
+
+geometry_msgs::Twist::ConstPtr base_ref_;
+
+// ----------------------------------------------------------------------------------------------------
+
+void baseReferenceCallback(const geometry_msgs::Twist::ConstPtr& msg)
+{
+    base_ref_ = msg;
+}
+
+// ----------------------------------------------------------------------------------------------------
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "pico_simulator");
@@ -46,11 +59,13 @@ int main(int argc, char **argv)
     // Add robot
     geo::Pose3D robot_pose = geo::Pose3D::identity();
     Id robot_id = world.addObject(robot_pose);
-    world.setVelocity(robot_id, geo::Vector3(0.1, 0, 0.0), 0.2);
 
     // Publishers
     ros::NodeHandle nh;
     ros::Publisher pub_laser = nh.advertise<sensor_msgs::LaserScan>("/pico/laser", 1);
+
+    // Subscribers
+    ros::Subscriber sub_base_ref = nh.subscribe<geometry_msgs::Twist>("/pico/base/reference", 1, baseReferenceCallback);
 
     // Set laser pose (in robot frame)
     geo::Pose3D laser_pose = geo::Pose3D::identity();
@@ -59,6 +74,15 @@ int main(int argc, char **argv)
     ros::Rate r(cycle_freq);
     while(ros::ok())
     {
+        base_ref_.reset();
+        ros::spinOnce();
+
+        if (base_ref_)
+        {
+            // Set robot velocity
+            world.setVelocity(robot_id, geo::Vector3(base_ref_->linear.x, base_ref_->linear.y, 0), base_ref_->angular.z);
+        }
+
         world.update(ros::Time::now().toSec());
 
         // Create laser data
