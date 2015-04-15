@@ -43,22 +43,28 @@ int main(int argc, char **argv)
 
     world.addObject(geo::Pose3D::identity(), heightmap);
 
+    // Add robot
+    geo::Pose3D robot_pose = geo::Pose3D::identity();
+    Id robot_id = world.addObject(robot_pose);
+    world.setVelocity(robot_id, geo::Vector3(0.1, 0, 0.0), 0.2);
+
     // Publishers
     ros::NodeHandle nh;
     ros::Publisher pub_laser = nh.advertise<sensor_msgs::LaserScan>("/pico/laser", 1);
 
+    // Set laser pose (in robot frame)
     geo::Pose3D laser_pose = geo::Pose3D::identity();
     laser_pose.t.z = 0.3;
 
     ros::Rate r(cycle_freq);
     while(ros::ok())
     {
-        world.update(cycle_time);
+        world.update(ros::Time::now().toSec());
 
         // Create laser data
         sensor_msgs::LaserScan scan_msg;
         scan_msg.header.frame_id = "/pico/laser";
-        lrf.generateLaserData(world, laser_pose, scan_msg);
+        lrf.generateLaserData(world, world.object(robot_id).pose * laser_pose, scan_msg);
         pub_laser.publish(scan_msg);
 
         // Visualize

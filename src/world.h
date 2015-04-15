@@ -7,8 +7,12 @@ typedef int Id;
 
 struct Object
 {
+    Object() : vel_trans(0, 0, 0), vel_angular(0) {}
+
     geo::ShapeConstPtr shape;
     geo::Pose3D pose;
+    geo::Vector3 vel_trans;
+    double vel_angular;
 };
 
 class World
@@ -22,7 +26,7 @@ public:
 
     void update(double dt);
 
-    Id addObject(const geo::Pose3D& pose, const geo::ShapeConstPtr& shape)
+    Id addObject(const geo::Pose3D& pose, const geo::ShapeConstPtr& shape = geo::ShapeConstPtr())
     {
         objects_.push_back(Object());
         Object& obj = objects_.back();
@@ -33,13 +37,20 @@ public:
 
     const std::vector<Object>& objects() const { return objects_; }
 
+    void setVelocity(Id id, const geo::Vector3& trans, double ang)
+    {
+        Object& obj = objects_[id];
+        obj.vel_trans = trans;
+        obj.vel_angular = ang;
+    }
+
+    const Object& object(Id id) const { return objects_[id]; }
+
     double time() const { return time_; }
 
 private:
 
     double time_;
-
-    geo::Pose3D robot_pose_;
 
     std::vector<Object> objects_;
 
