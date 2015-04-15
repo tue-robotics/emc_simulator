@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package>
+  <name>pico_simulator</name>
+  <version>0.0.0</version>
+  <description>No description available</description>
+
+  <maintainer email="todo@tue.nl">todo</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>geolib2</build_depend>
+  <run_depend>geolib2</run_depend>
+
+</package>
