@@ -11,6 +11,7 @@
 #include <ros/init.h>
 #include <ros/publisher.h>
 #include <ros/node_handle.h>
+#include <ros/package.h>
 
 #include <geometry_msgs/Twist.h>
 
@@ -29,11 +30,11 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "pico_simulator");
 
-    if (argc <= 1)
-    {
-        std::cout << "[PICO SIMULATOR] Please provide heightmap" << std::endl;
-        return 1;
-    }
+    std::string heightmap_filename;
+    if (argc > 1)
+        heightmap_filename = argv[1];
+    else
+        heightmap_filename = ros::package::getPath("pico_simulator") + "/data/heightmap.pgm";
 
     World world;
     LRF lrf;
@@ -47,7 +48,7 @@ int main(int argc, char **argv)
     bool visualize = true;
 
     // Load heightmap
-    geo::ShapePtr heightmap = createHeightMapShape(argv[1]);
+    geo::ShapePtr heightmap = createHeightMapShape(heightmap_filename);
     if (!heightmap)
     {
         std::cout << "[PICO SIMULATOR] Heightmap could not be loaded" << std::endl;
