@@ -34,7 +34,7 @@ int main(int argc, char **argv)
     if (argc > 1)
         heightmap_filename = argv[1];
     else
-        heightmap_filename = ros::package::getPath("pico_simulator") + "/data/heightmap.pgm";
+        heightmap_filename = ros::package::getPath("emc_simulator") + "/data/heightmap.pgm";
 
     World world;
     LRF lrf;
