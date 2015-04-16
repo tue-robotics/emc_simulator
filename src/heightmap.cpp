@@ -199,8 +199,8 @@ geo::ShapePtr createHeightMapShape(const std::string& filename)
                         poly[i].y = points[i].y;
 
                         // Convert to world coordinates
-                        double wx = points[i].x * resolution + origin_x;
-                        double wy = (image.rows - points[i].y - 1) * resolution + origin_y;
+                        double wy = -(points[i].x * resolution + origin_x);
+                        double wx = (image.rows - points[i].y - 1) * resolution + origin_y;
 
                         vertex_index_map.at<int>(points[i].y, points[i].x) = mesh.addPoint(geo::Vector3(wx, wy, min_z));
                         mesh.addPoint(geo::Vector3(wx, wy, max_z));
@@ -242,8 +242,8 @@ geo::ShapePtr createHeightMapShape(const std::string& filename)
                                     poly_hole[j].y = hole_points[j].y;
 
                                     // Convert to world coordinates
-                                    double wx = hole_points[j].x * resolution + origin_x;
-                                    double wy = (image.rows - hole_points[j].y - 1) * resolution + origin_y;
+                                    double wy = -(hole_points[j].x * resolution + origin_x);
+                                    double wx = (image.rows - hole_points[j].y - 1) * resolution + origin_y;
 
                                     vertex_index_map.at<int>(hole_points[j].y, hole_points[j].x) = mesh.addPoint(geo::Vector3(wx, wy, min_z));
                                     mesh.addPoint(geo::Vector3(wx, wy, max_z));
