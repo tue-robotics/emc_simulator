@@ -7,6 +7,8 @@
 
 #include <tue/profiling/timer.h>
 
+#include <geolib/ros/msg_conversions.h>
+
 // ROS
 #include <ros/init.h>
 #include <ros/publisher.h>
@@ -14,6 +16,7 @@
 #include <ros/package.h>
 
 #include <geometry_msgs/Twist.h>
+#include <nav_msgs/Odometry.h>
 
 geometry_msgs::Twist::ConstPtr base_ref_;
 
@@ -64,6 +67,7 @@ int main(int argc, char **argv)
     // Publishers
     ros::NodeHandle nh;
     ros::Publisher pub_laser = nh.advertise<sensor_msgs::LaserScan>("/pico/laser", 1);
+    ros::Publisher pub_odom = nh.advertise<nav_msgs::Odometry>("/pico/odom", 1);
 
     // Subscribers
     ros::Subscriber sub_base_ref = nh.subscribe<geometry_msgs::Twist>("/pico/base/reference", 1, baseReferenceCallback);
@@ -84,13 +88,23 @@ int main(int argc, char **argv)
             world.setVelocity(robot_id, geo::Vector3(base_ref_->linear.x, base_ref_->linear.y, 0), base_ref_->angular.z);
         }
 
-        world.update(ros::Time::now().toSec());
+        ros::Time time = ros::Time::now();
+
+        world.update(time.toSec());
 
         // Create laser data
         sensor_msgs::LaserScan scan_msg;
         scan_msg.header.frame_id = "/pico/laser";
+        scan_msg.header.stamp = time;
         lrf.generateLaserData(world, world.object(robot_id).pose * laser_pose, scan_msg);
         pub_laser.publish(scan_msg);
+
+        // Create odom data
+        nav_msgs::Odometry odom_msg;
+        odom_msg.header.stamp = time;
+        geo::convert(world.object(robot_id).pose, odom_msg.pose.pose);
+
+        pub_odom.publish(odom_msg);
 
         // Visualize
         if (visualize)
