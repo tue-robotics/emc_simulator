@@ -66,7 +66,6 @@ void LRF::generateLaserData(const World& world, const geo::Pose3D& laser_pose, s
     }
 
     // Create message
-    scan_msg.angle_increment = lrf_.getAngleIncrement();
     scan_msg.angle_min = lrf_.getAngleMin();
     scan_msg.angle_max = lrf_.getAngleMax();
     scan_msg.range_min = lrf_.getRangeMin();
@@ -74,6 +73,8 @@ void LRF::generateLaserData(const World& world, const geo::Pose3D& laser_pose, s
 
     // Make sure ranges in scan message is correct size
     scan_msg.ranges.resize(lrf_.getNumBeams());
+
+    scan_msg.angle_increment = (scan_msg.angle_max - scan_msg.angle_min) / (scan_msg.ranges.size() - 1);
 
     // Copy ranges to scan message and add noise
     for(unsigned int i = 0; i < ranges.size(); ++i)

@@ -1,9 +1,12 @@
 #include "heightmap.h"
+#include "door.h"
 
 #include "polypartition/polypartition.h"
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <geolib/CompositeShape.h>
+
+#include <queue>
 
 // ----------------------------------------------------------------------------------------------------
 
@@ -146,7 +149,7 @@ void findContours(const cv::Mat& image, const geo::Vec2i& p, int d_start, std::v
 
 // ----------------------------------------------------------------------------------------------------
 
-geo::ShapePtr createHeightMapShape(const std::string& filename)
+geo::ShapePtr createHeightMapShape(const std::string& filename, std::vector<Door>& doors)
 {
     double resolution = 0.025;
     double origin_z = 0;
@@ -162,6 +165,90 @@ geo::ShapePtr createHeightMapShape(const std::string& filename)
 
     double origin_x = -(image.cols * resolution / 2);
     double origin_y = -(image.rows * resolution / 2);
+
+    // Find doors
+    for(int y = 0; y < image.rows; ++y)
+    {
+        for(int x = 0; x < image.cols; ++x)
+        {
+            unsigned char c = image.at<unsigned char>(y, x);
+
+            if (c < 50 || c > 205)
+                continue;
+
+            std::queue<cv::Point2i> Q;
+            cv::Point2i p_start(x, y);
+            Q.push(p_start);
+
+            cv::Point2i p_min = p_start;
+            cv::Point2i p_max = p_start;
+
+            int n = 0;
+            while(!Q.empty())
+            {
+                const cv::Point2i& p = Q.front();
+
+                if (image.at<unsigned char>(p) > 50 && image.at<unsigned char>(p) < 205)
+                {
+                    // Remove this part of the door
+                    image.at<unsigned char>(p) = 255;
+
+                    if (image.at<unsigned char>(p.y, p.x + 1) > 50 && image.at<unsigned char>(p.y, p.x + 1) < 205) Q.push(cv::Point2i(p.x + 1, p.y));
+                    if (image.at<unsigned char>(p.y, p.x - 1) > 50 && image.at<unsigned char>(p.y, p.x - 1) < 205) Q.push(cv::Point2i(p.x - 1, p.y));
+                    if (image.at<unsigned char>(p.y + 1, p.x) > 50 && image.at<unsigned char>(p.y + 1, p.x) < 205) Q.push(cv::Point2i(p.x, p.y + 1));
+                    if (image.at<unsigned char>(p.y - 1, p.x) > 50 && image.at<unsigned char>(p.y - 1, p.x) < 205) Q.push(cv::Point2i(p.x, p.y - 1));
+
+                    p_min.x = std::min(p_min.x, p.x);
+                    p_min.y = std::min(p_min.y, p.y);
+
+                    p_max.x = std::max(p_max.x, p.x);
+                    p_max.y = std::max(p_max.y, p.y);
+
+                    ++n;
+                }
+                Q.pop();
+            }
+
+            int dx = p_max.x - p_min.x;
+            int dy = p_max.y - p_min.y;
+
+            int thickness_pixels = n / (std::max(dx, dy));
+            if (dy > dx)
+                p_max.x = std::max(p_min.x, p_max.x - thickness_pixels);
+            else
+                p_max.y = std::max(p_min.y, p_max.y - thickness_pixels);
+
+            // Convert to world coordinates
+            geo::Vector3 p_world_min((image.rows - p_min.y - 1) * resolution + origin_y, (image.cols - p_min.x - 1) * resolution + origin_x, 0);
+            geo::Vector3 p_world_max((image.rows - p_max.y - 1) * resolution + origin_y, (image.cols - p_max.x - 1) * resolution + origin_x, 0);
+
+            double thickness = resolution * thickness_pixels;
+
+            doors.push_back(Door());
+            Door& door = doors.back();
+
+            geo::Vector3 v = p_world_max - p_world_min;
+
+            if (p_start.x > (p_max.x + p_min.x) / 2)
+                v.y = -v.y;
+
+            door.size = v.length();
+            v = v / door.size;
+
+            geo::Matrix3 m(v.x, -v.y, 0,
+                           v.y,  v.x, 0,
+                           0,    0,   1);
+
+            door.init_pose = geo::Pose3D(m, (p_world_max + p_world_min) / 2);
+            door.open_vel = geo::Vector3(0.3, 0, 0);
+            if (c < 128)
+                door.open_vel = -door.open_vel;
+
+            door.open_distance = door.size;
+            door.shape.reset(new geo::Box(geo::Vector3(-door.size / 2, -thickness / 2, 0), geo::Vector3(door.size / 2, thickness / 2, 1)));
+            door.closed = true;
+        }
+    }
 
     cv::Mat vertex_index_map(image.rows, image.cols, CV_32SC1, -1);
     cv::Mat contour_map(image.rows, image.cols, CV_8UC1, cv::Scalar(0));
@@ -296,9 +383,6 @@ geo::ShapePtr createHeightMapShape(const std::string& filename)
             }
         }
     }
-
-//    std::cout << shape->getMesh().getPoints().size() << " vertices" << std::endl;
-//    std::cout << shape->getMesh().getTriangleIs().size() << " triangles" << std::endl;
 
     return shape;
 }

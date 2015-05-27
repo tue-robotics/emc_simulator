@@ -55,9 +55,9 @@ void visualize(const World& world, Id robot_id)
         const std::vector<geo::Vector3>& vertices = obj.shape->getMesh().getPoints();
         const std::vector<geo::TriangleI>& triangles = obj.shape->getMesh().getTriangleIs();
 
-        cv::Scalar line_color(255, 255, 255);
+        cv::Scalar line_color(obj.color.x * 255, obj.color.y * 255, obj.color.z * 255);
 
-        geo::Transform t = obj.pose * robot.pose.inverse();
+        geo::Transform t =  robot.pose.inverse() * obj.pose;
 
         for(std::vector<geo::TriangleI>::const_iterator it2 = triangles.begin(); it2 != triangles.end(); ++it2)
         {
@@ -71,10 +71,10 @@ void visualize(const World& world, Id robot_id)
             cv::line(canvas, p2_2d, p3_2d, line_color, 2);
             cv::line(canvas, p1_2d, p3_2d, line_color, 2);
         }
-
-        cv::imshow("simulator", canvas);
-        cv::waitKey(3);
     }
+
+    cv::imshow("simulator", canvas);
+    cv::waitKey(3);
 }
 
 }

@@ -3,6 +3,8 @@
 
 #include <geolib/datatypes.h>
 
-geo::ShapePtr createHeightMapShape(const std::string& filename);
+struct Door;
+
+geo::ShapePtr createHeightMapShape(const std::string& filename, std::vector<Door>& doors);
 
 #endif

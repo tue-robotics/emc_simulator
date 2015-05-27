@@ -2,12 +2,15 @@
 #include "visualization.h"
 #include "heightmap.h"
 #include "lrf.h"
+#include "door.h"
 
 #include <unistd.h>
 
 #include <tue/profiling/timer.h>
 
 #include <geolib/ros/msg_conversions.h>
+
+#include <geolib/Box.h>
 
 // ROS
 #include <ros/init.h>
@@ -17,14 +20,23 @@
 
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
+#include <std_msgs/Empty.h>
 
 geometry_msgs::Twist::ConstPtr base_ref_;
+bool request_open_door_;
 
 // ----------------------------------------------------------------------------------------------------
 
 void baseReferenceCallback(const geometry_msgs::Twist::ConstPtr& msg)
 {
     base_ref_ = msg;
+}
+
+// ----------------------------------------------------------------------------------------------------
+
+void openDoorCallback(const std_msgs::Empty::ConstPtr& msg)
+{
+    request_open_door_ = true;
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -51,7 +63,8 @@ int main(int argc, char **argv)
     bool visualize = true;
 
     // Load heightmap
-    geo::ShapePtr heightmap = createHeightMapShape(heightmap_filename);
+    std::vector<Door> doors;
+    geo::ShapePtr heightmap = createHeightMapShape(heightmap_filename, doors);
     if (!heightmap)
     {
         std::cout << "[PICO SIMULATOR] Heightmap could not be loaded" << std::endl;
@@ -64,6 +77,13 @@ int main(int argc, char **argv)
     geo::Pose3D robot_pose = geo::Pose3D::identity();
     Id robot_id = world.addObject(robot_pose);
 
+    // Add door
+    for(std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
+    {
+        Door& door = *it;
+        door.id = world.addObject(door.init_pose, door.shape, geo::Vector3(0, 1, 0));
+    }
+
     // Publishers
     ros::NodeHandle nh;
     ros::Publisher pub_laser = nh.advertise<sensor_msgs::LaserScan>("/pico/laser", 1);
@@ -71,6 +91,7 @@ int main(int argc, char **argv)
 
     // Subscribers
     ros::Subscriber sub_base_ref = nh.subscribe<geometry_msgs::Twist>("/pico/base/reference", 1, baseReferenceCallback);
+    ros::Subscriber sub_open_door = nh.subscribe<std_msgs::Empty>("/pico/open_door", 1, openDoorCallback);
 
     // Set laser pose (in robot frame)
     geo::Pose3D laser_pose = geo::Pose3D::identity();
@@ -80,12 +101,40 @@ int main(int argc, char **argv)
     while(ros::ok())
     {
         base_ref_.reset();
+        request_open_door_ = false;
         ros::spinOnce();
 
         if (base_ref_)
         {
             // Set robot velocity
             world.setVelocity(robot_id, geo::Vector3(base_ref_->linear.x, base_ref_->linear.y, 0), base_ref_->angular.z);
+        }
+
+        if (request_open_door_)
+        {
+            for(std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
+            {
+                Door& door = *it;
+                if (!door.closed)
+                    continue;
+
+                // Test if robot is in front of door. If not, don't open it
+                geo::Pose3D rel_robot_pose = door.init_pose.inverse() * world.object(robot_id).pose;
+
+                if (std::abs(rel_robot_pose.t.y) > 1 || std::abs(rel_robot_pose.t.x) > door.size / 2)
+                    continue;
+
+                world.setVelocity(door.id, door.open_vel, 0);
+                door.closed = false;
+            }
+        }
+
+        // Stop doors that have moved far enough
+        for(std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
+        {
+            Door& door = *it;
+            if (!door.closed && (door.init_pose.t - world.object(door.id).pose.t).length2() > door.open_distance * door.open_distance)
+                world.setVelocity(door.id, geo::Vector3(0, 0, 0), 0);
         }
 
         ros::Time time = ros::Time::now();

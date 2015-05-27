@@ -7,12 +7,13 @@ typedef int Id;
 
 struct Object
 {
-    Object() : vel_trans(0, 0, 0), vel_angular(0) {}
+    Object() : vel_trans(0, 0, 0), vel_angular(0), color(1, 1, 1) {}
 
     geo::ShapeConstPtr shape;
     geo::Pose3D pose;
     geo::Vector3 vel_trans;
     double vel_angular;
+    geo::Vector3 color;
 };
 
 class World
@@ -26,12 +27,13 @@ public:
 
     void update(double dt);
 
-    Id addObject(const geo::Pose3D& pose, const geo::ShapeConstPtr& shape = geo::ShapeConstPtr())
+    Id addObject(const geo::Pose3D& pose, const geo::ShapeConstPtr& shape = geo::ShapeConstPtr(), const geo::Vector3& color = geo::Vector3(1, 1, 1))
     {
         objects_.push_back(Object());
         Object& obj = objects_.back();
         obj.pose = pose;
         obj.shape = shape;
+        obj.color = color;
         return objects_.size() - 1;
     }
 
