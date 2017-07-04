@@ -90,7 +90,7 @@ int main(int argc, char **argv)
     ros::Publisher pub_odom = nh.advertise<nav_msgs::Odometry>("/pico/odom", 1);
 
     // Subscribers
-    ros::Subscriber sub_base_ref = nh.subscribe<geometry_msgs::Twist>("/pico/base/reference", 1, baseReferenceCallback);
+    ros::Subscriber sub_base_ref = nh.subscribe<geometry_msgs::Twist>("/pico/cmd_vel", 1, baseReferenceCallback);
     ros::Subscriber sub_open_door = nh.subscribe<std_msgs::Empty>("/pico/open_door", 1, openDoorCallback);
 
     // Set laser pose (in robot frame)

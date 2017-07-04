@@ -64,7 +64,7 @@ def vels(speed,turn):
 if __name__=="__main__":
     	settings = termios.tcgetattr(sys.stdin)
 	
-	pub = rospy.Publisher('/pico/base/reference', Twist)
+	pub = rospy.Publisher('/pico/cmd_vel', Twist)
 	rospy.init_node('teleop_twist_keyboard')
 
 	x = 0
