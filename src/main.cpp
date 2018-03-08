@@ -21,6 +21,8 @@
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
 #include <std_msgs/Empty.h>
+#include <std_msgs/String.h>
+#include <iostream>
 
 geometry_msgs::Twist::ConstPtr base_ref_;
 bool request_open_door_;
@@ -37,6 +39,11 @@ void baseReferenceCallback(const geometry_msgs::Twist::ConstPtr& msg)
 void openDoorCallback(const std_msgs::Empty::ConstPtr& msg)
 {
     request_open_door_ = true;
+}
+
+void speakCallback(const std_msgs::String::ConstPtr& msg)
+{
+    std::cout << "Pico says: " << "\033[1;31m" << msg->data << "\033[0m\n"  << std::endl;
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -92,6 +99,7 @@ int main(int argc, char **argv)
     // Subscribers
     ros::Subscriber sub_base_ref = nh.subscribe<geometry_msgs::Twist>("/pico/cmd_vel", 1, baseReferenceCallback);
     ros::Subscriber sub_open_door = nh.subscribe<std_msgs::Empty>("/pico/open_door", 1, openDoorCallback);
+    ros::Subscriber sub_speak = nh.subscribe<std_msgs::String>("/pico/speak",1,speakCallback);
 
     // Set laser pose (in robot frame)
     geo::Pose3D laser_pose = geo::Pose3D::identity();
