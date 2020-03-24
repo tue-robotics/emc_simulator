@@ -24,6 +24,9 @@
 #include <std_msgs/String.h>
 #include <iostream>
 
+#include <geolib/CompositeShape.h>
+
+
 geometry_msgs::Twist::ConstPtr base_ref_;
 bool request_open_door_;
 
@@ -79,6 +82,45 @@ int main(int argc, char **argv)
     }
 
     world.addObject(geo::Pose3D::identity(), heightmap);
+
+
+    // Ad moving object
+    boost::shared_ptr<geo::CompositeShape> moving_object(new geo::CompositeShape);
+    geo::Shape sub_shape;
+    geo::Mesh mesh;
+    mesh.addPoint(geo::Vector3(-0.3, -0.3, -1));
+    mesh.addPoint(geo::Vector3(-0.3, -0.3, 1));
+    mesh.addPoint(geo::Vector3(-0.3, 0.3, 1));
+    mesh.addPoint(geo::Vector3(-0.3, 0.3, -1));
+
+    mesh.addPoint(geo::Vector3(-0.3, 0.3, -1));
+    mesh.addPoint(geo::Vector3(-0.3, 0.3, 1));
+    mesh.addPoint(geo::Vector3(0.3, 0.3, 1));
+    mesh.addPoint(geo::Vector3(0.3, 0.3, -1));
+
+    mesh.addPoint(geo::Vector3(0.3, 0.3, -1));
+    mesh.addPoint(geo::Vector3(0.3, 0.3, 1));
+    mesh.addPoint(geo::Vector3(0.3, -0.3, 1));
+    mesh.addPoint(geo::Vector3(0.3, -0.3, -1));
+
+    mesh.addPoint(geo::Vector3(0.3, -0.3, -1));
+    mesh.addPoint(geo::Vector3(0.3, -0.3, 1));
+    mesh.addPoint(geo::Vector3(-0.3, -0.3, 1));
+    mesh.addPoint(geo::Vector3(-0.3, -0.3, -1));
+
+    mesh.addTriangle(0,1,2);
+    mesh.addTriangle(1,2,3);
+    mesh.addTriangle(4,5,6);
+    mesh.addTriangle(5,6,7);
+    mesh.addTriangle(8,9,10);
+    mesh.addTriangle(9,10,11);
+    mesh.addTriangle(12,13,14);
+    mesh.addTriangle(13,14,15);
+    sub_shape.setMesh(mesh);
+    moving_object->addShape(sub_shape, geo::Pose3D::identity());
+    Id moving_object_id = world.addObject(geo::Pose3D(0.5,0.0,0.0,0.0,0.0,0.0),moving_object);
+    world.setVelocity(moving_object_id,geo::Vector3(0.1,0.0,0.0),0.1);
+
 
     // Add robot
     geo::Pose3D robot_pose = geo::Pose3D::identity();
