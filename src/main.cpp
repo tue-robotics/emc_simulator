@@ -119,14 +119,14 @@ int main(int argc, char **argv)
     mesh.addTriangle(13,14,15);
     sub_shape.setMesh(mesh);
     moving_object->addShape(sub_shape, geo::Pose3D::identity());
-    Id moving_object_id = world.addObject(geo::Pose3D(0.5,0.0,0.0,0.0,0.0,0.0),moving_object);
-    world.setVelocity(moving_object_id,geo::Vector3(0.1,0.0,0.0),0.1);
+    Id moving_object_id = world.addObject(geo::Pose3D(1.8,-1.0,0.0,0.0,0.0,0.0),moving_object,geo::Vector3(0,1,1));
+    world.setVelocity(moving_object_id,geo::Vector3(0.0,0.0,0.0),0.0);
 
 
     // Add robot
     geo::Pose3D robot_pose = geo::Pose3D::identity();
     Id robot_id = world.addObject(robot_pose);
-    Virtualbase picobase(1.2,1.0,1.0);
+    Virtualbase picobase(1.03,1.0,1.0);
 
     // Add door
     for(std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
@@ -167,6 +167,14 @@ int main(int argc, char **argv)
             picobase.update(cycle_time);
             geometry_msgs::Twist actual_twist = picobase.getActualTwist();
             world.setVelocity(robot_id, geo::Vector3(actual_twist.linear.x, actual_twist.linear.y, 0), actual_twist.angular.z);
+        }
+
+
+        //check if object should start moving
+        geo::Vector3 dist_obj_pico = world.object(robot_id).pose.getOrigin() -  world.object(moving_object_id).pose.getOrigin();
+
+        if(dist_obj_pico.length() < 1.5){
+            world.setVelocity(moving_object_id,geo::Vector3(0.0,0.3,0.0),0.0);
         }
 
 

@@ -18,7 +18,16 @@ class Virtualbase
 {
 
 public:
-    Virtualbase(double a1_, double a2_, double a3_) : a1(a1_), a2(a2_), a3(a3_) {};
+    Virtualbase(double a1_, double a2_, double a3_) : a1(a1_), a2(a2_), a3(a3_)
+    {
+        odometry_state.pose.pose.position.x = 0.0;
+        odometry_state.pose.pose.position.y = 0.0;
+        odometry_state.pose.pose.position.z = 0.0;
+        odometry_state.pose.pose.orientation.x = 0.0;
+        odometry_state.pose.pose.orientation.y = 0.0;
+        odometry_state.pose.pose.orientation.z = 0.0;
+        odometry_state.pose.pose.orientation.w = 1.0;
+    };
 
     /**
      * Set wheel radius mismatch factors
@@ -46,20 +55,19 @@ public:
         double v2 = -0.5*twist.linear.x - 0.5*sqrt(3.0)*twist.linear.y - lw*twist.angular.z;
         double v3 = -0.5*twist.linear.x + 0.5*sqrt(3.0)*twist.linear.y - lw*twist.angular.z;
 
+        v1 = a1*v1; v2=a2*v2; v3=a3*v3;
+
         // Calculate actual twist from wrong wheelspeeds
         actual_twist.linear.x = (2.0/3.0)* v1 -(1/3.0)*v2 -(1/3.0)*v3;
         actual_twist.linear.y = -sqrt(3.0)/3 * v2 + sqrt(3.0)/3.0 * v3;
         actual_twist.angular.z = -v1 / (3.0*lw) -v2 / (3.0*lw) -v3 / (3.0*lw);
-
-       // actual_twist.linear.x = twist.linear.x;
-       // actual_twist.linear.y = -sqrt(3)/3 * v2 + sqrt(3)/3 * v3;
     }
 
     /**
      * Apply the input that was last sent again if no new input is available
      */
     void update(double dt){
-        update_odometry(odometry_state,reference_twist,dt);
+        odometry_state = update_odometry(odometry_state,reference_twist,dt);
     }
 
     geometry_msgs::Twist getActualTwist() const{
@@ -71,7 +79,9 @@ public:
     }
 
 private:
-
+    /**
+     * update odometry by an instantaneous twist (stateless function)
+     */
     nav_msgs::Odometry update_odometry(const nav_msgs::Odometry odom, const geometry_msgs::Twist twist, double dt) const{
         tf::Transform delta;
         delta.setOrigin( tf::Vector3(twist.linear.x*dt, twist.linear.y*dt, 0));
@@ -98,7 +108,6 @@ private:
 
         return new_odom_msg;
     }
-
 
     geometry_msgs::Twist reference_twist;
     geometry_msgs::Twist actual_twist;
