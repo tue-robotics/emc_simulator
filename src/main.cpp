@@ -26,6 +26,7 @@
 
 #include <geolib/CompositeShape.h>
 #include "virtualbase.h"
+#include "moving_object.h"
 
 
 geometry_msgs::Twist::ConstPtr base_ref_;
@@ -54,13 +55,26 @@ void speakCallback(const std_msgs::String::ConstPtr& msg)
 
 int main(int argc, char **argv)
 {
+    //check bash arguments
+    bool noslip = false;
+    for(int i = 1; i < argc; i++){
+        std::string str(argv[i]);
+        if(str.compare("--noslip")== 0){
+            std::cout << "wheelslip disabled" << std::endl;
+            noslip=true;
+        }
+    }
+
     ros::init(argc, argv, "pico_simulator");
 
     std::string heightmap_filename;
-    if (argc > 1)
-        heightmap_filename = argv[1];
-    else
-        heightmap_filename = ros::package::getPath("emc_simulator") + "/data/heightmap.pgm";
+    heightmap_filename = ros::package::getPath("emc_simulator") + "/data/heightmap.pgm";
+    if (argc > 1) {
+        std::string str(argv[1]);
+        if (str.compare("--noslip") != 0) {
+            heightmap_filename = argv[1];
+        }
+    }
 
     World world;
     LRF lrf;
@@ -85,48 +99,25 @@ int main(int argc, char **argv)
     world.addObject(geo::Pose3D::identity(), heightmap);
 
 
-    // Ad moving object
-    boost::shared_ptr<geo::CompositeShape> moving_object(new geo::CompositeShape);
-    geo::Shape sub_shape;
-    geo::Mesh mesh;
-    mesh.addPoint(geo::Vector3(-0.3, -0.3, -1));
-    mesh.addPoint(geo::Vector3(-0.3, -0.3, 1));
-    mesh.addPoint(geo::Vector3(-0.3, 0.3, 1));
-    mesh.addPoint(geo::Vector3(-0.3, 0.3, -1));
+    // Ad moving objects
+    MovingObject cart1;
+    geo::Pose3D p; p.setOrigin(geo::Vector3(1.5,1.0,0)); p.setRPY(0,0.0,0.3);
+    cart1.init_pose = p;
+    std::vector<MovingObject> movingobjects;
+    movingobjects.push_back(cart1);
 
-    mesh.addPoint(geo::Vector3(-0.3, 0.3, -1));
-    mesh.addPoint(geo::Vector3(-0.3, 0.3, 1));
-    mesh.addPoint(geo::Vector3(0.3, 0.3, 1));
-    mesh.addPoint(geo::Vector3(0.3, 0.3, -1));
-
-    mesh.addPoint(geo::Vector3(0.3, 0.3, -1));
-    mesh.addPoint(geo::Vector3(0.3, 0.3, 1));
-    mesh.addPoint(geo::Vector3(0.3, -0.3, 1));
-    mesh.addPoint(geo::Vector3(0.3, -0.3, -1));
-
-    mesh.addPoint(geo::Vector3(0.3, -0.3, -1));
-    mesh.addPoint(geo::Vector3(0.3, -0.3, 1));
-    mesh.addPoint(geo::Vector3(-0.3, -0.3, 1));
-    mesh.addPoint(geo::Vector3(-0.3, -0.3, -1));
-
-    mesh.addTriangle(0,1,2);
-    mesh.addTriangle(1,2,3);
-    mesh.addTriangle(4,5,6);
-    mesh.addTriangle(5,6,7);
-    mesh.addTriangle(8,9,10);
-    mesh.addTriangle(9,10,11);
-    mesh.addTriangle(12,13,14);
-    mesh.addTriangle(13,14,15);
-    sub_shape.setMesh(mesh);
-    moving_object->addShape(sub_shape, geo::Pose3D::identity());
-    Id moving_object_id = world.addObject(geo::Pose3D(1.8,-1.0,0.0,0.0,0.0,0.0),moving_object,geo::Vector3(0,1,1));
-    world.setVelocity(moving_object_id,geo::Vector3(0.0,0.0,0.0),0.0);
-
+    for(std::vector<MovingObject>::iterator it = movingobjects.begin(); it != movingobjects.end(); ++it){
+        cart1.id = world.addObject(it->init_pose,makeWorldSimObject(*it),geo::Vector3(0,1,1));
+        world.setVelocity(cart1.id,geo::Vector3(0.0,0.0,0.0),0.0);
+    }
 
     // Add robot
     geo::Pose3D robot_pose = geo::Pose3D::identity();
     Id robot_id = world.addObject(robot_pose);
     Virtualbase picobase(1.03,1.0,1.0);
+    if(noslip){
+        picobase.setWheelUncertaintyFactors(1.0,1.0,1.0);
+    }
 
     // Add door
     for(std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
@@ -171,12 +162,11 @@ int main(int argc, char **argv)
 
 
         //check if object should start moving
-        geo::Vector3 dist_obj_pico = world.object(robot_id).pose.getOrigin() -  world.object(moving_object_id).pose.getOrigin();
+        geo::Vector3 dist_obj_pico = world.object(robot_id).pose.getOrigin() -  world.object(cart1.id).pose.getOrigin();
 
         if(dist_obj_pico.length() < 1.5){
-            world.setVelocity(moving_object_id,geo::Vector3(0.0,0.3,0.0),0.0);
+            world.setVelocity(cart1.id,geo::Vector3(0.0,0.3,0.0),0.0);
         }
-
 
         //check collisions with robot
         bool collision = false;
@@ -187,7 +177,6 @@ int main(int argc, char **argv)
         if( heightmap->intersect(rp1,0.01) || heightmap->intersect(rp2,0.01) || heightmap->intersect(rp3,0.01) || heightmap->intersect(rp4,0.01)){
             collision = true;
         }
-
 
         if (request_open_door_)
         {
@@ -230,6 +219,7 @@ int main(int argc, char **argv)
         // Create odom data
         nav_msgs::Odometry odom_msg = picobase.getOdom();
         odom_msg.header.stamp = time;
+        odom_msg.header.frame_id = "odomframe";
         //geo::convert(world.object(robot_id).pose, odom_msg.pose.pose);
 
 
