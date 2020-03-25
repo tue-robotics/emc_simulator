@@ -25,6 +25,7 @@
 #include <iostream>
 
 #include <geolib/CompositeShape.h>
+#include "virtualbase.h"
 
 
 geometry_msgs::Twist::ConstPtr base_ref_;
@@ -125,6 +126,7 @@ int main(int argc, char **argv)
     // Add robot
     geo::Pose3D robot_pose = geo::Pose3D::identity();
     Id robot_id = world.addObject(robot_pose);
+    Virtualbase picobase(1.2,1.0,1.0);
 
     // Add door
     for(std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
@@ -154,11 +156,19 @@ int main(int argc, char **argv)
         request_open_door_ = false;
         ros::spinOnce();
 
-        if (base_ref_)
+        if (base_ref_) // If there is a twist message in the queue
         {
             // Set robot velocity
-            world.setVelocity(robot_id, geo::Vector3(base_ref_->linear.x, base_ref_->linear.y, 0), base_ref_->angular.z);
+            picobase.applyTwistAndUpdate(*base_ref_,cycle_time);
+            geometry_msgs::Twist actual_twist = picobase.getActualTwist();
+            world.setVelocity(robot_id, geo::Vector3(actual_twist.linear.x, actual_twist.linear.y, 0), actual_twist.angular.z);
         }
+        else{ // apply previous one again
+            picobase.update(cycle_time);
+            geometry_msgs::Twist actual_twist = picobase.getActualTwist();
+            world.setVelocity(robot_id, geo::Vector3(actual_twist.linear.x, actual_twist.linear.y, 0), actual_twist.angular.z);
+        }
+
 
         if (request_open_door_)
         {
@@ -199,9 +209,10 @@ int main(int argc, char **argv)
         pub_laser.publish(scan_msg);
 
         // Create odom data
-        nav_msgs::Odometry odom_msg;
+        nav_msgs::Odometry odom_msg = picobase.getOdom();
         odom_msg.header.stamp = time;
-        geo::convert(world.object(robot_id).pose, odom_msg.pose.pose);
+        //geo::convert(world.object(robot_id).pose, odom_msg.pose.pose);
+
 
         pub_odom.publish(odom_msg);
 
