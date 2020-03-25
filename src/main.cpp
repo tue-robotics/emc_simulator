@@ -178,6 +178,17 @@ int main(int argc, char **argv)
         }
 
 
+        //check collisions with robot
+        bool collision = false;
+        geo::Vector3 rp1 = world.object(robot_id).pose*geo::Vector3(0.05,0.15,0.0);
+        geo::Vector3 rp2 = world.object(robot_id).pose*geo::Vector3(0.05,-0.15,0.0);
+        geo::Vector3 rp3 = world.object(robot_id).pose*geo::Vector3(-0.05,0.15,0.0);
+        geo::Vector3 rp4 = world.object(robot_id).pose*geo::Vector3(-0.05,-0.15,0.0);
+        if( heightmap->intersect(rp1,0.01) || heightmap->intersect(rp2,0.01) || heightmap->intersect(rp3,0.01) || heightmap->intersect(rp4,0.01)){
+            collision = true;
+        }
+
+
         if (request_open_door_)
         {
             for(std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
@@ -226,7 +237,7 @@ int main(int argc, char **argv)
 
         // Visualize
         if (visualize)
-            visualization::visualize(world, robot_id);
+            visualization::visualize(world, robot_id, collision);
 
         r.sleep();
     }

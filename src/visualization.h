@@ -6,7 +6,7 @@
 namespace visualization
 {
 
-void visualize(const World& world, Id robot_id);
+void visualize(const World& world, Id robot_id, bool collision);
 
 }
 

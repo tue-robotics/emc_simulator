@@ -19,7 +19,7 @@ cv::Point2d worldToCanvas(const geo::Vector3& p)
 
 // ----------------------------------------------------------------------------------------------------
 
-void visualize(const World& world, Id robot_id)
+void visualize(const World& world, Id robot_id, bool collision = false)
 {
     const Object& robot = world.object(robot_id);
 
@@ -72,6 +72,10 @@ void visualize(const World& world, Id robot_id)
             cv::line(canvas, p2_2d, p3_2d, line_color, 2);
             cv::line(canvas, p1_2d, p3_2d, line_color, 2);
         }
+    }
+
+    if(collision){
+        cv::putText(canvas,"COLLISION!",cv::Point(20,20),cv::FONT_HERSHEY_COMPLEX,1,cv::Scalar(0,0,255));
     }
 
     cv::imshow("simulator", canvas);
