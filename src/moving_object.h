@@ -14,6 +14,7 @@ struct MovingObject
     double trigger_radius;
     double safety_radius;
     bool is_moving;
+    bool finished_moving;
     geo::Pose3D init_pose;
     geo::Pose3D final_pose;
     double velocity;
@@ -26,25 +27,25 @@ boost::shared_ptr<geo::CompositeShape> makeWorldSimObject(MovingObject object){
     boost::shared_ptr<geo::CompositeShape> shape_ptr(new geo::CompositeShape);
     geo::Shape* sub_shape = new geo::Shape();
     geo::Mesh* mesh = new geo::Mesh();
-    mesh->addPoint(geo::Vector3(-0.3, -0.3, -1));
-    mesh->addPoint(geo::Vector3(-0.3, -0.3, 1));
-    mesh->addPoint(geo::Vector3(-0.3, 0.3, 1));
-    mesh->addPoint(geo::Vector3(-0.3, 0.3, -1));
+    mesh->addPoint(geo::Vector3(-object.length/2, -object.width/2, -1));
+    mesh->addPoint(geo::Vector3(-object.length/2, -object.width/2, 1));
+    mesh->addPoint(geo::Vector3(-object.length/2, object.width/2, 1));
+    mesh->addPoint(geo::Vector3(-object.length/2, object.width/2, -1));
 
-    mesh->addPoint(geo::Vector3(-0.3, 0.3, -1));
-    mesh->addPoint(geo::Vector3(-0.3, 0.3, 1));
-    mesh->addPoint(geo::Vector3(0.3, 0.3, 1));
-    mesh->addPoint(geo::Vector3(0.3, 0.3, -1));
+    mesh->addPoint(geo::Vector3(-object.length/2, object.width/2, -1));
+    mesh->addPoint(geo::Vector3(-object.length/2, object.width/2, 1));
+    mesh->addPoint(geo::Vector3(object.length/2, object.width/2, 1));
+    mesh->addPoint(geo::Vector3(object.length/2, object.width/2, -1));
 
-    mesh->addPoint(geo::Vector3(0.3, 0.3, -1));
-    mesh->addPoint(geo::Vector3(0.3, 0.3, 1));
-    mesh->addPoint(geo::Vector3(0.3, -0.3, 1));
-    mesh->addPoint(geo::Vector3(0.3, -0.3, -1));
+    mesh->addPoint(geo::Vector3(object.length/2, object.width/2, -1));
+    mesh->addPoint(geo::Vector3(object.length/2, object.width/2, 1));
+    mesh->addPoint(geo::Vector3(object.length/2, -object.width/2, 1));
+    mesh->addPoint(geo::Vector3(object.length/2, -object.width/2, -1));
 
-    mesh->addPoint(geo::Vector3(0.3, -0.3, -1));
-    mesh->addPoint(geo::Vector3(0.3, -0.3, 1));
-    mesh->addPoint(geo::Vector3(-0.3, -0.3, 1));
-    mesh->addPoint(geo::Vector3(-0.3, -0.3, -1));
+    mesh->addPoint(geo::Vector3(object.length/2, -object.width/2, -1));
+    mesh->addPoint(geo::Vector3(object.length/2, -object.width/2, 1));
+    mesh->addPoint(geo::Vector3(-object.length/2, -object.width/2, 1));
+    mesh->addPoint(geo::Vector3(-object.length/2, -object.width/2, -1));
 
     mesh->addTriangle(0,1,2);
     mesh->addTriangle(1,2,3);

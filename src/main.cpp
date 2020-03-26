@@ -5,11 +5,8 @@
 #include "door.h"
 
 #include <unistd.h>
-
 #include <tue/profiling/timer.h>
-
 #include <geolib/ros/msg_conversions.h>
-
 #include <geolib/Box.h>
 
 // ROS
@@ -27,6 +24,7 @@
 #include <geolib/CompositeShape.h>
 #include "virtualbase.h"
 #include "moving_object.h"
+#include "random"
 
 
 geometry_msgs::Twist::ConstPtr base_ref_;
@@ -98,23 +96,44 @@ int main(int argc, char **argv)
 
     world.addObject(geo::Pose3D::identity(), heightmap);
 
-
     // Ad moving objects
     MovingObject cart1;
-    geo::Pose3D p; p.setOrigin(geo::Vector3(1.5,1.0,0)); p.setRPY(0,0.0,0.3);
-    cart1.init_pose = p;
+    geo::Pose3D p1; p1.setOrigin(geo::Vector3(1.9,1.0,0)); p1.setRPY(0,0.0,0.3);
+    cart1.init_pose = p1;
+    geo::Pose3D p2; p2.setOrigin(geo::Vector3(1.5,-1.0,0)); p2.setRPY(0,0.0,0.3);
+    cart1.final_pose = p2;
+    cart1.velocity = 1.0;
+    cart1.trigger_radius = 1.5;
+    cart1.safety_radius = 0.1;
+    cart1.width = 0.3; cart1.length = 0.4;
+
     std::vector<MovingObject> movingobjects;
     movingobjects.push_back(cart1);
+    p1.setOrigin(geo::Vector3(0.7,0.0,0));
+    p2.setOrigin(geo::Vector3(0.5,0.9,0));
+    cart1.init_pose = p1; cart1.final_pose=p2; cart1.trigger_radius = 0.6;
+    cart1.init_pose.setRPY(0,0.0,-0.3);
+    movingobjects.push_back(cart1);
+
+    p1.setOrigin(geo::Vector3(1.4,0.0,0));
+    p2.setOrigin(geo::Vector3(1.0,-0.9,0));
+    cart1.width = 1.2;
+    cart1.init_pose = p1; cart1.final_pose=p2; cart1.trigger_radius = 0.6;
+    movingobjects.push_back(cart1);
+
 
     for(std::vector<MovingObject>::iterator it = movingobjects.begin(); it != movingobjects.end(); ++it){
-        cart1.id = world.addObject(it->init_pose,makeWorldSimObject(*it),geo::Vector3(0,1,1));
-        world.setVelocity(cart1.id,geo::Vector3(0.0,0.0,0.0),0.0);
+        it->id = world.addObject(it->init_pose,makeWorldSimObject(*it),geo::Vector3(0,1,1));
+        world.setVelocity(it->id,geo::Vector3(0.0,0.0,0.0),0.0);
     }
 
     // Add robot
     geo::Pose3D robot_pose = geo::Pose3D::identity();
     Id robot_id = world.addObject(robot_pose);
-    Virtualbase picobase(1.03,1.0,1.0);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::normal_distribution<double> dis(0.0,0.005);
+    Virtualbase picobase(1.0 +dis(gen),1.0+dis(gen),1.0+dis(gen));
     if(noslip){
         picobase.setWheelUncertaintyFactors(1.0,1.0,1.0);
     }
@@ -162,10 +181,24 @@ int main(int argc, char **argv)
 
 
         //check if object should start moving
-        geo::Vector3 dist_obj_pico = world.object(robot_id).pose.getOrigin() -  world.object(cart1.id).pose.getOrigin();
+        for(std::vector<MovingObject>::iterator it = movingobjects.begin(); it != movingobjects.end(); ++it){
 
-        if(dist_obj_pico.length() < 1.5){
-            world.setVelocity(cart1.id,geo::Vector3(0.0,0.3,0.0),0.0);
+            // check if it should start
+            geo::Vector3 dist_obj_pico = world.object(robot_id).pose.getOrigin() -  world.object(it->id).pose.getOrigin();
+            if(dist_obj_pico.length() < it->trigger_radius && it->is_moving == false && it->finished_moving == false){
+                it->is_moving = true;
+                geo::Vector3 unit_vel = (it->final_pose.getOrigin() - it->init_pose.getOrigin());
+                unit_vel =world.object(it->id).pose.R.transpose()*unit_vel / unit_vel.length();
+                world.setVelocity(it->id, unit_vel*it->velocity,0.0);
+            }
+
+            // check if it should stop
+            geo::Vector3 dist_obj_dest = world.object(it->id).pose.getOrigin() -  it->final_pose.getOrigin();
+            if(dist_obj_dest.length() < 0.1 && it->is_moving == true && it->finished_moving == false){
+                it->is_moving = false;
+                it->finished_moving = true;
+                world.setVelocity(it->id, geo::Vector3(0.0,0.0,0.0),0.0);
+            }
         }
 
         //check collisions with robot
@@ -178,6 +211,20 @@ int main(int argc, char **argv)
             collision = true;
         }
 
+        for(std::vector<MovingObject>::iterator it = movingobjects.begin(); it != movingobjects.end(); ++it){
+            rp1 = world.object(it->id).pose.inverse()* world.object(robot_id).pose*geo::Vector3(0.05,0.15,0.0);
+            rp2 = world.object(it->id).pose.inverse()* world.object(robot_id).pose*geo::Vector3(0.05,-0.15,0.0);
+            rp3 = world.object(it->id).pose.inverse()* world.object(robot_id).pose*geo::Vector3(-0.05,0.15,0.0);
+            rp4 = world.object(it->id).pose.inverse()* world.object(robot_id).pose*geo::Vector3(-0.05,-0.15,0.0);
+
+            if(  world.object(it->id).shape->intersect(rp1,0.01) ||
+                 world.object(it->id).shape->intersect(rp2,0.01) ||
+                 world.object(it->id).shape->intersect(rp3,0.01) ||
+                 world.object(it->id).shape->intersect(rp4,0.01)){
+                collision = true;
+            }
+        }
+        
         if (request_open_door_)
         {
             for(std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
