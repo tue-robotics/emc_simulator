@@ -8,6 +8,7 @@
 #include <tue/profiling/timer.h>
 #include <geolib/ros/msg_conversions.h>
 #include <geolib/Box.h>
+#include "jsonconfig.h"
 
 // ROS
 #include <ros/init.h>
@@ -97,6 +98,9 @@ int main(int argc, char **argv)
     world.addObject(geo::Pose3D::identity(), heightmap);
 
     // Ad moving objects
+    Config config("/home/bob/.emc/system/src/emc_simulator/data/config.json");
+    std::cout << config.mapfile.value() << std::endl;
+
     MovingObject cart1;
     geo::Pose3D p1; p1.setOrigin(geo::Vector3(1.9,1.0,0)); p1.setRPY(0,0.0,0.3);
     cart1.init_pose = p1;
