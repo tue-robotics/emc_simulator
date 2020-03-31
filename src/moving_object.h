@@ -15,6 +15,7 @@ struct MovingObject
     double safety_radius;
     bool is_moving;
     bool finished_moving;
+    bool repeat;
     geo::Pose3D init_pose;
     geo::Pose3D final_pose;
     double velocity;

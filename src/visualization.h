@@ -6,7 +6,7 @@
 namespace visualization
 {
 
-void visualize(const World& world, Id robot_id, bool collision);
+void visualize(const World& world, Id robot_id, bool collision, bool show_full_map);
 
 }
 

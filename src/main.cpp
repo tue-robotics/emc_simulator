@@ -55,25 +55,44 @@ void speakCallback(const std_msgs::String::ConstPtr& msg)
 int main(int argc, char **argv)
 {
     //check bash arguments
-    bool noslip = false;
-    for(int i = 1; i < argc; i++){
-        std::string str(argv[i]);
-        if(str.compare("--noslip")== 0){
-            std::cout << "wheelslip disabled" << std::endl;
-            noslip=true;
-        }
-    }
+//    bool noslip = false;
+//    for(int i = 1; i < argc; i++){
+//        std::string str(argv[i]);
+//        if(str.compare("--noslip")== 0){
+//            std::cout << "wheelslip disabled" << std::endl;
+//            noslip=true;
+//        }
+//    }
 
     ros::init(argc, argv, "pico_simulator");
 
     std::string heightmap_filename;
     heightmap_filename = ros::package::getPath("emc_simulator") + "/data/heightmap.pgm";
-    if (argc > 1) {
-        std::string str(argv[1]);
-        if (str.compare("--noslip") != 0) {
-            heightmap_filename = argv[1];
+
+    std::string config_filename;
+    config_filename = ros::package::getPath("emc_simulator") + "/data/defaultconfig.json";
+
+    for(int i = 1; i < argc; i++){
+        std::string config_supplied("--config");
+        std::string map_supplied("--map");
+        if(config_supplied.compare(argv[i])==0){
+            std::cout << "User config file supplied!" << std::endl;
+            config_filename = std::string(argv[i+1]);
+        }
+        if(map_supplied.compare(argv[i])==0){
+            std::cout << "User map file supplied!" << std::endl;
+            heightmap_filename = std::string(argv[i+1]);
         }
     }
+
+    Config config(config_filename);
+    config.print();
+
+
+//    if (argc > 1) {
+//        std::string str(argv[1]);
+//            heightmap_filename = argv[1];
+//    }
 
     World world;
     LRF lrf;
@@ -98,47 +117,51 @@ int main(int argc, char **argv)
     world.addObject(geo::Pose3D::identity(), heightmap);
 
     // Ad moving objects
-    Config config("/home/bob/.emc/system/src/emc_simulator/data/config.json");
-    std::cout << config.mapfile.value() << std::endl;
-
-    MovingObject cart1;
-    geo::Pose3D p1; p1.setOrigin(geo::Vector3(1.9,1.0,0)); p1.setRPY(0,0.0,0.3);
-    cart1.init_pose = p1;
-    geo::Pose3D p2; p2.setOrigin(geo::Vector3(1.5,-1.0,0)); p2.setRPY(0,0.0,0.3);
-    cart1.final_pose = p2;
-    cart1.velocity = 1.0;
-    cart1.trigger_radius = 1.5;
-    cart1.safety_radius = 0.1;
-    cart1.width = 0.3; cart1.length = 0.4;
-
-    std::vector<MovingObject> movingobjects;
-    movingobjects.push_back(cart1);
-    p1.setOrigin(geo::Vector3(0.7,0.0,0));
-    p2.setOrigin(geo::Vector3(0.5,0.9,0));
-    cart1.init_pose = p1; cart1.final_pose=p2; cart1.trigger_radius = 0.6;
-    cart1.init_pose.setRPY(0,0.0,-0.3);
-    movingobjects.push_back(cart1);
-
-    p1.setOrigin(geo::Vector3(1.4,0.0,0));
-    p2.setOrigin(geo::Vector3(1.0,-0.9,0));
-    cart1.width = 1.2;
-    cart1.init_pose = p1; cart1.final_pose=p2; cart1.trigger_radius = 0.6;
-    movingobjects.push_back(cart1);
-
-
-    for(std::vector<MovingObject>::iterator it = movingobjects.begin(); it != movingobjects.end(); ++it){
+    for(std::vector<MovingObject>::iterator it = config.moving_objects.value().begin(); it != config.moving_objects.value().end(); ++it) {
         it->id = world.addObject(it->init_pose,makeWorldSimObject(*it),geo::Vector3(0,1,1));
         world.setVelocity(it->id,geo::Vector3(0.0,0.0,0.0),0.0);
     }
+
+
+
+//    MovingObject cart1;
+//    geo::Pose3D p1; p1.setOrigin(geo::Vector3(1.9,1.0,0)); p1.setRPY(0,0.0,0.3);
+//    cart1.init_pose = p1;
+//    geo::Pose3D p2; p2.setOrigin(geo::Vector3(1.5,-1.0,0)); p2.setRPY(0,0.0,0.3);
+//    cart1.final_pose = p2;
+//    cart1.velocity = 1.0;
+//    cart1.trigger_radius = 1.5;
+//    cart1.safety_radius = 0.1;
+//    cart1.width = 0.3; cart1.length = 0.4;
+//
+//    std::vector<MovingObject> movingobjects;
+//    movingobjects.push_back(cart1);
+//    p1.setOrigin(geo::Vector3(0.7,0.0,0));
+//    p2.setOrigin(geo::Vector3(0.5,0.9,0));
+//    cart1.init_pose = p1; cart1.final_pose=p2; cart1.trigger_radius = 0.6;
+//    cart1.init_pose.setRPY(0,0.0,-0.3);
+//    movingobjects.push_back(cart1);
+//
+//    p1.setOrigin(geo::Vector3(1.4,0.0,0));
+//    p2.setOrigin(geo::Vector3(1.0,-0.9,0));
+//    cart1.width = 1.2;
+//    cart1.init_pose = p1; cart1.final_pose=p2; cart1.trigger_radius = 0.6;
+//    movingobjects.push_back(cart1);
+
+
+//    for(std::vector<MovingObject>::iterator it = movingobjects.begin(); it != movingobjects.end(); ++it){
+//        it->id = world.addObject(it->init_pose,makeWorldSimObject(*it),geo::Vector3(0,1,1));
+//        world.setVelocity(it->id,geo::Vector3(0.0,0.0,0.0),0.0);
+//    }
 
     // Add robot
     geo::Pose3D robot_pose = geo::Pose3D::identity();
     Id robot_id = world.addObject(robot_pose);
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::normal_distribution<double> dis(0.0,0.005);
+    std::normal_distribution<double> dis(0.0,0.003);
     Virtualbase picobase(1.0 +dis(gen),1.0+dis(gen),1.0+dis(gen));
-    if(noslip){
+    if(!config.uncertain_odom.value()){
         picobase.setWheelUncertaintyFactors(1.0,1.0,1.0);
     }
 
@@ -185,7 +208,7 @@ int main(int argc, char **argv)
 
 
         //check if object should start moving
-        for(std::vector<MovingObject>::iterator it = movingobjects.begin(); it != movingobjects.end(); ++it){
+        for(std::vector<MovingObject>::iterator it = config.moving_objects.value().begin(); it != config.moving_objects.value().end(); ++it){
 
             // check if it should start
             geo::Vector3 dist_obj_pico = world.object(robot_id).pose.getOrigin() -  world.object(it->id).pose.getOrigin();
@@ -198,10 +221,22 @@ int main(int argc, char **argv)
 
             // check if it should stop
             geo::Vector3 dist_obj_dest = world.object(it->id).pose.getOrigin() -  it->final_pose.getOrigin();
-            if(dist_obj_dest.length() < 0.1 && it->is_moving == true && it->finished_moving == false){
+            if(dist_obj_dest.length() < 0.1 && it->is_moving == true && it->finished_moving == false && it->repeat == false){
                 it->is_moving = false;
                 it->finished_moving = true;
                 world.setVelocity(it->id, geo::Vector3(0.0,0.0,0.0),0.0);
+            }
+
+            // reverse and repeat ... :o)
+            if(dist_obj_dest.length() < 0.1 && it->is_moving == true && it->finished_moving == false && it->repeat == true){
+                it->is_moving = true;
+                it->finished_moving = false;
+                geo::Pose3D placeholder = it->init_pose;
+                it->init_pose = it->final_pose;
+                it->final_pose = placeholder;
+                geo::Vector3 unit_vel = (it->final_pose.getOrigin() - it->init_pose.getOrigin());
+                unit_vel =world.object(it->id).pose.R.transpose()*unit_vel / unit_vel.length();
+                world.setVelocity(it->id, unit_vel*it->velocity,0.0);
             }
         }
 
@@ -215,7 +250,7 @@ int main(int argc, char **argv)
             collision = true;
         }
 
-        for(std::vector<MovingObject>::iterator it = movingobjects.begin(); it != movingobjects.end(); ++it){
+        for(std::vector<MovingObject>::iterator it = config.moving_objects.value().begin(); it != config.moving_objects.value().end(); ++it){
             rp1 = world.object(it->id).pose.inverse()* world.object(robot_id).pose*geo::Vector3(0.05,0.15,0.0);
             rp2 = world.object(it->id).pose.inverse()* world.object(robot_id).pose*geo::Vector3(0.05,-0.15,0.0);
             rp3 = world.object(it->id).pose.inverse()* world.object(robot_id).pose*geo::Vector3(-0.05,0.15,0.0);
@@ -258,6 +293,11 @@ int main(int argc, char **argv)
 
         ros::Time time = ros::Time::now();
 
+        //
+        if(config.uncertain_odom.value() && time.sec%6 == 0 ){
+            picobase.setWheelUncertaintyFactors(1.0 +dis(gen),1.0+dis(gen),1.0+dis(gen));
+        }
+
         world.update(time.toSec());
 
         // Create laser data
@@ -278,7 +318,7 @@ int main(int argc, char **argv)
 
         // Visualize
         if (visualize)
-            visualization::visualize(world, robot_id, collision);
+            visualization::visualize(world, robot_id, collision, config.show_full_map.value());
 
         r.sleep();
     }
