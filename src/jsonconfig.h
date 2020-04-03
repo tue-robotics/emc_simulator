@@ -8,6 +8,7 @@
 #include "moving_object.h"
 #include "../3rdparty/json.hpp"
 #include <fstream>
+#include <boost/optional.hpp>
 
 class Config{
 
