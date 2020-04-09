@@ -25,7 +25,7 @@ void visualize(const World& world, Id robot_id, bool collision = false, bool sho
 
     int dim = 500;
     if(show_full_map){
-        dim = 1200;
+        dim = 1000;
     }
 
     cv::Mat canvas(dim, dim, CV_8UC3, cv::Scalar(100, 100, 100));
@@ -49,7 +49,6 @@ void visualize(const World& world, Id robot_id, bool collision = false, bool sho
             robot_points[i] = world.object(robot_id).pose * robot_points[i];
         }
     }
-
 
     for(unsigned int i = 0; i < robot_points.size(); ++i)
     {

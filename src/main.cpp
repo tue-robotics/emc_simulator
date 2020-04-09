@@ -52,17 +52,7 @@ void speakCallback(const std_msgs::String::ConstPtr& msg)
 
 // ----------------------------------------------------------------------------------------------------
 
-int main(int argc, char **argv)
-{
-    //check bash arguments
-//    bool noslip = false;
-//    for(int i = 1; i < argc; i++){
-//        std::string str(argv[i]);
-//        if(str.compare("--noslip")== 0){
-//            std::cout << "wheelslip disabled" << std::endl;
-//            noslip=true;
-//        }
-//    }
+int main(int argc, char **argv){
 
     ros::init(argc, argv, "pico_simulator");
 
@@ -87,12 +77,6 @@ int main(int argc, char **argv)
 
     Config config(config_filename);
     config.print();
-
-
-//    if (argc > 1) {
-//        std::string str(argv[1]);
-//            heightmap_filename = argv[1];
-//    }
 
     World world;
     LRF lrf;
@@ -121,38 +105,6 @@ int main(int argc, char **argv)
         it->id = world.addObject(it->init_pose,makeWorldSimObject(*it),geo::Vector3(0,1,1));
         world.setVelocity(it->id,geo::Vector3(0.0,0.0,0.0),0.0);
     }
-
-
-
-//    MovingObject cart1;
-//    geo::Pose3D p1; p1.setOrigin(geo::Vector3(1.9,1.0,0)); p1.setRPY(0,0.0,0.3);
-//    cart1.init_pose = p1;
-//    geo::Pose3D p2; p2.setOrigin(geo::Vector3(1.5,-1.0,0)); p2.setRPY(0,0.0,0.3);
-//    cart1.final_pose = p2;
-//    cart1.velocity = 1.0;
-//    cart1.trigger_radius = 1.5;
-//    cart1.safety_radius = 0.1;
-//    cart1.width = 0.3; cart1.length = 0.4;
-//
-//    std::vector<MovingObject> movingobjects;
-//    movingobjects.push_back(cart1);
-//    p1.setOrigin(geo::Vector3(0.7,0.0,0));
-//    p2.setOrigin(geo::Vector3(0.5,0.9,0));
-//    cart1.init_pose = p1; cart1.final_pose=p2; cart1.trigger_radius = 0.6;
-//    cart1.init_pose.setRPY(0,0.0,-0.3);
-//    movingobjects.push_back(cart1);
-//
-//    p1.setOrigin(geo::Vector3(1.4,0.0,0));
-//    p2.setOrigin(geo::Vector3(1.0,-0.9,0));
-//    cart1.width = 1.2;
-//    cart1.init_pose = p1; cart1.final_pose=p2; cart1.trigger_radius = 0.6;
-//    movingobjects.push_back(cart1);
-
-
-//    for(std::vector<MovingObject>::iterator it = movingobjects.begin(); it != movingobjects.end(); ++it){
-//        it->id = world.addObject(it->init_pose,makeWorldSimObject(*it),geo::Vector3(0,1,1));
-//        world.setVelocity(it->id,geo::Vector3(0.0,0.0,0.0),0.0);
-//    }
 
     // Add robot
     geo::Pose3D robot_pose = geo::Pose3D::identity();
@@ -187,16 +139,28 @@ int main(int argc, char **argv)
     laser_pose.t.z = 0.3;
 
     ros::Rate r(cycle_freq);
+    double time_ = 0;
+    double dt;
     while(ros::ok())
     {
         base_ref_.reset();
         request_open_door_ = false;
         ros::spinOnce();
+        ros::Time time = ros::Time::now();
+
+        if(time_==0){
+            dt = 0;
+            time_ = time.toSec();
+        }
+        else{
+            dt = time.toSec() - time_;
+            time_ = time.toSec();
+        }
 
         if (base_ref_) // If there is a twist message in the queue
         {
             // Set robot velocity
-            picobase.applyTwistAndUpdate(*base_ref_,cycle_time);
+            picobase.applyTwistAndUpdate(*base_ref_,dt);
             geometry_msgs::Twist actual_twist = picobase.getActualTwist();
             world.setVelocity(robot_id, geo::Vector3(actual_twist.linear.x, actual_twist.linear.y, 0), actual_twist.angular.z);
         }
@@ -291,7 +255,7 @@ int main(int argc, char **argv)
                 world.setVelocity(door.id, geo::Vector3(0, 0, 0), 0);
         }
 
-        ros::Time time = ros::Time::now();
+
 
         //
         if(config.uncertain_odom.value() && time.sec%6 == 0 ){
