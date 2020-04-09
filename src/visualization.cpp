@@ -19,11 +19,16 @@ cv::Point2d worldToCanvas(const geo::Vector3& p)
 
 // ----------------------------------------------------------------------------------------------------
 
-void visualize(const World& world, Id robot_id)
+void visualize(const World& world, Id robot_id, bool collision = false, bool show_full_map = false)
 {
     const Object& robot = world.object(robot_id);
 
-    cv::Mat canvas(500, 500, CV_8UC3, cv::Scalar(100, 100, 100));
+    int dim = 500;
+    if(show_full_map){
+        dim = 1000;
+    }
+
+    cv::Mat canvas(dim, dim, CV_8UC3, cv::Scalar(100, 100, 100));
     canvas_center = cv::Point2d(canvas.rows / 2, canvas.cols / 2);
 
     // Draw robot
@@ -38,6 +43,12 @@ void visualize(const World& world, Id robot_id)
     robot_points.push_back(geo::Vector3( 0.1,   0.2, 0));
     robot_points.push_back(geo::Vector3(-0.1,   0.2, 0));
     robot_points.push_back(geo::Vector3(-0.1,  -0.2, 0));
+
+    if(show_full_map == true){
+        for(unsigned int i = 0; i < robot_points.size(); ++i) {
+            robot_points[i] = world.object(robot_id).pose * robot_points[i];
+        }
+    }
 
     for(unsigned int i = 0; i < robot_points.size(); ++i)
     {
@@ -58,7 +69,13 @@ void visualize(const World& world, Id robot_id)
 
         cv::Scalar line_color(obj.color.x * 255, obj.color.y * 255, obj.color.z * 255);
 
-        geo::Transform t =  robot.pose.inverse() * obj.pose;
+        geo::Transform t;
+        if(show_full_map== false){
+           t =  robot.pose.inverse() * obj.pose;
+        } else{
+            t = obj.pose;
+        }
+
 
         for(std::vector<geo::TriangleI>::const_iterator it2 = triangles.begin(); it2 != triangles.end(); ++it2)
         {
@@ -72,6 +89,10 @@ void visualize(const World& world, Id robot_id)
             cv::line(canvas, p2_2d, p3_2d, line_color, 2);
             cv::line(canvas, p1_2d, p3_2d, line_color, 2);
         }
+    }
+
+    if(collision){
+        cv::putText(canvas,"COLLISION!",cv::Point(20,20),cv::FONT_HERSHEY_COMPLEX,1,cv::Scalar(0,0,255));
     }
 
     cv::imshow("simulator", canvas);
