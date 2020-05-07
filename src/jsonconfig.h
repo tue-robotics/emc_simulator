@@ -58,7 +58,7 @@ public:
             MovingObject m;
 
             m.length = object.at("length");
-            m.width = object.at("length");
+            m.width = object.at("width");
             m.trigger_radius = object.at("trigger_radius");
             m.velocity = object.at("velocity");
             m.init_pose.setOrigin(geo::Vector3(object.at("init_pose")[0], object.at("init_pose")[1],0));
