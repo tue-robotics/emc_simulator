@@ -71,12 +71,23 @@ public:
 
         }
         moving_objects = ms;
+
+        //Check if speedcap disabled is in json
+        if(doc.find("disable_speedcap") != doc.end()){
+            disable_speedcap = doc.at("disable_speedcap");
+        }
+        else{
+            disable_speedcap = false;
+        }
+
+
     }
 
     void print(){
         std::cout << "Simulator configuration settings:" << std::endl;
         std::cout << "Uncertain odom: " << uncertain_odom.value() << std::endl;
         std::cout << "Show full map: " << show_full_map.value() << std::endl;
+        std::cout << "disable_speedcap: " << disable_speedcap.value() << std::endl;
         std::cout << "imported " << moving_objects.value().size() << " moving objects" << std::endl;
     }
 
@@ -86,6 +97,7 @@ public:
     boost::optional<bool> show_full_map;
     boost::optional<bool> uncertain_odom;
     boost::optional<std::vector<MovingObject>> moving_objects;
+    boost::optional<bool> disable_speedcap;
 };
 
 

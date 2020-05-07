@@ -52,6 +52,12 @@ void speakCallback(const std_msgs::String::ConstPtr& msg)
 
 // ----------------------------------------------------------------------------------------------------
 
+template <typename T> int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+
+// -----------------------------------------------------------------------------------------------------
+
 int main(int argc, char **argv){
 
     ros::init(argc, argv, "pico_simulator");
@@ -161,7 +167,16 @@ int main(int argc, char **argv){
         if (base_ref_) // If there is a twist message in the queue
         {
             // Set robot velocity
-            picobase.applyTwistAndUpdate(*base_ref_,dt);
+            geometry_msgs::Twist cmd;
+            if(config.disable_speedcap == false){
+                cmd.linear.x  = sgn<double>(base_ref_->linear.x)  * std::min(std::abs(base_ref_->linear.x),0.5);
+                cmd.linear.y  = sgn<double>(base_ref_->linear.y)  * std::min(std::abs(base_ref_->linear.y),0.5);
+                cmd.angular.z = sgn<double>(base_ref_->angular.z) * std::min(std::abs(base_ref_->angular.z),1.2);
+            }
+            else{
+                cmd = *base_ref_;
+            }
+            picobase.applyTwistAndUpdate(cmd,dt);
             geometry_msgs::Twist actual_twist = picobase.getActualTwist();
             world.setVelocity(robot_id, geo::Vector3(actual_twist.linear.x, actual_twist.linear.y, 0), actual_twist.angular.z);
         }
