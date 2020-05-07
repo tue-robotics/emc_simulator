@@ -111,7 +111,8 @@ int main(int argc, char **argv){
     Id robot_id = world.addObject(robot_pose);
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::normal_distribution<double> dis(0.0,0.003);
+    //std::normal_distribution<double> dis(0.0,0.003);
+    std::uniform_real_distribution<double> dis(-0.002,0.002);
     Virtualbase picobase(1.0 +dis(gen),1.0+dis(gen),1.0+dis(gen));
     if(!config.uncertain_odom.value()){
         picobase.setWheelUncertaintyFactors(1.0,1.0,1.0);
