@@ -5,8 +5,11 @@
 
 namespace visualization
 {
+    struct Bbox {
+        double xmin, ymin, xmax, ymax;
+    };
 
-void visualize(const World& world, Id robot_id, bool collision, bool show_full_map);
+void visualize(const World& world, Id robot_id, bool collision, bool show_full_map,Bbox bbox);
 
 }
 

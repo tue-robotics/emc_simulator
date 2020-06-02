@@ -103,8 +103,22 @@ int main(int argc, char **argv){
         std::cout << "[PICO SIMULATOR] Heightmap could not be loaded" << std::endl;
         return 1;
     }
-
     world.addObject(geo::Pose3D::identity(), heightmap);
+
+    // Get centerbox for height map (the visualization is constraining canvas within this box)
+    visualization::Bbox bbox; bbox.xmin = -1; bbox.xmax = 1; bbox.ymin=-1; bbox.ymax = 1;
+
+    std::vector<geo::Vector3> meshpoints = heightmap->getMesh().getPoints();
+
+    bbox.xmin = std::max_element(meshpoints.begin(), meshpoints.end(),[](geo::Vec3T<double> a, geo::Vec3T<double> b){return a.getX() > b.getX() ;} )->getX();
+    bbox.ymin = std::max_element(meshpoints.begin(), meshpoints.end(),[](geo::Vec3T<double> a, geo::Vec3T<double> b){return a.getY() > b.getY() ;} )->getY();
+    bbox.xmax = std::max_element(meshpoints.begin(), meshpoints.end(),[](geo::Vec3T<double> a, geo::Vec3T<double> b){return a.getX() < b.getX() ;} )->getX();
+    bbox.ymax = std::max_element(meshpoints.begin(), meshpoints.end(),[](geo::Vec3T<double> a, geo::Vec3T<double> b){return a.getY() < b.getY() ;} )->getY();
+
+    //std::cout << "bbox: " << bbox.xmin << "   " << bbox.xmax << "  "  << bbox.ymin << "  " << bbox.ymax << std::endl;
+
+
+
 
     // Ad moving objects
     for(std::vector<MovingObject>::iterator it = config.moving_objects.value().begin(); it != config.moving_objects.value().end(); ++it) {
@@ -192,6 +206,7 @@ int main(int argc, char **argv){
 
             // check if it should start
             geo::Vector3 dist_obj_pico = world.object(robot_id).pose.getOrigin() -  world.object(it->id).pose.getOrigin();
+            double safety_radius = sqrt( std::pow(it->width/2,2) + std::pow(it->length/2,2)) + 0.3;
             if(dist_obj_pico.length() < it->trigger_radius && it->is_moving == false && it->finished_moving == false){
                 it->is_moving = true;
                 geo::Vector3 unit_vel = (it->final_pose.getOrigin() - it->init_pose.getOrigin());
@@ -218,6 +233,23 @@ int main(int argc, char **argv){
                 unit_vel =world.object(it->id).pose.R.transpose()*unit_vel / unit_vel.length();
                 world.setVelocity(it->id, unit_vel*it->velocity,0.0);
             }
+
+            // Check if it should pause
+            if(dist_obj_pico.length() < safety_radius && it->is_moving == true && it->is_paused == false){
+                it->is_paused = true;
+                world.setVelocity(it->id, geo::Vector3(0.0,0.0,0.0),0.0);
+            }
+
+            // Check if it should continue after being paused
+            if(dist_obj_pico.length() > safety_radius && it->is_paused == true){
+                it->is_paused = false;
+                geo::Vector3 unit_vel = (it->final_pose.getOrigin() - it->init_pose.getOrigin());
+                unit_vel =world.object(it->id).pose.R.transpose()*unit_vel / unit_vel.length();
+                world.setVelocity(it->id, unit_vel*it->velocity,0.0);
+            }
+
+
+
         }
 
         //check collisions with robot
@@ -298,7 +330,7 @@ int main(int argc, char **argv){
 
         // Visualize
         if (visualize)
-            visualization::visualize(world, robot_id, collision, config.show_full_map.value());
+            visualization::visualize(world, robot_id, collision, config.show_full_map.value(),bbox);
 
         r.sleep();
     }

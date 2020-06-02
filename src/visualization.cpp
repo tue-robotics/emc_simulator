@@ -12,6 +12,7 @@ cv::Point2d canvas_center;
 namespace visualization
 {
 
+
 cv::Point2d worldToCanvas(const geo::Vector3& p)
 {
     return cv::Point2d(-p.y / resolution, -p.x / resolution) + canvas_center;
@@ -19,7 +20,7 @@ cv::Point2d worldToCanvas(const geo::Vector3& p)
 
 // ----------------------------------------------------------------------------------------------------
 
-void visualize(const World& world, Id robot_id, bool collision = false, bool show_full_map = false)
+void visualize(const World& world, Id robot_id, bool collision = false, bool show_full_map = false, Bbox centerframe = {-1e5, -1e5, 1e5, 1e5})
 {
     const Object& robot = world.object(robot_id);
 
@@ -44,9 +45,38 @@ void visualize(const World& world, Id robot_id, bool collision = false, bool sho
     robot_points.push_back(geo::Vector3(-0.1,   0.2, 0));
     robot_points.push_back(geo::Vector3(-0.1,  -0.2, 0));
 
+    Bbox midpointframe;
+    midpointframe.xmin = centerframe.xmin + dim*resolution/2 -0.5;
+    midpointframe.xmax = centerframe.xmax - dim*resolution/2 +0.5;
+    midpointframe.ymin = centerframe.ymin + dim*resolution/2 -0.5;
+    midpointframe.ymax = centerframe.ymax - dim*resolution/2 +0.5;
+
+
+    // check translation of world within bbox for sliding camera
+    double xview, yview;
+    xview = robot.pose.getOrigin().getX();
+    if(robot.pose.getOrigin().getX() > midpointframe.xmax )
+        xview = midpointframe.xmax;
+    if(robot.pose.getOrigin().getX() < midpointframe.xmin )
+        xview = midpointframe.xmin;
+    yview = robot.pose.getOrigin().getY();
+    if(robot.pose.getOrigin().getY() > midpointframe.ymax )
+        yview = midpointframe.ymax;
+    if(robot.pose.getOrigin().getY() < midpointframe.ymin)
+        yview = midpointframe.ymin;
+
+    // If there is not enough mapsize for a midpointbox, fix views to center
+    if(midpointframe.xmax < midpointframe.xmin){
+        xview = midpointframe.xmax + midpointframe.xmin /2;
+    }
+    if(midpointframe.ymax < midpointframe.ymin){
+        yview = midpointframe.ymax + midpointframe.ymin /2;
+    }
+
+
     if(show_full_map == true){
         for(unsigned int i = 0; i < robot_points.size(); ++i) {
-            robot_points[i] = world.object(robot_id).pose * robot_points[i];
+            robot_points[i] = (robot.pose * robot_points[i]) + geo::Vector3(-xview,-yview,0);
         }
     }
 
@@ -71,9 +101,10 @@ void visualize(const World& world, Id robot_id, bool collision = false, bool sho
 
         geo::Transform t;
         if(show_full_map== false){
-           t =  robot.pose.inverse() * obj.pose;
+           t = robot.pose.inverse() * obj.pose;
         } else{
-            t = obj.pose;
+            geo::Transform viewbox(-xview, -yview,0,0,0,0);
+            t = viewbox*obj.pose;
         }
 
 
