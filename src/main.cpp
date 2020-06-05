@@ -195,7 +195,7 @@ int main(int argc, char **argv){
             world.setVelocity(robot_id, geo::Vector3(actual_twist.linear.x, actual_twist.linear.y, 0), actual_twist.angular.z);
         }
         else{ // apply previous one again
-            picobase.update(cycle_time);
+            picobase.update(dt);
             geometry_msgs::Twist actual_twist = picobase.getActualTwist();
             world.setVelocity(robot_id, geo::Vector3(actual_twist.linear.x, actual_twist.linear.y, 0), actual_twist.angular.z);
         }
@@ -321,10 +321,11 @@ int main(int argc, char **argv){
 
         // Create odom data
         nav_msgs::Odometry odom_msg = picobase.getOdom();
+        if(!config.uncertain_odom.value()){
+            geo::convert(world.object(robot_id).pose, odom_msg.pose.pose);
+        }
         odom_msg.header.stamp = time;
         odom_msg.header.frame_id = "odomframe";
-        //geo::convert(world.object(robot_id).pose, odom_msg.pose.pose);
-
 
         pub_odom.publish(odom_msg);
 
