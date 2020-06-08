@@ -32,6 +32,13 @@ void visualize(const World& world, Id robot_id, bool collision = false, bool sho
     cv::Mat canvas(dim, dim, CV_8UC3, cv::Scalar(100, 100, 100));
     canvas_center = cv::Point2d(canvas.rows / 2, canvas.cols / 2);
 
+
+
+
+
+
+
+
     // Draw robot
     cv::Scalar robot_color(0, 0, 255);
 
@@ -72,6 +79,78 @@ void visualize(const World& world, Id robot_id, bool collision = false, bool sho
     if(midpointframe.ymax < midpointframe.ymin){
         yview = midpointframe.ymax + midpointframe.ymin /2;
     }
+
+
+    // Draw cabinets
+    std::vector<std::vector<geo::Vector3>> cabinets({
+                                                         {{(geo::Vector3(6.1 , -2.8 , 0.0))},
+                                                                 {(
+                                                                         geo::Vector3(6.1 , -3.2 , 0.0))},
+                                                                 {(
+                                                                         geo::Vector3(6.5 , -3.2 , 0.0))},
+                                                                 {(
+                                                                         geo::Vector3(6.5 , -2.8 , 0.0))}
+                                                         },
+                                                         {{(geo::Vector3(2.3 , -2.8 , 0.0))},
+                                                                 {(
+                                                                         geo::Vector3(1.9 , -2.8 , 0.0))},
+                                                                 {(
+                                                                         geo::Vector3(1.9 , -2.4 , 0.0))},
+                                                                 {(
+                                                                         geo::Vector3(2.3 , -2.4 , 0.0))}
+                                                         },
+                                                         {{(geo::Vector3(0.2 , -0.8 , 0.0))},
+                                                                 {(
+                                                                         geo::Vector3(0.6 , -0.8 , 0.0))},
+                                                                 {(
+                                                                         geo::Vector3(0.6 , -0.4 , 0.0))},
+                                                                 {(
+                                                                         geo::Vector3(0.2 , -0.4 , 0.0))}
+                                                         },
+                                                         {{(geo::Vector3(0.6 , 0.6 , 0.0))},
+                                                                 {(
+                                                                         geo::Vector3(0.2 , 0.6 , 0.0))},
+                                                                 {(
+                                                                         geo::Vector3(0.2 , 0.2 , 0.0))},
+                                                                 {(
+                                                                         geo::Vector3(0.6 , 0.2 , 0.0))}
+                                                         },
+                                                         {{(geo::Vector3(2.3 , 2.6 , 0.0))},
+                                                                 {(
+                                                                         geo::Vector3(1.9 , 2.6 , 0.0))},
+                                                                 {(
+                                                                         geo::Vector3(1.9 , 2.2 , 0.0))},
+                                                                 {(
+                                                                         geo::Vector3(2.3 , 2.2 , 0.0))}
+                                                         },
+                                                         {{(geo::Vector3(0.2 , 5.8 , 0.0))},
+                                                                 {(
+                                                                         geo::Vector3(0.6 , 5.8 , 0.0))},
+                                                                 {(
+                                                                         geo::Vector3(0.6 , 6.2 , 0.0))},
+                                                                 {(
+                                                                         geo::Vector3(0.2 , 6.2 , 0.0))}
+                                                         },
+                                                         {{(geo::Vector3(6.5 , 3.0 , 0.0))},
+                                                                 {(
+                                                                         geo::Vector3(6.1 , 3.0 , 0.0))},
+                                                                 {(
+                                                                         geo::Vector3(6.1 , 2.6 , 0.0))},
+                                                                 {(
+                                                                         geo::Vector3(6.5 , 2.6 , 0.0))}
+                                                         }
+
+                                                 });
+
+
+
+
+
+
+
+    //cv::polylines(canvas,
+
+
 
 
     if(show_full_map == true){
@@ -125,6 +204,24 @@ void visualize(const World& world, Id robot_id, bool collision = false, bool sho
     if(collision){
         cv::putText(canvas,"COLLISION!",cv::Point(20,20),cv::FONT_HERSHEY_COMPLEX,1,cv::Scalar(0,0,255));
     }
+
+    int index = 0;
+    for(auto cabinet : cabinets){
+        std::vector<cv::Point> cvpoints;
+        for(auto p : cabinet){
+            cvpoints.push_back(worldToCanvas( geo::Vector3(p.getY()-xview+2.7, -p.getX()-yview+4.925, 0.0)   ));
+        }
+
+        geo::Vector3 center((cabinet[0].getX() + cabinet[2].getX())/2,(cabinet[0].getY() + cabinet[2].getY())/2,0.0  );
+
+        cv::polylines(canvas,cvpoints,true,cv::Scalar(40,255,40),2);
+        std::cout << "drew cabinet" << std::endl;
+        std::cout << cabinet.size() << std::endl;
+        std::cout << cabinet[0].x << std::endl;
+        index++;
+    }
+
+
 
     cv::imshow("simulator", canvas);
     cv::waitKey(3);
