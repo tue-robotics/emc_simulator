@@ -214,14 +214,13 @@ void visualize(const World& world, Id robot_id, bool collision = false, bool sho
 
         geo::Vector3 center((cabinet[0].getX() + cabinet[2].getX())/2,(cabinet[0].getY() + cabinet[2].getY())/2,0.0  );
 
-        cv::polylines(canvas,cvpoints,true,cv::Scalar(40,255,40),2);
-        std::cout << "drew cabinet" << std::endl;
-        std::cout << cabinet.size() << std::endl;
-        std::cout << cabinet[0].x << std::endl;
+        cv::putText(canvas,std::to_string(index),worldToCanvas(geo::Vector3(center.getY()-xview+2.7-0.1, -center.getX()-yview+4.925+0.1, 0.0)),cv::FONT_HERSHEY_COMPLEX,1,cv::Scalar(255,255,255));
+        cv::polylines(canvas,cvpoints,true,cv::Scalar(255,255,255),2);
+
+        cv::line(canvas, worldToCanvas(geo::Vector3(cabinet[0].getY()-xview+2.7, -cabinet[0].getX()-yview+4.925, 0.0)),
+                 worldToCanvas(geo::Vector3(cabinet[1].getY()-xview+2.7, -cabinet[1].getX()-yview+4.925, 0.0)),cv::Scalar(40,255,40), 2);
         index++;
     }
-
-
 
     cv::imshow("simulator", canvas);
     cv::waitKey(3);
