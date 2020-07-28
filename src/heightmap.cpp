@@ -5,6 +5,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <geolib/CompositeShape.h>
+#include <geolib/datatypes.h>
 
 #include <queue>
 
@@ -253,7 +254,7 @@ geo::ShapePtr createHeightMapShape(const std::string& filename, std::vector<Door
     cv::Mat vertex_index_map(image.rows, image.cols, CV_32SC1, -1);
     cv::Mat contour_map(image.rows, image.cols, CV_8UC1, cv::Scalar(0));
 
-    boost::shared_ptr<geo::CompositeShape> shape(new geo::CompositeShape);
+    geo::CompositeShapePtr shape(new geo::CompositeShape);
 
     for(int y = 0; y < image.rows; ++y)
     {

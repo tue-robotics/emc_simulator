@@ -6,6 +6,8 @@
 #include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
 
+#include <vector>
+
 double resolution = 0.01;
 cv::Point2d canvas_center;
 

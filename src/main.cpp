@@ -27,6 +27,8 @@
 #include "moving_object.h"
 #include "random"
 
+#include <vector>
+
 
 geometry_msgs::Twist::ConstPtr base_ref_;
 bool request_open_door_;

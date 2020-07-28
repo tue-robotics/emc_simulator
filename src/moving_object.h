@@ -24,9 +24,9 @@ struct MovingObject
 };
 
 
-boost::shared_ptr<geo::CompositeShape> makeWorldSimObject(MovingObject object){
+geo::CompositeShapePtr makeWorldSimObject(MovingObject object){
 
-    boost::shared_ptr<geo::CompositeShape> shape_ptr(new geo::CompositeShape);
+    geo::CompositeShapePtr shape_ptr(new geo::CompositeShape);
     geo::Shape* sub_shape = new geo::Shape();
     geo::Mesh* mesh = new geo::Mesh();
     mesh->addPoint(geo::Vector3(-object.length/2, -object.width/2, -1));
