@@ -10,6 +10,8 @@
 #include <fstream>
 #include <boost/optional.hpp>
 
+#include <vector>
+
 class Config{
 
 public:
