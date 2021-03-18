@@ -4,7 +4,6 @@ project(emc_simulator)
 find_package(catkin REQUIRED COMPONENTS
     geolib2
     code_profiler
-    roslib
 )
 
 # find_package(Boost REQUIRED COMPONENTS system program_options)
