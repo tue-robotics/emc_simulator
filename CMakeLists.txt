@@ -2,8 +2,10 @@ cmake_minimum_required(VERSION 3.0.2)
 project(emc_simulator)
 
 find_package(catkin REQUIRED COMPONENTS
-    geolib2
     code_profiler
+    geolib2
+    roscpp
+    roslib
 )
 
 # find_package(Boost REQUIRED COMPONENTS system program_options)
