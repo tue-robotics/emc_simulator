@@ -156,7 +156,7 @@ geo::ShapePtr createHeightMapShape(const std::string& filename, std::vector<Door
     double origin_z = 0;
     double blockheight = 1.0;
 
-    cv::Mat image = cv::imread(filename, CV_LOAD_IMAGE_GRAYSCALE);   // Read the file
+    cv::Mat image = cv::imread(filename, cv::IMREAD_GRAYSCALE);   // Read the file
 
     if (!image.data)
     {
