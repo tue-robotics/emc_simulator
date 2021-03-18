@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 2.8.3)
-set (CMAKE_CXX_STANDARD 11)
+cmake_minimum_required(VERSION 3.0.2)
 project(emc_simulator)
 
 find_package(catkin REQUIRED COMPONENTS
-    geolib2
     code_profiler
+    geolib2
+    roscpp
     roslib
 )
 
@@ -70,5 +70,3 @@ add_executable(pico_simulator
     src/lrf.cpp
 )
 target_link_libraries(pico_simulator polypartition ${catkin_LIBRARIES})
-
-
