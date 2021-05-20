@@ -52,12 +52,6 @@ void speakCallback(const std_msgs::String::ConstPtr& msg)
     std::cout << "Pico says: " << "\033[1;31m" << msg->data << "\033[0m\n"  << std::endl;
 }
 
-// ----------------------------------------------------------------------------------------------------
-
-template <typename T> int sgn(T val) {
-    return (T(0) < val) - (val < T(0));
-}
-
 // -----------------------------------------------------------------------------------------------------
 
 int main(int argc, char **argv){
@@ -135,7 +129,7 @@ int main(int argc, char **argv){
     std::mt19937 gen(rd());
     //std::normal_distribution<double> dis(0.0,0.003);
     std::uniform_real_distribution<double> dis(-0.002,0.002);
-    Virtualbase picobase(1.0 +dis(gen),1.0+dis(gen),1.0+dis(gen));
+    Virtualbase picobase(1.0 +dis(gen),1.0+dis(gen),1.0+dis(gen), config.disable_speedcap.value());
     if(!config.uncertain_odom.value()){
         picobase.setWheelUncertaintyFactors(1.0,1.0,1.0);
     }
@@ -183,24 +177,14 @@ int main(int argc, char **argv){
         if (base_ref_) // If there is a twist message in the queue
         {
             // Set robot velocity
-            geometry_msgs::Twist cmd;
-            if(config.disable_speedcap == false){
-                cmd.linear.x  = sgn<double>(base_ref_->linear.x)  * std::min(std::abs(base_ref_->linear.x),0.5);
-                cmd.linear.y  = sgn<double>(base_ref_->linear.y)  * std::min(std::abs(base_ref_->linear.y),0.5);
-                cmd.angular.z = sgn<double>(base_ref_->angular.z) * std::min(std::abs(base_ref_->angular.z),1.2);
-            }
-            else{
-                cmd = *base_ref_;
-            }
-            picobase.applyTwistAndUpdate(cmd,dt);
-            geometry_msgs::Twist actual_twist = picobase.getActualTwist();
-            world.setVelocity(robot_id, geo::Vector3(actual_twist.linear.x, actual_twist.linear.y, 0), actual_twist.angular.z);
+            geometry_msgs::Twist cmd = *base_ref_;
+            picobase.applyTwistAndUpdate(cmd, dt);
         }
         else{ // apply previous one again
             picobase.update(dt);
-            geometry_msgs::Twist actual_twist = picobase.getActualTwist();
-            world.setVelocity(robot_id, geo::Vector3(actual_twist.linear.x, actual_twist.linear.y, 0), actual_twist.angular.z);
         }
+        geometry_msgs::Twist actual_twist = picobase.getActualTwist();
+        world.setVelocity(robot_id, geo::Vector3(actual_twist.linear.x, actual_twist.linear.y, 0), actual_twist.angular.z);
 
 
         //check if object should start moving

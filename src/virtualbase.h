@@ -14,11 +14,15 @@
  * Class that contains functionality for "virtual base" to mimic uncertainty
  */
 
+template <typename T> int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+
 class Virtualbase
 {
 
 public:
-    Virtualbase(double a1_, double a2_, double a3_) : a1(a1_), a2(a2_), a3(a3_)
+    Virtualbase(double a1_, double a2_, double a3_, bool disable_speedcap) : a1(a1_), a2(a2_), a3(a3_), disable_speedcap_(disable_speedcap)
     {
         odometry_state.pose.pose.position.x = 0.0;
         odometry_state.pose.pose.position.y = 0.0;
@@ -41,7 +45,17 @@ public:
     /**
      * Apply the input that is to be sent to the robot
      */
-    void applyTwistAndUpdate(const geometry_msgs::Twist& twist, double dt){
+    void applyTwistAndUpdate(const geometry_msgs::Twist& cmd, double dt){
+        // apply speedcap
+        geometry_msgs::Twist twist;
+        if(disable_speedcap_ == false){
+            twist.linear.x  = sgn<double>(cmd.linear.x)  * std::min(std::abs(cmd.linear.x),0.5);
+            twist.linear.y  = sgn<double>(cmd.linear.y)  * std::min(std::abs(cmd.linear.y),0.5);
+            twist.angular.z = sgn<double>(cmd.angular.z) * std::min(std::abs(cmd.angular.z),1.2);
+        }
+        else{
+            twist = cmd;
+        }
 
         // save twist to keep odometry updated
         reference_twist = twist;
@@ -113,6 +127,7 @@ private:
     geometry_msgs::Twist actual_twist;
     nav_msgs::Odometry odometry_state;
     double a1, a2, a3;
+    bool disable_speedcap_;
 };
 
 #endif //EMC_SYSTEM_VIRTUALBASE_H
