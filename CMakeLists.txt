@@ -68,5 +68,7 @@ add_executable(pico_simulator
     src/heightmap.cpp
     src/visualization.cpp
     src/lrf.cpp
+    src/robot.cpp
+    src/moving_object.cpp
 )
 target_link_libraries(pico_simulator polypartition ${catkin_LIBRARIES})

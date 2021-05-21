@@ -3,6 +3,7 @@
 #include "heightmap.h"
 #include "lrf.h"
 #include "door.h"
+#include "robot.h"
 
 #include <unistd.h>
 #include <tue/profiling/timer.h>
@@ -21,6 +22,7 @@
 #include <std_msgs/Empty.h>
 #include <std_msgs/String.h>
 #include <iostream>
+#include <string>
 
 #include <geolib/CompositeShape.h>
 #include "virtualbase.h"
@@ -125,6 +127,7 @@ int main(int argc, char **argv){
     // Add robot
     geo::Pose3D robot_pose = geo::Pose3D::identity();
     Id robot_id = world.addObject(robot_pose);
+    Robot robot("pico", robot_id);
     std::random_device rd;
     std::mt19937 gen(rd());
     //std::normal_distribution<double> dis(0.0,0.003);

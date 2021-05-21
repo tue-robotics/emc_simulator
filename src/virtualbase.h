@@ -22,7 +22,7 @@ class Virtualbase
 {
 
 public:
-    Virtualbase(double a1_, double a2_, double a3_, bool disable_speedcap) : a1(a1_), a2(a2_), a3(a3_), disable_speedcap_(disable_speedcap)
+    Virtualbase()
     {
         odometry_state.pose.pose.position.x = 0.0;
         odometry_state.pose.pose.position.y = 0.0;
@@ -31,7 +31,12 @@ public:
         odometry_state.pose.pose.orientation.y = 0.0;
         odometry_state.pose.pose.orientation.z = 0.0;
         odometry_state.pose.pose.orientation.w = 1.0;
-    };
+    }
+
+    Virtualbase(double a1_, double a2_, double a3_, bool disable_speedcap) : a1(a1_), a2(a2_), a3(a3_), disable_speedcap_(disable_speedcap)
+    {
+        Virtualbase();
+    }
 
     /**
      * Set wheel radius mismatch factors
