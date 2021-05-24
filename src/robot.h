@@ -1,7 +1,6 @@
 #ifndef PICO_SIMULATOR_ROBOT_H_
 #define PICO_SIMULATOR_ROBOT_H_
 
-#include "lrf.h"
 #include "virtualbase.h"
 #include "jsonconfig.h"
 #include "world.h"
@@ -12,6 +11,7 @@
 #include <nav_msgs/Odometry.h>
 #include <std_msgs/Empty.h>
 #include <std_msgs/String.h>
+#include <sensor_msgs/LaserScan.h>
 
 #include <iostream>
 #include <string>
