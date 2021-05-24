@@ -206,24 +206,39 @@ int main(int argc, char **argv){
             }
 
             //check collisions with robot
-            geo::Vector3 rp1 = robot_pose*geo::Vector3(0.08,0.18,0.0);
-            geo::Vector3 rp2 = robot_pose*geo::Vector3(0.08,-0.18,0.0);
-            geo::Vector3 rp3 = robot_pose*geo::Vector3(-0.08,0.18,0.0);
-            geo::Vector3 rp4 = robot_pose*geo::Vector3(-0.08,-0.18,0.0);
+            geo::Vector3 rp1 = robot_pose*geo::Vector3(robot_width/2, robot_length/2, 0.0);
+            geo::Vector3 rp2 = robot_pose*geo::Vector3(robot_width/2, -robot_length/2, 0.0);
+            geo::Vector3 rp3 = robot_pose*geo::Vector3(-robot_width/2, robot_length/2, 0.0);
+            geo::Vector3 rp4 = robot_pose*geo::Vector3(-robot_width/2, -robot_length/2, 0.0);
             if( heightmap->intersect(rp1,0.001) || heightmap->intersect(rp2,0.001) || heightmap->intersect(rp3,0.001) || heightmap->intersect(rp4,0.001)){
                 collision = true;
             }
 
             for(std::vector<MovingObject>::iterator it = config.moving_objects.value().begin(); it != config.moving_objects.value().end(); ++it){
-                rp1 = world.object(it->id).pose.inverse()* robot_pose*geo::Vector3(0.08,0.18,0.0);
-                rp2 = world.object(it->id).pose.inverse()* robot_pose*geo::Vector3(0.08,-0.18,0.0);
-                rp3 = world.object(it->id).pose.inverse()* robot_pose*geo::Vector3(-0.08,0.18,0.0);
-                rp4 = world.object(it->id).pose.inverse()* robot_pose*geo::Vector3(-0.08,-0.18,0.0);
+                geo::Vector3 op1 = world.object(it->id).pose.inverse()* rp1;
+                geo::Vector3 op2 = world.object(it->id).pose.inverse()* rp2;
+                geo::Vector3 op3 = world.object(it->id).pose.inverse()* rp3;
+                geo::Vector3 op4 = world.object(it->id).pose.inverse()* rp4;
 
-                if(  world.object(it->id).shape->intersect(rp1,0.001) ||
-                     world.object(it->id).shape->intersect(rp2,0.001) ||
-                     world.object(it->id).shape->intersect(rp3,0.001) ||
-                     world.object(it->id).shape->intersect(rp4,0.001)){
+                if(  world.object(it->id).shape->intersect(op1,0.001) ||
+                     world.object(it->id).shape->intersect(op2,0.001) ||
+                     world.object(it->id).shape->intersect(op3,0.001) ||
+                     world.object(it->id).shape->intersect(op4,0.001)){
+                    collision = true;
+                }
+            }
+
+            for (std::vector<Robot*>::iterator it2 = it+1; it2 != robots.end(); ++it2)
+            {
+                geo::Vector3 op1 = world.object((*it2)->robot_id).pose.inverse()* rp1;
+                geo::Vector3 op2 = world.object((*it2)->robot_id).pose.inverse()* rp2;
+                geo::Vector3 op3 = world.object((*it2)->robot_id).pose.inverse()* rp3;
+                geo::Vector3 op4 = world.object((*it2)->robot_id).pose.inverse()* rp4;
+
+                if(  world.object((*it2)->robot_id).shape->intersect(op1,0.001) ||
+                     world.object((*it2)->robot_id).shape->intersect(op2,0.001) ||
+                     world.object((*it2)->robot_id).shape->intersect(op3,0.001) ||
+                     world.object((*it2)->robot_id).shape->intersect(op4,0.001)){
                     collision = true;
                 }
             }
