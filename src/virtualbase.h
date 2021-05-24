@@ -10,6 +10,8 @@
 #include "nav_msgs/Odometry.h"
 #include "tf/tf.h"
 
+#include "random"
+
 /**
  * Class that contains functionality for "virtual base" to mimic uncertainty
  */
@@ -31,20 +33,35 @@ public:
         odometry_state.pose.pose.orientation.y = 0.0;
         odometry_state.pose.pose.orientation.z = 0.0;
         odometry_state.pose.pose.orientation.w = 1.0;
+
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        //std::normal_distribution<double> dis(0.0,0.003);
+        std::uniform_real_distribution<double> dis(-0.002,0.002);
+
+        updateWheelUncertaintyFactors();
     }
 
-    Virtualbase(double a1_, double a2_, double a3_, bool disable_speedcap) : a1(a1_), a2(a2_), a3(a3_), disable_speedcap_(disable_speedcap)
+    Virtualbase(bool disable_speedcap, bool uncertain_odom) : disable_speedcap_(disable_speedcap), uncertain_odom_(uncertain_odom)
     {
         Virtualbase();
     }
 
     /**
-     * Set wheel radius mismatch factors
+     * Set flag for disabling speedcap
      */
-    void setWheelUncertaintyFactors(double a1_, double a2_, double a3_){
-        a1 = a1_;
-        a2 = a2_;
-        a3 = a3_;
+    void setDisableSpeedCap(bool disable_speedcap)
+    {
+        disable_speedcap_ = disable_speedcap;
+    }
+
+    /**
+     * Set flag for inacuracies in the odometry
+     */
+    void setUncertainOdom(bool uncertain_odom)
+    {
+        uncertain_odom_ = uncertain_odom;
+        updateWheelUncertaintyFactors();
     }
 
     /**
@@ -87,6 +104,23 @@ public:
      */
     void update(double dt){
         odometry_state = update_odometry(odometry_state,reference_twist,dt);
+    }
+
+    /**
+    * Resample the inaccuracies in the odometry from the distribution.
+    */
+    void updateWheelUncertaintyFactors()
+    {
+        if (uncertain_odom_)
+        {
+            a1 = 1.0 + dis(gen);
+            a2 = 1.0 + dis(gen);
+            a3 = 1.0 + dis(gen);
+        }
+        else
+        {
+            a1 = 1.0; a2 = 1.0; a3 =1.0;
+        }
     }
 
     geometry_msgs::Twist getActualTwist() const{
@@ -133,6 +167,11 @@ private:
     nav_msgs::Odometry odometry_state;
     double a1, a2, a3;
     bool disable_speedcap_;
+    bool uncertain_odom_;
+
+    // random effects
+    std::mt19937 gen;
+    std::uniform_real_distribution<double> dis;
 };
 
 #endif //EMC_SYSTEM_VIRTUALBASE_H

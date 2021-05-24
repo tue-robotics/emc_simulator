@@ -1,7 +1,5 @@
 #include "robot.h"
 
-#include "random"
-
 /*
 // ----------------------------------------------------------------------------------------------------
 
@@ -39,19 +37,6 @@ Robot::Robot(std::string name, Id id)
     laser_pose = geo::Pose3D::identity();
     laser_pose.t.z = 0.3;
 
-    */
-
-    /*
-    // configure base
-    base.setWheelUncertaintyFactors(1.0,1.0,1.0);
-    if(config.uncertain_odom.value()){
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        //std::normal_distribution<double> dis(0.0,0.003);
-        std::uniform_real_distribution<double> dis(-0.002,0.002);
-        base.setWheelUncertaintyFactors(1.0 +dis(gen),1.0+dis(gen),1.0+dis(gen));
-    }
-    base.setDisableSpeedCap(config.disable_speedcap.value());
     */
 
     /*

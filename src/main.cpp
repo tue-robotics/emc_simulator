@@ -128,14 +128,8 @@ int main(int argc, char **argv){
     geo::Pose3D robot_pose = geo::Pose3D::identity();
     Id robot_id = world.addObject(robot_pose);
     Robot robot("pico", robot_id);
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    //std::normal_distribution<double> dis(0.0,0.003);
-    std::uniform_real_distribution<double> dis(-0.002,0.002);
-    Virtualbase picobase(1.0 +dis(gen),1.0+dis(gen),1.0+dis(gen), config.disable_speedcap.value());
-    if(!config.uncertain_odom.value()){
-        picobase.setWheelUncertaintyFactors(1.0,1.0,1.0);
-    }
+    robot.base.setDisableSpeedCap(config.disable_speedcap.value());
+    robot.base.setUncertainOdom(config.uncertain_odom.value());
 
     // Add door
     for(std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
@@ -181,12 +175,12 @@ int main(int argc, char **argv){
         {
             // Set robot velocity
             geometry_msgs::Twist cmd = *base_ref_;
-            picobase.applyTwistAndUpdate(cmd, dt);
+            robot.base.applyTwistAndUpdate(cmd, dt);
         }
         else{ // apply previous one again
-            picobase.update(dt);
+            robot.base.update(dt);
         }
-        geometry_msgs::Twist actual_twist = picobase.getActualTwist();
+        geometry_msgs::Twist actual_twist = robot.base.getActualTwist();
         world.setVelocity(robot_id, geo::Vector3(actual_twist.linear.x, actual_twist.linear.y, 0), actual_twist.angular.z);
 
 
@@ -296,7 +290,7 @@ int main(int argc, char **argv){
 
         //
         if(config.uncertain_odom.value() && time.sec%6 == 0 ){
-            picobase.setWheelUncertaintyFactors(1.0 +dis(gen),1.0+dis(gen),1.0+dis(gen));
+            robot.base.updateWheelUncertaintyFactors();
         }
 
         world.update(time.toSec());
@@ -309,7 +303,7 @@ int main(int argc, char **argv){
         pub_laser.publish(scan_msg);
 
         // Create odom data
-        nav_msgs::Odometry odom_msg = picobase.getOdom();
+        nav_msgs::Odometry odom_msg = robot.base.getOdom();
         if(!config.uncertain_odom.value()){
             geo::convert(world.object(robot_id).pose, odom_msg.pose.pose);
         }
