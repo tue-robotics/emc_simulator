@@ -286,7 +286,7 @@ int main(int argc, char **argv){
         sensor_msgs::LaserScan scan_msg;
         scan_msg.header.frame_id = "/pico/laser";
         scan_msg.header.stamp = time;
-        lrf.generateLaserData(world, world.object(robot.robot_id).pose * robot.laser_pose, scan_msg);
+        lrf.generateLaserData(world, robot, scan_msg);
         robot.pub_laser.publish(scan_msg);
 
         // Create odom data

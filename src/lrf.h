@@ -1,6 +1,8 @@
 #ifndef PICO_SIMULATOR_LRF_H_
 #define PICO_SIMULATOR_LRF_H_
 
+#include "robot.h"
+
 #include <geolib/sensors/LaserRangeFinder.h>
 #include <sensor_msgs/LaserScan.h>
 
@@ -15,7 +17,7 @@ public:
 
     ~LRF();
 
-    void generateLaserData(const World& world, const geo::Pose3D& laser_pose, sensor_msgs::LaserScan& scan_msg) const;
+    void generateLaserData(const World& world, const Robot& robot, sensor_msgs::LaserScan& scan_msg) const;
 
     void setAngleLimits(double a_min, double a_max);
 
