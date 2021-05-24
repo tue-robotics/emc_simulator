@@ -25,7 +25,6 @@ public:
 
     ~Robot();
 
-    LRF lrf;
     geo::Pose3D laser_pose;
     std::string robot_name;
     Id robot_id;

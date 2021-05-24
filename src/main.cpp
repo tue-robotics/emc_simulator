@@ -148,10 +148,6 @@ int main(int argc, char **argv){
     ros::Subscriber sub_open_door = nh.subscribe<std_msgs::Empty>("/pico/open_door", 1, openDoorCallback);
     ros::Subscriber sub_speak = nh.subscribe<std_msgs::String>("/pico/speak",1,speakCallback);
 
-    // Set laser pose (in robot frame)
-    geo::Pose3D laser_pose = geo::Pose3D::identity();
-    laser_pose.t.z = 0.3;
-
     ros::Rate r(cycle_freq);
     double time_ = 0;
     double dt;

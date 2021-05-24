@@ -29,15 +29,9 @@ Robot::Robot(std::string name, Id id)
     robot_name = name;
     robot_id = id;
 
-    /*
-    // configure lrf
-    lrf.setAngleLimits(-2, 2);
-    lrf.setNumBeams(1000);
-    lrf.setRangeLimits(0.01, 10);
-    laser_pose = geo::Pose3D::identity();
+    // Set laser pose (in robot frame)
+    geo::Pose3D laser_pose = geo::Pose3D::identity();
     laser_pose.t.z = 0.3;
-
-    */
 
     /*
     // Publishers
