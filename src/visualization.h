@@ -2,6 +2,7 @@
 #define PICO_SIMULATOR_VISUALIZATION_H_
 
 #include "world.h"
+#include "robot.h"
 
 namespace visualization
 {
@@ -9,7 +10,7 @@ namespace visualization
         double xmin, ymin, xmax, ymax;
     };
 
-void visualize(const World& world, Id robot_id, bool collision, bool show_full_map,Bbox bbox);
+void visualize(const World& world, const std::vector<Robot>& robots, bool collision, bool show_full_map,Bbox bbox);
 
 }
 

@@ -100,12 +100,19 @@ int main(int argc, char **argv){
         world.setVelocity(it->id,geo::Vector3(0.0,0.0,0.0),0.0);
     }
 
-    // Add robot
-    geo::Pose3D robot_pose = geo::Pose3D::identity();
-    Id robot_id = world.addObject(robot_pose);
-    Robot robot("pico", robot_id);
+    // Add robots
+    Id pico_id = world.addObject(geo::Pose3D::identity());
+    Robot robot("pico", pico_id);
     robot.base.setDisableSpeedCap(config.disable_speedcap.value());
     robot.base.setUncertainOdom(config.uncertain_odom.value());
+
+    Id taco_id = world.addObject(geo::Pose3D::identity());
+    Robot taco("taco", taco_id);
+    robot.base.setDisableSpeedCap(config.disable_speedcap.value());
+    robot.base.setUncertainOdom(config.uncertain_odom.value());
+
+    std::vector<Robot> robots;
+    robots.push_back(robot); robots.push_back(taco);
 
     // Add door
     for(std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
@@ -199,7 +206,7 @@ int main(int argc, char **argv){
 
         //check collisions with robot
         bool collision = false;
-        robot_pose = world.object(robot.robot_id).pose;
+        geo::Pose3D robot_pose = world.object(robot.robot_id).pose;
         geo::Vector3 rp1 = robot_pose*geo::Vector3(0.08,0.18,0.0);
         geo::Vector3 rp2 = robot_pose*geo::Vector3(0.08,-0.18,0.0);
         geo::Vector3 rp3 = robot_pose*geo::Vector3(-0.08,0.18,0.0);
@@ -277,7 +284,7 @@ int main(int argc, char **argv){
 
         // Visualize
         if (visualize)
-            visualization::visualize(world, robot.robot_id, collision, config.show_full_map.value(),bbox);
+            visualization::visualize(world, robots, collision, config.show_full_map.value(),bbox);
 
         r.sleep();
     }

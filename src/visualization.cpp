@@ -22,10 +22,8 @@ cv::Point2d worldToCanvas(const geo::Vector3& p)
 
 // ----------------------------------------------------------------------------------------------------
 
-void visualize(const World& world, Id robot_id, bool collision = false, bool show_full_map = false, Bbox centerframe = {-1e5, -1e5, 1e5, 1e5})
+void visualize(const World& world, const std::vector<Robot>& robots, bool collision = false, bool show_full_map = false, Bbox centerframe = {-1e5, -1e5, 1e5, 1e5})
 {
-    const Object& robot = world.object(robot_id);
-
     int dim = 500;
     if(show_full_map){
         dim = 1000;
@@ -34,37 +32,29 @@ void visualize(const World& world, Id robot_id, bool collision = false, bool sho
     cv::Mat canvas(dim, dim, CV_8UC3, cv::Scalar(100, 100, 100));
     canvas_center = cv::Point2d(canvas.rows / 2, canvas.cols / 2);
 
-    // Draw robot
-    cv::Scalar robot_color(0, 0, 255);
+    // Determine camera pose
+    geo::Pose3D frame_center_pose = geo::Pose3D::identity();
+    if (!show_full_map){
+        frame_center_pose = world.object(robots[0].robot_id).pose;
+    }
 
-    std::vector<geo::Vector3> robot_points;
-    robot_points.push_back(geo::Vector3( 0.1,  -0.2, 0));
-    robot_points.push_back(geo::Vector3( 0.1,  -0.1, 0));
-    robot_points.push_back(geo::Vector3( 0.05, -0.1, 0));
-    robot_points.push_back(geo::Vector3( 0.05,  0.1, 0));
-    robot_points.push_back(geo::Vector3( 0.1,   0.1, 0));
-    robot_points.push_back(geo::Vector3( 0.1,   0.2, 0));
-    robot_points.push_back(geo::Vector3(-0.1,   0.2, 0));
-    robot_points.push_back(geo::Vector3(-0.1,  -0.2, 0));
-
-    Bbox midpointframe;
+    Bbox midpointframe; //maximum range for the midpoint of the view.
     midpointframe.xmin = centerframe.xmin + dim*resolution/2 -0.5;
     midpointframe.xmax = centerframe.xmax - dim*resolution/2 +0.5;
     midpointframe.ymin = centerframe.ymin + dim*resolution/2 -0.5;
     midpointframe.ymax = centerframe.ymax - dim*resolution/2 +0.5;
 
-
     // check translation of world within bbox for sliding camera
     double xview, yview;
-    xview = robot.pose.getOrigin().getX();
-    if(robot.pose.getOrigin().getX() > midpointframe.xmax )
+    xview = frame_center_pose.getOrigin().getX();
+    if(frame_center_pose.getOrigin().getX() > midpointframe.xmax )
         xview = midpointframe.xmax;
-    if(robot.pose.getOrigin().getX() < midpointframe.xmin )
+    if(frame_center_pose.getOrigin().getX() < midpointframe.xmin )
         xview = midpointframe.xmin;
-    yview = robot.pose.getOrigin().getY();
-    if(robot.pose.getOrigin().getY() > midpointframe.ymax )
+    yview = frame_center_pose.getOrigin().getY();
+    if(frame_center_pose.getOrigin().getY() > midpointframe.ymax )
         yview = midpointframe.ymax;
-    if(robot.pose.getOrigin().getY() < midpointframe.ymin)
+    if(frame_center_pose.getOrigin().getY() < midpointframe.ymin)
         yview = midpointframe.ymin;
 
     // If there is not enough mapsize for a midpointbox, fix views to center
@@ -74,20 +64,36 @@ void visualize(const World& world, Id robot_id, bool collision = false, bool sho
     if(midpointframe.ymax < midpointframe.ymin){
         yview = midpointframe.ymax + midpointframe.ymin /2;
     }
+    frame_center_pose.t.x = xview;
+    frame_center_pose.t.y = yview;
 
-
-    if(show_full_map == true){
-        for(unsigned int i = 0; i < robot_points.size(); ++i) {
-            robot_points[i] = (robot.pose * robot_points[i]) + geo::Vector3(-xview,-yview,0);
-        }
-    }
-
-    for(unsigned int i = 0; i < robot_points.size(); ++i)
+    // Draw robots
+    for (std::vector<Robot>::const_iterator it = robots.begin(); it != robots.end(); ++it)
     {
-        unsigned int j = (i + 1) % robot_points.size();
-        cv::Point2d p1 = worldToCanvas(robot_points[i]);
-        cv::Point2d p2 = worldToCanvas(robot_points[j]);
-        cv::line(canvas, p1, p2, robot_color, 2);
+        const Object& robot = world.object(it->robot_id);
+        cv::Scalar robot_color(0, 0, 255);
+
+        std::vector<geo::Vector3> robot_points;
+        robot_points.push_back(geo::Vector3( 0.1,  -0.2, 0));
+        robot_points.push_back(geo::Vector3( 0.1,  -0.1, 0));
+        robot_points.push_back(geo::Vector3( 0.05, -0.1, 0));
+        robot_points.push_back(geo::Vector3( 0.05,  0.1, 0));
+        robot_points.push_back(geo::Vector3( 0.1,   0.1, 0));
+        robot_points.push_back(geo::Vector3( 0.1,   0.2, 0));
+        robot_points.push_back(geo::Vector3(-0.1,   0.2, 0));
+        robot_points.push_back(geo::Vector3(-0.1,  -0.2, 0));
+
+        for(unsigned int i = 0; i < robot_points.size(); ++i) {
+                robot_points[i] = (frame_center_pose.inverse() * robot.pose * robot_points[i]);
+            }
+
+        for(unsigned int i = 0; i < robot_points.size(); ++i)
+        {
+            unsigned int j = (i + 1) % robot_points.size();
+            cv::Point2d p1 = worldToCanvas(robot_points[i]);
+            cv::Point2d p2 = worldToCanvas(robot_points[j]);
+            cv::line(canvas, p1, p2, robot_color, 2);
+        }
     }
 
     for(std::vector<Object>::const_iterator it = world.objects().begin(); it != world.objects().end(); ++it)
@@ -101,14 +107,7 @@ void visualize(const World& world, Id robot_id, bool collision = false, bool sho
 
         cv::Scalar line_color(obj.color.x * 255, obj.color.y * 255, obj.color.z * 255);
 
-        geo::Transform t;
-        if(show_full_map== false){
-           t = robot.pose.inverse() * obj.pose;
-        } else{
-            geo::Transform viewbox(-xview, -yview,0,0,0,0);
-            t = viewbox*obj.pose;
-        }
-
+        geo::Transform t = frame_center_pose.inverse() * obj.pose;
 
         for(std::vector<geo::TriangleI>::const_iterator it2 = triangles.begin(); it2 != triangles.end(); ++it2)
         {
