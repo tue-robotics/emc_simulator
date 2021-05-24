@@ -181,14 +181,14 @@ int main(int argc, char **argv){
             robot.base.update(dt);
         }
         geometry_msgs::Twist actual_twist = robot.base.getActualTwist();
-        world.setVelocity(robot_id, geo::Vector3(actual_twist.linear.x, actual_twist.linear.y, 0), actual_twist.angular.z);
+        world.setVelocity(robot.robot_id, geo::Vector3(actual_twist.linear.x, actual_twist.linear.y, 0), actual_twist.angular.z);
 
 
         //check if object should start moving
         for(std::vector<MovingObject>::iterator it = config.moving_objects.value().begin(); it != config.moving_objects.value().end(); ++it){
 
             // check if it should start
-            geo::Vector3 dist_obj_pico = world.object(robot_id).pose.getOrigin() -  world.object(it->id).pose.getOrigin();
+            geo::Vector3 dist_obj_pico = world.object(robot.robot_id).pose.getOrigin() -  world.object(it->id).pose.getOrigin();
             double safety_radius = sqrt( std::pow(it->width/2,2) + std::pow(it->length/2,2)) + 0.3;
             if(dist_obj_pico.length() < it->trigger_radius && it->is_moving == false && it->finished_moving == false){
                 it->is_moving = true;
@@ -237,19 +237,20 @@ int main(int argc, char **argv){
 
         //check collisions with robot
         bool collision = false;
-        geo::Vector3 rp1 = world.object(robot_id).pose*geo::Vector3(0.08,0.18,0.0);
-        geo::Vector3 rp2 = world.object(robot_id).pose*geo::Vector3(0.08,-0.18,0.0);
-        geo::Vector3 rp3 = world.object(robot_id).pose*geo::Vector3(-0.08,0.18,0.0);
-        geo::Vector3 rp4 = world.object(robot_id).pose*geo::Vector3(-0.08,-0.18,0.0);
+        robot_pose = world.object(robot.robot_id).pose;
+        geo::Vector3 rp1 = robot_pose*geo::Vector3(0.08,0.18,0.0);
+        geo::Vector3 rp2 = robot_pose*geo::Vector3(0.08,-0.18,0.0);
+        geo::Vector3 rp3 = robot_pose*geo::Vector3(-0.08,0.18,0.0);
+        geo::Vector3 rp4 = robot_pose*geo::Vector3(-0.08,-0.18,0.0);
         if( heightmap->intersect(rp1,0.001) || heightmap->intersect(rp2,0.001) || heightmap->intersect(rp3,0.001) || heightmap->intersect(rp4,0.001)){
             collision = true;
         }
 
         for(std::vector<MovingObject>::iterator it = config.moving_objects.value().begin(); it != config.moving_objects.value().end(); ++it){
-            rp1 = world.object(it->id).pose.inverse()* world.object(robot_id).pose*geo::Vector3(0.08,0.18,0.0);
-            rp2 = world.object(it->id).pose.inverse()* world.object(robot_id).pose*geo::Vector3(0.08,-0.18,0.0);
-            rp3 = world.object(it->id).pose.inverse()* world.object(robot_id).pose*geo::Vector3(-0.08,0.18,0.0);
-            rp4 = world.object(it->id).pose.inverse()* world.object(robot_id).pose*geo::Vector3(-0.08,-0.18,0.0);
+            rp1 = world.object(it->id).pose.inverse()* robot_pose*geo::Vector3(0.08,0.18,0.0);
+            rp2 = world.object(it->id).pose.inverse()* robot_pose*geo::Vector3(0.08,-0.18,0.0);
+            rp3 = world.object(it->id).pose.inverse()* robot_pose*geo::Vector3(-0.08,0.18,0.0);
+            rp4 = world.object(it->id).pose.inverse()* robot_pose*geo::Vector3(-0.08,-0.18,0.0);
 
             if(  world.object(it->id).shape->intersect(rp1,0.001) ||
                  world.object(it->id).shape->intersect(rp2,0.001) ||
@@ -268,7 +269,7 @@ int main(int argc, char **argv){
                     continue;
 
                 // Test if robot is in front of door. If not, don't open it
-                geo::Pose3D rel_robot_pose = door.init_pose.inverse() * world.object(robot_id).pose;
+                geo::Pose3D rel_robot_pose = door.init_pose.inverse() * robot_pose;
 
                 if (std::abs(rel_robot_pose.t.y) > 1 || std::abs(rel_robot_pose.t.x) > door.size / 2)
                     continue;
@@ -299,13 +300,13 @@ int main(int argc, char **argv){
         sensor_msgs::LaserScan scan_msg;
         scan_msg.header.frame_id = "/pico/laser";
         scan_msg.header.stamp = time;
-        lrf.generateLaserData(world, world.object(robot_id).pose * laser_pose, scan_msg);
+        lrf.generateLaserData(world, world.object(robot.robot_id).pose * robot.laser_pose, scan_msg);
         pub_laser.publish(scan_msg);
 
         // Create odom data
         nav_msgs::Odometry odom_msg = robot.base.getOdom();
         if(!config.uncertain_odom.value()){
-            geo::convert(world.object(robot_id).pose, odom_msg.pose.pose);
+            geo::convert(world.object(robot.robot_id).pose, odom_msg.pose.pose);
         }
         odom_msg.header.stamp = time;
         odom_msg.header.frame_id = "odomframe";
@@ -314,7 +315,7 @@ int main(int argc, char **argv){
 
         // Visualize
         if (visualize)
-            visualization::visualize(world, robot_id, collision, config.show_full_map.value(),bbox);
+            visualization::visualize(world, robot.robot_id, collision, config.show_full_map.value(),bbox);
 
         r.sleep();
     }
