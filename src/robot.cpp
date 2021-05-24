@@ -16,7 +16,7 @@ void Robot::openDoorCallback(const std_msgs::Empty::ConstPtr& msg)
 
 void Robot::speakCallback(const std_msgs::String::ConstPtr& msg)
 {
-    std::cout << "Pico says: " << "\033[1;31m" << msg->data << "\033[0m\n"  << std::endl;
+    std::cout << robot_name << " says: " << "\033[1;31m" << msg->data << "\033[0m\n"  << std::endl;
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -32,13 +32,13 @@ Robot::Robot(std::string name, Id id)
 
     nh = ros::NodeHandle();
     // Publishers
-    pub_laser = nh.advertise<sensor_msgs::LaserScan>("/pico/laser", 1);
-    pub_odom = nh.advertise<nav_msgs::Odometry>("/pico/odom", 1);
+    pub_laser = nh.advertise<sensor_msgs::LaserScan>("/" + robot_name + "/laser", 1);
+    pub_odom = nh.advertise<nav_msgs::Odometry>("/" + robot_name + "/odom", 1);
 
     // Subscribers
-    sub_base_ref = nh.subscribe<geometry_msgs::Twist>("/pico/cmd_vel", 1, &Robot::baseReferenceCallback, this);
-    sub_open_door = nh.subscribe<std_msgs::Empty>("/pico/open_door", 1, &Robot::openDoorCallback, this);
-    sub_speak = nh.subscribe<std_msgs::String>("/pico/speak", 1, &Robot::speakCallback, this);
+    sub_base_ref = nh.subscribe<geometry_msgs::Twist>("/" + robot_name + "/cmd_vel", 1, &Robot::baseReferenceCallback, this);
+    sub_open_door = nh.subscribe<std_msgs::Empty>("/" + robot_name + "/open_door", 1, &Robot::openDoorCallback, this);
+    sub_speak = nh.subscribe<std_msgs::String>("/" + robot_name + "/speak", 1, &Robot::speakCallback, this);
 }
 
 // ----------------------------------------------------------------------------------------------------
