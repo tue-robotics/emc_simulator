@@ -82,6 +82,13 @@ public:
             disable_speedcap = false;
         }
 
+        //Check if taco enabled is in json
+        if(doc.find("enable_taco") != doc.end()){
+            enable_taco = doc.at("enable_taco");
+        }
+        else{
+            enable_taco = false;
+        }
 
     }
 
@@ -90,6 +97,7 @@ public:
         std::cout << "Uncertain odom: " << uncertain_odom.value() << std::endl;
         std::cout << "Show full map: " << show_full_map.value() << std::endl;
         std::cout << "disable_speedcap: " << disable_speedcap.value() << std::endl;
+        std::cout << "enable taco: " << enable_taco.value() << std::endl;
         std::cout << "imported " << moving_objects.value().size() << " moving objects" << std::endl;
     }
 
@@ -100,6 +108,7 @@ public:
     boost::optional<bool> uncertain_odom;
     boost::optional<std::vector<MovingObject>> moving_objects;
     boost::optional<bool> disable_speedcap;
+    boost::optional<bool> enable_taco;
 };
 
 

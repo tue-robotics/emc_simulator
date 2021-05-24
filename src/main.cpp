@@ -102,18 +102,22 @@ int main(int argc, char **argv){
     double robot_length = 0.16;
     geo::CompositeShapePtr robot_shape = makeWorldSimObject(robot_width, robot_length);
 
+    std::vector<Robot*> robots;
+
     Id pico_id = world.addObject(geo::Pose3D::identity(), robot_shape);
     Robot pico("pico", pico_id);
     pico.base.setDisableSpeedCap(config.disable_speedcap.value());
     pico.base.setUncertainOdom(config.uncertain_odom.value());
+    robots.push_back(&pico);
 
-    Id taco_id = world.addObject(geo::Pose3D::identity(), robot_shape);
-    Robot taco("taco", taco_id);
-    taco.base.setDisableSpeedCap(config.disable_speedcap.value());
-    taco.base.setUncertainOdom(config.uncertain_odom.value());
-
-    std::vector<Robot*> robots;
-    robots.push_back(&pico); robots.push_back(&taco);
+    Robot taco("blank", pico_id); //TODO taco needs to be predefined otherwise it will go out of scope
+    if (config.enable_taco.value()){
+        Id taco_id = world.addObject(geo::Pose3D::identity(), robot_shape);
+        taco = Robot("taco", taco_id);
+        taco.base.setDisableSpeedCap(config.disable_speedcap.value());
+        taco.base.setUncertainOdom(config.uncertain_odom.value());
+        robots.push_back(&taco);
+    }
 
     // Add door
     for(std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
@@ -122,6 +126,7 @@ int main(int argc, char **argv){
         door.id = world.addObject(door.init_pose, door.shape, geo::Vector3(0, 1, 0));
     }
 
+    std::cout << "start cycle" << std::endl;
     ros::Rate r(cycle_freq);
     double time_ = 0;
     double dt;
