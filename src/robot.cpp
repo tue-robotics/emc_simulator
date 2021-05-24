@@ -27,7 +27,7 @@ Robot::Robot(std::string name, Id id)
     robot_id = id;
 
     // Set laser pose (in robot frame)
-    geo::Pose3D laser_pose = geo::Pose3D::identity();
+    laser_pose = geo::Pose3D::identity();
     laser_pose.t.z = 0.3;
 
     nh = ros::NodeHandle();
