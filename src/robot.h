@@ -33,19 +33,20 @@ public:
     geometry_msgs::Twist::ConstPtr base_ref_;
     bool request_open_door_;
 
-private:
-    ros::NodeHandle* nh;
     // Publisher
-    //ros::Publisher pub_laser;
-    //ros::Publisher pub_odom;
+    ros::Publisher pub_laser;
+    ros::Publisher pub_odom;
+
+private:
+    ros::NodeHandle nh;
 
     // Subscribers
-    //ros::Subscriber sub_base_ref;
-    //ros::Subscriber sub_open_door;
-    //ros::Subscriber sub_speak;
-    //void baseReferenceCallback(const geometry_msgs::Twist::ConstPtr& msg);
-    //void openDoorCallback(const std_msgs::Empty::ConstPtr& msg);
-    //void speakCallback(const std_msgs::String::ConstPtr& msg);
+    ros::Subscriber sub_base_ref;
+    ros::Subscriber sub_open_door;
+    ros::Subscriber sub_speak;
+    void baseReferenceCallback(const geometry_msgs::Twist::ConstPtr& msg);
+    void openDoorCallback(const std_msgs::Empty::ConstPtr& msg);
+    void speakCallback(const std_msgs::String::ConstPtr& msg);
 
 };
 

@@ -138,23 +138,13 @@ int main(int argc, char **argv){
         door.id = world.addObject(door.init_pose, door.shape, geo::Vector3(0, 1, 0));
     }
 
-    // Publishers
-    ros::NodeHandle nh;
-    ros::Publisher pub_laser = nh.advertise<sensor_msgs::LaserScan>("/pico/laser", 1);
-    ros::Publisher pub_odom = nh.advertise<nav_msgs::Odometry>("/pico/odom", 1);
-
-    // Subscribers
-    ros::Subscriber sub_base_ref = nh.subscribe<geometry_msgs::Twist>("/pico/cmd_vel", 1, baseReferenceCallback);
-    ros::Subscriber sub_open_door = nh.subscribe<std_msgs::Empty>("/pico/open_door", 1, openDoorCallback);
-    ros::Subscriber sub_speak = nh.subscribe<std_msgs::String>("/pico/speak",1,speakCallback);
-
     ros::Rate r(cycle_freq);
     double time_ = 0;
     double dt;
     while(ros::ok())
     {
-        base_ref_.reset();
-        request_open_door_ = false;
+        robot.base_ref_.reset();
+        robot.request_open_door_ = false;
         ros::spinOnce();
         ros::Time time = ros::Time::now();
 
@@ -167,10 +157,10 @@ int main(int argc, char **argv){
             time_ = time.toSec();
         }
 
-        if (base_ref_) // If there is a twist message in the queue
+        if (robot.base_ref_) // If there is a twist message in the queue
         {
             // Set robot velocity
-            geometry_msgs::Twist cmd = *base_ref_;
+            geometry_msgs::Twist cmd = *robot.base_ref_;
             robot.base.applyTwistAndUpdate(cmd, dt);
         }
         else{ // apply previous one again
@@ -256,7 +246,7 @@ int main(int argc, char **argv){
             }
         }
         
-        if (request_open_door_)
+        if (robot.request_open_door_)
         {
             for(std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
             {
@@ -297,7 +287,7 @@ int main(int argc, char **argv){
         scan_msg.header.frame_id = "/pico/laser";
         scan_msg.header.stamp = time;
         lrf.generateLaserData(world, world.object(robot.robot_id).pose * robot.laser_pose, scan_msg);
-        pub_laser.publish(scan_msg);
+        robot.pub_laser.publish(scan_msg);
 
         // Create odom data
         nav_msgs::Odometry odom_msg = robot.base.getOdom();
@@ -307,7 +297,7 @@ int main(int argc, char **argv){
         odom_msg.header.stamp = time;
         odom_msg.header.frame_id = "odomframe";
 
-        pub_odom.publish(odom_msg);
+        robot.pub_odom.publish(odom_msg);
 
         // Visualize
         if (visualize)
