@@ -32,30 +32,6 @@
 #include <vector>
 
 
-geometry_msgs::Twist::ConstPtr base_ref_;
-bool request_open_door_;
-
-// ----------------------------------------------------------------------------------------------------
-
-void baseReferenceCallback(const geometry_msgs::Twist::ConstPtr& msg)
-{
-    base_ref_ = msg;
-}
-
-// ----------------------------------------------------------------------------------------------------
-
-void openDoorCallback(const std_msgs::Empty::ConstPtr& msg)
-{
-    request_open_door_ = true;
-}
-
-void speakCallback(const std_msgs::String::ConstPtr& msg)
-{
-    std::cout << "Pico says: " << "\033[1;31m" << msg->data << "\033[0m\n"  << std::endl;
-}
-
-// -----------------------------------------------------------------------------------------------------
-
 int main(int argc, char **argv){
 
     ros::init(argc, argv, "pico_simulator");
