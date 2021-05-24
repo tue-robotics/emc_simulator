@@ -98,12 +98,16 @@ int main(int argc, char **argv){
     }
 
     // Add robots
-    Id pico_id = world.addObject(geo::Pose3D::identity());
+    double robot_width = 0.36;
+    double robot_length = 0.16;
+    geo::CompositeShapePtr robot_shape = makeWorldSimObject(robot_width, robot_length);
+
+    Id pico_id = world.addObject(geo::Pose3D::identity(), robot_shape);
     Robot pico("pico", pico_id);
     pico.base.setDisableSpeedCap(config.disable_speedcap.value());
     pico.base.setUncertainOdom(config.uncertain_odom.value());
 
-    Id taco_id = world.addObject(geo::Pose3D::identity());
+    Id taco_id = world.addObject(geo::Pose3D::identity(), robot_shape);
     Robot taco("taco", taco_id);
     taco.base.setDisableSpeedCap(config.disable_speedcap.value());
     taco.base.setUncertainOdom(config.uncertain_odom.value());
