@@ -22,7 +22,7 @@ cv::Point2d worldToCanvas(const geo::Vector3& p)
 
 // ----------------------------------------------------------------------------------------------------
 
-void visualize(const World& world, const std::vector<Robot>& robots, bool collision = false, bool show_full_map = false, Bbox centerframe = {-1e5, -1e5, 1e5, 1e5})
+void visualize(const World& world, const std::vector<Robot*>& robots, bool collision = false, bool show_full_map = false, Bbox centerframe = {-1e5, -1e5, 1e5, 1e5})
 {
     int dim = 500;
     if(show_full_map){
@@ -35,7 +35,7 @@ void visualize(const World& world, const std::vector<Robot>& robots, bool collis
     // Determine camera pose
     geo::Pose3D frame_center_pose = geo::Pose3D::identity();
     if (!show_full_map){
-        frame_center_pose = world.object(robots[0].robot_id).pose;
+        frame_center_pose = world.object(robots[0]->robot_id).pose;
     }
 
     Bbox midpointframe; //maximum range for the midpoint of the view.
@@ -68,9 +68,9 @@ void visualize(const World& world, const std::vector<Robot>& robots, bool collis
     frame_center_pose.t.y = yview;
 
     // Draw robots
-    for (std::vector<Robot>::const_iterator it = robots.begin(); it != robots.end(); ++it)
+    for (std::vector<Robot*>::const_iterator it = robots.begin(); it != robots.end(); ++it)
     {
-        const Object& robot = world.object(it->robot_id);
+        const Object& robot = world.object((*it)->robot_id);
         cv::Scalar robot_color(0, 0, 255);
 
         std::vector<geo::Vector3> robot_points;

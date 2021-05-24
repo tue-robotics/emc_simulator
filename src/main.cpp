@@ -112,8 +112,8 @@ int main(int argc, char **argv){
     taco.base.setDisableSpeedCap(config.disable_speedcap.value());
     taco.base.setUncertainOdom(config.uncertain_odom.value());
 
-    std::vector<Robot> robots;
-    robots.push_back(pico); robots.push_back(taco);
+    std::vector<Robot*> robots;
+    robots.push_back(&pico); robots.push_back(&taco);
 
     // Add door
     for(std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
@@ -140,9 +140,9 @@ int main(int argc, char **argv){
         }
         bool collision = false;
 
-        for (std::vector<Robot>::iterator it = robots.begin(); it != robots.end(); ++it)
+        for (std::vector<Robot*>::iterator it = robots.begin(); it != robots.end(); ++it)
         {
-            Robot& robot = *it;
+            Robot& robot = **it;
             geo::Pose3D robot_pose = world.object(robot.robot_id).pose;
             if (robot.base_ref_) // If there is a twist message in the queue
             {
@@ -203,9 +203,6 @@ int main(int argc, char **argv){
                     unit_vel =world.object(it->id).pose.R.transpose()*unit_vel / unit_vel.length();
                     world.setVelocity(it->id, unit_vel*it->velocity,0.0);
                 }
-
-
-
             }
 
             //check collisions with robot
@@ -268,9 +265,9 @@ int main(int argc, char **argv){
         world.update(time.toSec());
 
         // create output
-        for (std::vector<Robot>::iterator it = robots.begin(); it != robots.end(); ++it)
+        for (std::vector<Robot*>::iterator it = robots.begin(); it != robots.end(); ++it)
         {
-            Robot& robot = *it;
+            Robot& robot = **it;
             // Create laser data
             sensor_msgs::LaserScan scan_msg;
             scan_msg.header.frame_id = "/pico/laser";
