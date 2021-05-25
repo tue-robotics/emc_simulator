@@ -336,7 +336,7 @@ int main(int argc, char **argv){
             visualization::visualize(world, robot_id, collision, config.show_full_map.value(),bbox);
 
         if (collision)
-            std::cout << "\033[1;;7;35m" << "COLLISION!" << "\033[0m\n"  << std::endl;
+            std::cout << "\033[1;;7;33m" << "COLLISION!" << "\033[0m\n"  << std::endl;
 
         r.sleep();
     }
