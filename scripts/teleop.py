@@ -55,9 +55,9 @@ speedBindings={
 
 
 class PublishThread(threading.Thread):
-    def __init__(self, rate):
+    def __init__(self, rate, robot_name):
         super(PublishThread, self).__init__()
-        self.publisher = rospy.Publisher('/pico/cmd_vel', Twist, queue_size=1)
+        self.publisher = rospy.Publisher('/' + robot_name + '/cmd_vel', Twist, queue_size=1)
         self.x = 0.0
         self.y = 0.0
         self.th = 0.0
@@ -159,7 +159,11 @@ if __name__ == "__main__":
     if key_timeout == 0.0:
         key_timeout = None
 
-    pub_thread = PublishThread(repeat)
+    robot_name = "pico"
+    if len(sys.argv) > 1:
+        robot_name = sys.argv[1]
+
+    pub_thread = PublishThread(repeat, robot_name)
 
     x = 0
     y = 0
