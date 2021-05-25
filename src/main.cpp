@@ -101,10 +101,11 @@ int main(int argc, char **argv){
     double robot_width = 0.36;
     double robot_length = 0.16;
     geo::CompositeShapePtr robot_shape = makeWorldSimObject(robot_width, robot_length);
+    geo::Vector3 robot_color(0, 0, 1);
 
     std::vector<Robot*> robots;
 
-    Id pico_id = world.addObject(geo::Pose3D::identity(), robot_shape);
+    Id pico_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color);
     Robot pico("pico", pico_id);
     pico.base.setDisableSpeedCap(config.disable_speedcap.value());
     pico.base.setUncertainOdom(config.uncertain_odom.value());
@@ -112,7 +113,7 @@ int main(int argc, char **argv){
 
     Robot taco("blank", pico_id); //TODO taco needs to be predefined otherwise it will go out of scope
     if (config.enable_taco.value()){
-        Id taco_id = world.addObject(geo::Pose3D::identity(), robot_shape);
+        Id taco_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color);
         taco = Robot("taco", taco_id);
         taco.base.setDisableSpeedCap(config.disable_speedcap.value());
         taco.base.setUncertainOdom(config.uncertain_odom.value());
