@@ -111,13 +111,11 @@ int main(int argc, char **argv){
     pico.base.setUncertainOdom(config.uncertain_odom.value());
     robots.push_back(&pico);
 
-    Robot taco("blank", pico_id); //TODO taco needs to be predefined otherwise it will go out of scope
     if (config.enable_taco.value()){
         Id taco_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color);
-        taco = Robot("taco", taco_id);
-        taco.base.setDisableSpeedCap(config.disable_speedcap.value());
-        taco.base.setUncertainOdom(config.uncertain_odom.value());
-        robots.push_back(&taco);
+        robots.push_back(new Robot("taco", taco_id));
+        robots.back()->base.setDisableSpeedCap(config.disable_speedcap.value());
+        robots.back()->base.setUncertainOdom(config.uncertain_odom.value());
     }
 
     // Add door
