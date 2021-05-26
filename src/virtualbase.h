@@ -35,9 +35,9 @@ public:
         odometry_state.pose.pose.orientation.w = 1.0;
 
         std::random_device rd;
-        std::mt19937 gen(rd());
+        gen = std::mt19937(rd());
         //std::normal_distribution<double> dis(0.0,0.003);
-        std::uniform_real_distribution<double> dis(-0.002,0.002);
+        dis = std::uniform_real_distribution<double>(-0.002,0.002);
 
         updateWheelUncertaintyFactors();
     }
