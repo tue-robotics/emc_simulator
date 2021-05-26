@@ -150,7 +150,11 @@ def vels(speed, turn):
 if __name__ == "__main__":
     settings = termios.tcgetattr(sys.stdin)
 
-    rospy.init_node('teleop_twist_keyboard')
+    robot_name = "pico"
+    if len(sys.argv) > 1:
+        robot_name = sys.argv[1]
+
+    rospy.init_node('teleop_twist_keyboard_'+robot_name)
 
     speed = rospy.get_param("~speed", 0.25)
     turn = rospy.get_param("~turn", 0.5)
@@ -159,9 +163,7 @@ if __name__ == "__main__":
     if key_timeout == 0.0:
         key_timeout = None
 
-    robot_name = "pico"
-    if len(sys.argv) > 1:
-        robot_name = sys.argv[1]
+
 
     pub_thread = PublishThread(repeat, robot_name)
 
