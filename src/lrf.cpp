@@ -46,14 +46,19 @@ void LRF::setRangeLimits(double r_min, double r_max)
 
 // ----------------------------------------------------------------------------------------------------
 
-void LRF::generateLaserData(const World& world, const geo::Pose3D& laser_pose, sensor_msgs::LaserScan& scan_msg) const
+void LRF::generateLaserData(const World& world, const Robot& robot, sensor_msgs::LaserScan& scan_msg) const
 {
+    const Object& robot_obj = world.object(robot.robot_id);
+    geo::Pose3D laser_pose = robot_obj.pose * robot.laser_pose;
     geo::Pose3D laser_pose_inv = laser_pose.inverse();
 
     std::vector<double> ranges(lrf_.getNumBeams(), 0);
     for(std::vector<Object>::const_iterator it = world.objects().begin(); it != world.objects().end(); ++it)
     {
         const Object& obj = *it;
+        if (&obj == &robot_obj) // ignore robot itself
+            continue;
+
         if (!obj.shape)
             continue;
 

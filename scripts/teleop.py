@@ -55,9 +55,9 @@ speedBindings={
 
 
 class PublishThread(threading.Thread):
-    def __init__(self, rate):
+    def __init__(self, rate, robot_name):
         super(PublishThread, self).__init__()
-        self.publisher = rospy.Publisher('/pico/cmd_vel', Twist, queue_size=1)
+        self.publisher = rospy.Publisher('/' + robot_name + '/cmd_vel', Twist, queue_size=1)
         self.x = 0.0
         self.y = 0.0
         self.th = 0.0
@@ -150,7 +150,11 @@ def vels(speed, turn):
 if __name__ == "__main__":
     settings = termios.tcgetattr(sys.stdin)
 
-    rospy.init_node('teleop_twist_keyboard')
+    robot_name = "pico"
+    if len(sys.argv) > 1:
+        robot_name = sys.argv[1]
+
+    rospy.init_node('teleop_twist_keyboard_'+robot_name)
 
     speed = rospy.get_param("~speed", 0.25)
     turn = rospy.get_param("~turn", 0.5)
@@ -159,7 +163,9 @@ if __name__ == "__main__":
     if key_timeout == 0.0:
         key_timeout = None
 
-    pub_thread = PublishThread(repeat)
+
+
+    pub_thread = PublishThread(repeat, robot_name)
 
     x = 0
     y = 0

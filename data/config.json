@@ -1,6 +1,7 @@
 {
   "uncertain_odom":true,
   "show_full_map":true,
+  "enable_taco":true,
   "objects":[
     {
       "length": 1.0,
