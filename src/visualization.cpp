@@ -44,17 +44,19 @@ void visualize(const World& world, const std::vector<Robot*>& robots, bool colli
     midpointframe.ymin = centerframe.ymin + dim*resolution/2 -0.5;
     midpointframe.ymax = centerframe.ymax - dim*resolution/2 +0.5;
 
+
+    auto robot = world.object(robots[0]->robot_id);
     // check translation of world within bbox for sliding camera
     double xview, yview;
-    xview = frame_center_pose.getOrigin().getX();
-    if(frame_center_pose.getOrigin().getX() > midpointframe.xmax )
+    xview = robot.pose.getOrigin().getX();
+    if(robot.pose.getOrigin().getX() > midpointframe.xmax )
         xview = midpointframe.xmax;
-    if(frame_center_pose.getOrigin().getX() < midpointframe.xmin )
+    if(robot.pose.getOrigin().getX() < midpointframe.xmin )
         xview = midpointframe.xmin;
-    yview = frame_center_pose.getOrigin().getY();
-    if(frame_center_pose.getOrigin().getY() > midpointframe.ymax )
+    yview = robot.pose.getOrigin().getY();
+    if(robot.pose.getOrigin().getY() > midpointframe.ymax )
         yview = midpointframe.ymax;
-    if(frame_center_pose.getOrigin().getY() < midpointframe.ymin)
+    if(robot.pose.getOrigin().getY() < midpointframe.ymin)
         yview = midpointframe.ymin;
 
     // If there is not enough mapsize for a midpointbox, fix views to center
@@ -64,8 +66,8 @@ void visualize(const World& world, const std::vector<Robot*>& robots, bool colli
     if(midpointframe.ymax < midpointframe.ymin){
         yview = midpointframe.ymax + midpointframe.ymin /2;
     }
-    frame_center_pose.t.x = xview;
-    frame_center_pose.t.y = yview;
+//    frame_center_pose.t.x = xview;
+//    frame_center_pose.t.y = yview;
 
     // Draw robots
     for (std::vector<Robot*>::const_iterator it = robots.begin(); it != robots.end(); ++it)
@@ -83,8 +85,15 @@ void visualize(const World& world, const std::vector<Robot*>& robots, bool colli
         robot_points.push_back(geo::Vector3(-0.1,   0.2, 0));
         robot_points.push_back(geo::Vector3(-0.1,  -0.2, 0));
 
-        for(unsigned int i = 0; i < robot_points.size(); ++i) {
-                robot_points[i] = (frame_center_pose.inverse() * robot.pose * robot_points[i]);
+        if(show_full_map == true) {
+            for (unsigned int i = 0; i < robot_points.size(); ++i) {
+                robot_points[i] = (robot.pose * robot_points[i]) + geo::Vector3(-xview, -yview, 0);
+            }
+        }
+        else{
+                for (unsigned int i = 0; i < robot_points.size(); ++i) {
+                    robot_points[i] = (frame_center_pose.inverse() * robot.pose * robot_points[i]);
+                }
             }
 
         for(unsigned int i = 0; i < robot_points.size(); ++i)
@@ -107,7 +116,15 @@ void visualize(const World& world, const std::vector<Robot*>& robots, bool colli
 
         cv::Scalar line_color(obj.color.x * 255, obj.color.y * 255, obj.color.z * 255);
 
-        geo::Transform t = frame_center_pose.inverse() * obj.pose;
+        auto robot = world.object(robots[0]->robot_id);
+        geo::Transform t;
+        if(show_full_map== false){
+            t = robot.pose.inverse() * obj.pose;
+        } else{
+            geo::Transform viewbox(-xview, -yview,0,0,0,0);
+            t = viewbox*obj.pose;
+        }
+        //geo::Transform t = frame_center_pose.inverse() * obj.pose;
 
         for(std::vector<geo::TriangleI>::const_iterator it2 = triangles.begin(); it2 != triangles.end(); ++it2)
         {
