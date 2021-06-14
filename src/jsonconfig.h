@@ -9,6 +9,7 @@
 #include "../3rdparty/json.hpp"
 #include <fstream>
 #include <boost/optional.hpp>
+#include <geolib/datatypes.h>
 
 #include <vector>
 
@@ -90,6 +91,26 @@ public:
             enable_taco = false;
         }
 
+        //Check for pico_pose
+        if(doc.find("pico_pose") != doc.end()){
+            auto pose = doc.at("pico_pose");
+            pico_pose.setOrigin({pose[0],pose[1],0.0});
+            pico_pose.setRPY(0.0,0.0,pose[2]);
+        }
+        else{
+            pico_pose = geo::Pose3D::identity();
+        }
+
+        //Check for taco_pose
+        if(doc.find("taco_pose") != doc.end()){
+            auto pose = doc.at("taco_pose");
+            taco_pose.setOrigin({pose[0],pose[1],0.0});
+            taco_pose.setRPY(0.0,0.0,pose[2]);
+        }
+        else{
+            taco_pose = geo::Pose3D::identity();
+        }
+
     }
 
     void print(){
@@ -99,6 +120,8 @@ public:
         std::cout << "disable_speedcap: " << disable_speedcap.value() << std::endl;
         std::cout << "enable taco: " << enable_taco.value() << std::endl;
         std::cout << "imported " << moving_objects.value().size() << " moving objects" << std::endl;
+        std::cout << "pico pose: x=" << pico_pose.getOrigin().getX() << " y=" <<  pico_pose.getOrigin().getY() << " rot=" << pico_pose.getYaw() << std::endl;
+        std::cout << "taco pose: x=" << taco_pose.getOrigin().getX() << " y=" <<  taco_pose.getOrigin().getY() << " rot=" << taco_pose.getYaw() << std::endl;
     }
 
 
@@ -109,6 +132,9 @@ public:
     boost::optional<std::vector<MovingObject>> moving_objects;
     boost::optional<bool> disable_speedcap;
     boost::optional<bool> enable_taco;
+    geo::Pose3D pico_pose;
+    geo::Pose3D taco_pose;
+
 };
 
 

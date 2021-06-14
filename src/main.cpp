@@ -105,14 +105,14 @@ int main(int argc, char **argv){
 
     std::vector<Robot*> robots;
 
-    Id pico_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color);
+    Id pico_id = world.addObject(config.pico_pose, robot_shape, robot_color);
     Robot pico("pico", pico_id);
     pico.base.setDisableSpeedCap(config.disable_speedcap.value());
     pico.base.setUncertainOdom(config.uncertain_odom.value());
     robots.push_back(&pico);
 
     if (config.enable_taco.value()){
-        Id taco_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color);
+        Id taco_id = world.addObject(config.taco_pose, robot_shape, robot_color);
         robots.push_back(new Robot("taco", taco_id));
         robots.back()->base.setDisableSpeedCap(config.disable_speedcap.value());
         robots.back()->base.setUncertainOdom(config.uncertain_odom.value());
