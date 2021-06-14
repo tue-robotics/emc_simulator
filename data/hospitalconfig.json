@@ -1,0 +1,25 @@
+{
+  "uncertain_odom":true,
+  "show_full_map":true,
+  "enable_taco":false,
+  "objects":[
+    {
+      "length": 1.0,
+      "width": 0.5,
+      "trigger_radius": 2.0,
+      "repeat": false,
+      "velocity": 0.6,
+      "init_pose": [0.70, -4.56,  0.0],
+      "final_pose": [3.44, -4.56, 0.0]
+    },
+    {
+      "length": 0.2,
+      "width": 0.4,
+      "trigger_radius": 10.0,
+      "repeat": true,
+      "velocity": 0.5,
+      "init_pose": [6.5, -6.5, 0.0],
+      "final_pose": [0.4, -6.5, 0.0]
+    }
+  ]
+}
