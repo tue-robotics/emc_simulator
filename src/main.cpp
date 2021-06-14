@@ -162,50 +162,51 @@ int main(int argc, char **argv){
             world.setVelocity(robot.robot_id, geo::Vector3(actual_twist.linear.x, actual_twist.linear.y, 0), actual_twist.angular.z);
 
             //check if object should start moving
-            for(std::vector<MovingObject>::iterator it = config.moving_objects.value().begin(); it != config.moving_objects.value().end(); ++it){
+            for(std::vector<MovingObject>::iterator ito = config.moving_objects.value().begin(); ito != config.moving_objects.value().end(); ++ito){
 
+                MovingObject& obj = *ito;
                 // check if it should start
-                geo::Vector3 dist_obj_pico = world.object(robot.robot_id).pose.getOrigin() -  world.object(it->id).pose.getOrigin();
-                double safety_radius = sqrt( std::pow(it->width/2,2) + std::pow(it->length/2,2)) + 0.3;
-                if(dist_obj_pico.length() < it->trigger_radius && it->is_moving == false && it->finished_moving == false){
-                    it->is_moving = true;
-                    geo::Vector3 unit_vel = (it->final_pose.getOrigin() - it->init_pose.getOrigin());
-                    unit_vel =world.object(it->id).pose.R.transpose()*unit_vel / unit_vel.length();
-                    world.setVelocity(it->id, unit_vel*it->velocity,0.0);
+                geo::Vector3 dist_obj_pico = world.object(robot.robot_id).pose.getOrigin() -  world.object(obj.id).pose.getOrigin();
+                double safety_radius = sqrt( std::pow(obj.width/2,2) + std::pow(obj.length/2,2)) + 0.3;
+                if(dist_obj_pico.length() < obj.trigger_radius && obj.is_moving == false && obj.finished_moving == false){
+                    obj.is_moving = true;
+                    geo::Vector3 unit_vel = (obj.final_pose.getOrigin() - obj.init_pose.getOrigin());
+                    unit_vel =world.object(obj.id).pose.R.transpose()*unit_vel / unit_vel.length();
+                    world.setVelocity(obj.id, unit_vel*obj.velocity,0.0);
                 }
 
                 // check if it should stop
-                geo::Vector3 dist_obj_dest = world.object(it->id).pose.getOrigin() -  it->final_pose.getOrigin();
-                if(dist_obj_dest.length() < 0.1 && it->is_moving == true && it->finished_moving == false && it->repeat == false){
-                    it->is_moving = false;
-                    it->finished_moving = true;
-                    world.setVelocity(it->id, geo::Vector3(0.0,0.0,0.0),0.0);
+                geo::Vector3 dist_obj_dest = world.object(obj.id).pose.getOrigin() -  obj.final_pose.getOrigin();
+                if(dist_obj_dest.length() < 0.1 && obj.is_moving == true && obj.finished_moving == false && obj.repeat == false){
+                    obj.is_moving = false;
+                    obj.finished_moving = true;
+                    world.setVelocity(obj.id, geo::Vector3(0.0,0.0,0.0),0.0);
                 }
 
                 // reverse and repeat ... :o)
-                if(dist_obj_dest.length() < 0.1 && it->is_moving == true && it->finished_moving == false && it->repeat == true){
-                    it->is_moving = true;
-                    it->finished_moving = false;
-                    geo::Pose3D placeholder = it->init_pose;
-                    it->init_pose = it->final_pose;
-                    it->final_pose = placeholder;
-                    geo::Vector3 unit_vel = (it->final_pose.getOrigin() - it->init_pose.getOrigin());
-                    unit_vel =world.object(it->id).pose.R.transpose()*unit_vel / unit_vel.length();
-                    world.setVelocity(it->id, unit_vel*it->velocity,0.0);
+                if(dist_obj_dest.length() < 0.1 && obj.is_moving == true && obj.finished_moving == false && obj.repeat == true){
+                    obj.is_moving = true;
+                    obj.finished_moving = false;
+                    geo::Pose3D placeholder = obj.init_pose;
+                    obj.init_pose = obj.final_pose;
+                    obj.final_pose = placeholder;
+                    geo::Vector3 unit_vel = (obj.final_pose.getOrigin() - obj.init_pose.getOrigin());
+                    unit_vel =world.object(obj.id).pose.R.transpose()*unit_vel / unit_vel.length();
+                    world.setVelocity(obj.id, unit_vel*obj.velocity,0.0);
                 }
 
                 // Check if it should pause
-                if(dist_obj_pico.length() < safety_radius && it->is_moving == true && it->is_paused == false){
-                    it->is_paused = true;
-                    world.setVelocity(it->id, geo::Vector3(0.0,0.0,0.0),0.0);
+                if(dist_obj_pico.length() < safety_radius && obj.is_moving == true && obj.is_paused == false){
+                    obj.is_paused = true;
+                    world.setVelocity(obj.id, geo::Vector3(0.0,0.0,0.0),0.0);
                 }
 
                 // Check if it should continue after being paused
-                if(dist_obj_pico.length() > safety_radius && it->is_paused == true){
-                    it->is_paused = false;
-                    geo::Vector3 unit_vel = (it->final_pose.getOrigin() - it->init_pose.getOrigin());
-                    unit_vel =world.object(it->id).pose.R.transpose()*unit_vel / unit_vel.length();
-                    world.setVelocity(it->id, unit_vel*it->velocity,0.0);
+                if(dist_obj_pico.length() > safety_radius && obj.is_paused == true){
+                    obj.is_paused = false;
+                    geo::Vector3 unit_vel = (obj.final_pose.getOrigin() - obj.init_pose.getOrigin());
+                    unit_vel =world.object(obj.id).pose.R.transpose()*unit_vel / unit_vel.length();
+                    world.setVelocity(obj.id, unit_vel*obj.velocity,0.0);
                 }
             }
 
@@ -218,16 +219,16 @@ int main(int argc, char **argv){
                 collision = true;
             }
 
-            for(std::vector<MovingObject>::iterator it = config.moving_objects.value().begin(); it != config.moving_objects.value().end(); ++it){
-                geo::Vector3 op1 = world.object(it->id).pose.inverse()* rp1;
-                geo::Vector3 op2 = world.object(it->id).pose.inverse()* rp2;
-                geo::Vector3 op3 = world.object(it->id).pose.inverse()* rp3;
-                geo::Vector3 op4 = world.object(it->id).pose.inverse()* rp4;
+            for(std::vector<MovingObject>::iterator itobj = config.moving_objects.value().begin(); itobj != config.moving_objects.value().end(); ++itobj){
+                geo::Vector3 op1 = world.object(itobj->id).pose.inverse()* rp1;
+                geo::Vector3 op2 = world.object(itobj->id).pose.inverse()* rp2;
+                geo::Vector3 op3 = world.object(itobj->id).pose.inverse()* rp3;
+                geo::Vector3 op4 = world.object(itobj->id).pose.inverse()* rp4;
 
-                if(  world.object(it->id).shape->intersect(op1,0.001) ||
-                     world.object(it->id).shape->intersect(op2,0.001) ||
-                     world.object(it->id).shape->intersect(op3,0.001) ||
-                     world.object(it->id).shape->intersect(op4,0.001)){
+                if(  world.object(itobj->id).shape->intersect(op1,0.001) ||
+                     world.object(itobj->id).shape->intersect(op2,0.001) ||
+                     world.object(itobj->id).shape->intersect(op3,0.001) ||
+                     world.object(itobj->id).shape->intersect(op4,0.001)){
                     collision = true;
                 }
             }
