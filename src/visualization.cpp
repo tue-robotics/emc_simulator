@@ -66,8 +66,93 @@ void visualize(const World& world, const std::vector<Robot*>& robots, bool colli
     if(midpointframe.ymax < midpointframe.ymin){
         yview = midpointframe.ymax + midpointframe.ymin /2;
     }
-//    frame_center_pose.t.x = xview;
-//    frame_center_pose.t.y = yview;
+
+
+
+
+
+// Draw cabinets
+    std::vector<std::vector<geo::Vector3>> cabinets({
+                                                            {{(geo::Vector3(-4.6 , -2.8 , 0.0))},
+                                                                    {(
+                                                                             geo::Vector3(-4.2 , -2.8 , 0.0))},
+                                                                    {(
+                                                                             geo::Vector3(-4.2 , -3.2 , 0.0))},
+                                                                    {(
+                                                                             geo::Vector3(-4.6 , -3.2 , 0.0))}
+                                                            },
+                                                            {{(geo::Vector3(-6 , 6 , 0.0))},
+                                                                    {(
+                                                                             geo::Vector3(-5.6 , 6 , 0.0))},
+                                                                    {(
+                                                                             geo::Vector3(-5.6 , 6.4 , 0.0))},
+                                                                    {(
+                                                                             geo::Vector3(-6 , 6.4 , 0.0))}
+                                                            },
+                                                            {{(geo::Vector3(-1.4 , 5.8 , 0.0))},
+                                                                    {(
+                                                                             geo::Vector3(-1 , 5.8 , 0.0))},
+                                                                    {(
+                                                                             geo::Vector3(-1 , 6.2 , 0.0))},
+                                                                    {(
+                                                                             geo::Vector3(-1.4 , 6.2 , 0.0))}
+                                                            },
+                                                            {{(geo::Vector3(-0.4 , 5.8 , 0.0))},
+                                                                    {(
+                                                                             geo::Vector3(0 , 5.8 , 0.0))},
+                                                                    {(
+                                                                             geo::Vector3(0 , 6.2 , 0.0))},
+                                                                    {(
+                                                                             geo::Vector3(-0.4 , 6.2 , 0.0))}
+                                                            },
+                                                            {{(geo::Vector3(2.2 , -0.2 , 0.0))},
+                                                                    {(
+                                                                             geo::Vector3(2.2 , 0.2 , 0.0))},
+                                                                    {(
+                                                                             geo::Vector3(1.8 , 0.2 , 0.0))},
+                                                                    {(
+                                                                             geo::Vector3(1.8 , -0.2, 0.0))}
+                                                            },
+                                                            {{(geo::Vector3(6.8 , -1.4 , 0.0))},
+                                                                    {(
+                                                                             geo::Vector3(6.8 , -1.8 , 0.0))},
+                                                                    {(
+                                                                             geo::Vector3(7.2 , -1.8 , 0.0))},
+                                                                    {(
+                                                                             geo::Vector3(7.2 , -1.4 , 0.0))}
+                                                            },
+                                                            {{(geo::Vector3(6.8 , -3 , 0.0))},
+                                                                    {(
+                                                                             geo::Vector3(6.8 , -3.4 , 0.0))},
+                                                                    {(
+                                                                             geo::Vector3(7.2 , -3.4 , 0.0))},
+                                                                    {(
+                                                                             geo::Vector3(7.2 , -3 , 0.0))}
+                                                            },
+                                                            {{(geo::Vector3(0 , -7 , 0.0))},
+                                                                    {(
+                                                                             geo::Vector3(0.4 , -7 , 0.0))},
+                                                                    {(
+                                                                             geo::Vector3(0.4 , -7.4 , 0.0))},
+                                                                    {(
+                                                                             geo::Vector3(0 , -7.4 , 0.0))}
+                                                            }
+
+                                                    });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // Draw robots
     for (std::vector<Robot*>::const_iterator it = robots.begin(); it != robots.end(); ++it)
@@ -143,6 +228,29 @@ void visualize(const World& world, const std::vector<Robot*>& robots, bool colli
     if(collision){
         cv::putText(canvas,"COLLISION!",cv::Point(20,20),cv::FONT_HERSHEY_COMPLEX,1,cv::Scalar(0,0,255));
     }
+
+
+    std::pair<double,double> offset[8] = {{0, -0.4},{0,0.4},{0,0.4},{0,-0.4},{0,-0.4},{0,0.4},{0,0.4},{0.4,0}};
+
+
+
+    int index = 0;
+    for(auto cabinet : cabinets){
+        std::vector<cv::Point> cvpoints;
+        for(auto p : cabinet){
+            cvpoints.push_back(worldToCanvas( geo::Vector3(p.getY()-xview+0.1 +0.4, -p.getX()-yview-0.2 +0.425, 0.0)   ));
+        }
+
+        geo::Vector3 center((cabinet[0].getX() + cabinet[2].getX())/2,(cabinet[0].getY() + cabinet[2].getY())/2,0.0  );
+
+        cv::putText(canvas,std::to_string(index),worldToCanvas(geo::Vector3(center.getY()-xview+0.1-0.1+0.4+offset[index].first, -center.getX()-yview-0.2+0.1+0.425+offset[index].second, 0.0)),cv::FONT_HERSHEY_TRIPLEX,1,cv::Scalar(30,255,30));
+        cv::polylines(canvas,cvpoints,true,cv::Scalar(255,255,255),2);
+
+        cv::line(canvas, worldToCanvas(geo::Vector3(cabinet[0].getY()-xview+0.1+0.4, -cabinet[0].getX()-yview-0.2+0.425, 0.0)),
+                 worldToCanvas(geo::Vector3(cabinet[1].getY()-xview+0.1+0.4, -cabinet[1].getX()-yview-0.2+0.425, 0.0)),cv::Scalar(10,255,10), 3);
+        index++;
+    }
+
 
     cv::imshow("simulator", canvas);
     cv::waitKey(3);
