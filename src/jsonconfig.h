@@ -70,6 +70,10 @@ public:
             m.final_pose.setRPY(0,0,object.at("final_pose")[2]);
             m.repeat = object.at("repeat");
 
+            m.is_moving = false;
+            m.is_paused = false;
+            m.finished_moving = false;
+
             ms.push_back(m);
 
         }
