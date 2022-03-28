@@ -32,11 +32,11 @@ Robot::Robot(std::string name, Id id)
 
     nh = ros::NodeHandle();
     // Publishers
-    pub_laser = nh.advertise<sensor_msgs::LaserScan>("/" + robot_name + "/laser", 1);
+    pub_laser = nh.advertise<sensor_msgs::LaserScan>("/" + robot_name + "/base_scan", 1);
     pub_odom = nh.advertise<nav_msgs::Odometry>("/" + robot_name + "/odom", 1);
 
     // Subscribers
-    sub_base_ref = nh.subscribe<geometry_msgs::Twist>("/" + robot_name + "/cmd_vel", 1, &Robot::baseReferenceCallback, this);
+    sub_base_ref = nh.subscribe<geometry_msgs::Twist>("/" + robot_name + "/base/references", 1, &Robot::baseReferenceCallback, this);
     sub_open_door = nh.subscribe<std_msgs::Empty>("/" + robot_name + "/open_door", 1, &Robot::openDoorCallback, this);
     sub_speak = nh.subscribe<std_msgs::String>("/" + robot_name + "/speak", 1, &Robot::speakCallback, this);
 }

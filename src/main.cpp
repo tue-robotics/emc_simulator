@@ -34,7 +34,7 @@
 
 int main(int argc, char **argv){
 
-    ros::init(argc, argv, "pico_simulator");
+    ros::init(argc, argv, "hero_simulator");
 
     std::string heightmap_filename;
     heightmap_filename = ros::package::getPath("emc_simulator") + "/data/heightmap.pgm";
@@ -74,7 +74,7 @@ int main(int argc, char **argv){
     geo::ShapePtr heightmap = createHeightMapShape(heightmap_filename, doors);
     if (!heightmap)
     {
-        std::cout << "[PICO SIMULATOR] Heightmap could not be loaded" << std::endl;
+        std::cout << "[HERO SIMULATOR] Heightmap could not be loaded" << std::endl;
         return 1;
     }
     world.addObject(geo::Pose3D::identity(), heightmap);
@@ -105,11 +105,11 @@ int main(int argc, char **argv){
 
     std::vector<Robot*> robots;
 
-    Id pico_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color);
-    Robot pico("pico", pico_id);
-    pico.base.setDisableSpeedCap(config.disable_speedcap.value());
-    pico.base.setUncertainOdom(config.uncertain_odom.value());
-    robots.push_back(&pico);
+    Id hero_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color);
+    Robot hero("hero", hero_id);
+    hero.base.setDisableSpeedCap(config.disable_speedcap.value());
+    hero.base.setUncertainOdom(config.uncertain_odom.value());
+    robots.push_back(&hero);
 
     if (config.enable_taco.value()){
         Id taco_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color);
@@ -166,9 +166,9 @@ int main(int argc, char **argv){
 
                 MovingObject& obj = *ito;
                 // check if it should start
-                geo::Vector3 dist_obj_pico = world.object(robot.robot_id).pose.getOrigin() -  world.object(obj.id).pose.getOrigin();
+                geo::Vector3 dist_obj_robot = world.object(robot.robot_id).pose.getOrigin() -  world.object(obj.id).pose.getOrigin();
                 double safety_radius = sqrt( std::pow(obj.width/2,2) + std::pow(obj.length/2,2)) + 0.3;
-                if(dist_obj_pico.length() < obj.trigger_radius && obj.is_moving == false && obj.finished_moving == false){
+                if(dist_obj_robot.length() < obj.trigger_radius && obj.is_moving == false && obj.finished_moving == false){
                     obj.is_moving = true;
                     geo::Vector3 unit_vel = (obj.final_pose.getOrigin() - obj.init_pose.getOrigin());
                     unit_vel =world.object(obj.id).pose.R.transpose()*unit_vel / unit_vel.length();
@@ -196,13 +196,13 @@ int main(int argc, char **argv){
                 }
 
                 // Check if it should pause
-                if(dist_obj_pico.length() < safety_radius && obj.is_moving == true && obj.is_paused == false){
+                if(dist_obj_robot.length() < safety_radius && obj.is_moving == true && obj.is_paused == false){
                     obj.is_paused = true;
                     world.setVelocity(obj.id, geo::Vector3(0.0,0.0,0.0),0.0);
                 }
 
                 // Check if it should continue after being paused
-                if(dist_obj_pico.length() > safety_radius && obj.is_paused == true){
+                if(dist_obj_robot.length() > safety_radius && obj.is_paused == true){
                     obj.is_paused = false;
                     geo::Vector3 unit_vel = (obj.final_pose.getOrigin() - obj.init_pose.getOrigin());
                     unit_vel =world.object(obj.id).pose.R.transpose()*unit_vel / unit_vel.length();
@@ -290,7 +290,7 @@ int main(int argc, char **argv){
             Robot& robot = **it;
             // Create laser data
             sensor_msgs::LaserScan scan_msg;
-            scan_msg.header.frame_id = "/pico/laser";
+            scan_msg.header.frame_id = "/" + robot.robot_name + "/laser";
             scan_msg.header.stamp = time;
             lrf.generateLaserData(world, robot, scan_msg);
             robot.pub_laser.publish(scan_msg);
