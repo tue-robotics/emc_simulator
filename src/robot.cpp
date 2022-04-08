@@ -33,7 +33,7 @@ Robot::Robot(std::string name, Id id)
     nh = ros::NodeHandle();
     // Publishers
     pub_laser = nh.advertise<sensor_msgs::LaserScan>("/" + robot_name + "/base_scan", 1);
-    pub_odom = nh.advertise<nav_msgs::Odometry>("/" + robot_name + "/odom", 1);
+    pub_odom = nh.advertise<nav_msgs::Odometry>("/" + robot_name + "/base/measurements", 1);
 
     // Subscribers
     sub_base_ref = nh.subscribe<geometry_msgs::Twist>("/" + robot_name + "/base/references", 1, &Robot::baseReferenceCallback, this);
