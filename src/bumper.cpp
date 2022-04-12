@@ -43,31 +43,43 @@ void Bumper::generateBumperData(const World& world, const Robot& robot, std_msgs
         // If range larger than bumper radius do nothing
         if(lrf_msg.ranges[i] > _bumperRadiusTheta(theta_i))
         {
-            break;
+            continue;
         }
-
+        if(lrf_msg.ranges[i]< lrf_msg.range_min)
+        {
+            continue;
+        }
         // If range smaller than bumper radius, and is behind the robot
         if (_isRear(theta_i))
         {
             hitR = true;
+            continue;
         }
 
         // If range smaller than bumper radius, and is in front of the robot
         if (_isFront(theta_i))
         {
             hitF = true;
+            continue;
         }
     }
     // Write variables to message 
     scan_msg_f.data = hitF;
     scan_msg_r.data = hitR;
 
-    std::cout<<hitF<<std::endl;
+    std::cout<<hitF<<","<<hitR<<std::endl;
 }
 
 double Bumper::_radiusTheta(const double theta) const
 {
-    return _robotRadiusWidth; // todo make ellipse
+    double ca = cos(theta)/_robotRadiusWidth;
+    ca = ca*ca;
+
+    double sb = sin(theta)/_robotRadiusLength;
+    sb = sb*sb;
+
+    double radius = 1/sqrt(ca + sb);
+    return radius; 
 }
 
 double Bumper::_bumperRadiusTheta(const double theta) const
@@ -77,16 +89,16 @@ double Bumper::_bumperRadiusTheta(const double theta) const
 
 bool Bumper::_isRear(const double theta) const
 {
-    bool check1 = theta < -0.5*M_PI;
-    bool check2 = theta > 0.5*M_PI;
-    return check1 && check2;
+    bool check1 = theta > 0.5*M_PI;
+    bool check2 = theta < -0.5*M_PI;
+    return check1 || check2;
     
 }
 
 bool Bumper::_isFront(const double theta) const
 {
-    bool check1 = theta > -0.5*M_PI;
-    bool check2 = theta < 0.5*M_PI;
+    bool check1 = theta >= -0.5*M_PI;
+    bool check2 = theta <= 0.5*M_PI;
     return check1 && check2;
 }
 
