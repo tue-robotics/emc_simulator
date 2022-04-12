@@ -312,6 +312,8 @@ int main(int argc, char **argv){
             std_msgs::Bool bump_msg_f;
             std_msgs::Bool bump_msg_r;
             bumper.generateBumperData(world,robot,bump_msg_f,bump_msg_r);
+            robot.pub_bumperF.publish(bump_msg_f);
+            robot.pub_bumperR.publish(bump_msg_r);
 
             // Create odom data
             nav_msgs::Odometry odom_msg = robot.base.getOdom();
