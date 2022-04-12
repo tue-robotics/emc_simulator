@@ -110,6 +110,11 @@ int main(int argc, char **argv){
     double robot_length = 0.16;
     geo::CompositeShapePtr robot_shape = makeWorldSimObject(robot_width, robot_length);
     geo::Vector3 robot_color(0, 0, 1);
+    
+    // Set robot and bumper sizes
+    double bumperSize = 0.05; // [cm]
+    bumper.setRobotRadius(robot_width,robot_length);
+    bumper.setBumperRadius(bumperSize);
 
     std::vector<Robot*> robots;
 
