@@ -2,6 +2,7 @@
 #include "visualization.h"
 #include "heightmap.h"
 #include "lrf.h"
+#include "bumper.h"
 #include "door.h"
 #include "robot.h"
 
@@ -19,6 +20,7 @@
 
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
+#include <std_msgs/Bool.h>
 #include <std_msgs/Empty.h>
 #include <std_msgs/String.h>
 #include <iostream>
@@ -63,6 +65,12 @@ int main(int argc, char **argv){
     lrf.setAngleLimits(-2, 2);
     lrf.setNumBeams(1000);
     lrf.setRangeLimits(0.01, 10);
+
+    // The bumper class implementation is a specialization of the lrf class
+    Bumper bumper;
+    bumper.setAngleLimits(-M_PI,M_PI);
+    bumper.setNumBeams(50);                 
+    bumper.setRangeLimits(0.01,1); 
 
     double cycle_freq = 30;
     double cycle_time = 1 / cycle_freq;
@@ -294,6 +302,11 @@ int main(int argc, char **argv){
             scan_msg.header.stamp = time;
             lrf.generateLaserData(world, robot, scan_msg);
             robot.pub_laser.publish(scan_msg);
+
+            // Create bumper data 
+            std_msgs::Bool bump_msg_f;
+            std_msgs::Bool bump_msg_r;
+            bumper.generateBumperData(world,robot,bump_msg_f,bump_msg_r);
 
             // Create odom data
             nav_msgs::Odometry odom_msg = robot.base.getOdom();
