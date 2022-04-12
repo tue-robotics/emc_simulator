@@ -66,8 +66,6 @@ void Bumper::generateBumperData(const World& world, const Robot& robot, std_msgs
     // Write variables to message 
     scan_msg_f.data = hitF;
     scan_msg_r.data = hitR;
-
-    std::cout<<hitF<<","<<hitR<<std::endl;
 }
 
 double Bumper::_radiusTheta(const double theta) const
