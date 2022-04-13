@@ -1,24 +1,15 @@
 #include "bumper.h"
 
-Bumper::Bumper()
+Bumper::Bumper(): _lrf()
 {
-}
-
-Bumper::~Bumper()
-{
-
-}
-
-void Bumper::setRobotRadius(double width, double length)
-{
-    _robotRadiusWidth = width;
-    _robotRadiusLength = length;
+    _lrf.setAngleLimits(-M_PI,M_PI);
+    _lrf.setNumBeams(50);
+    _lrf.setRangeLimits(0.01,1);
 }
 
 void Bumper::setRobotRadius(double radius)
 {
-    _robotRadiusLength = radius;
-    _robotRadiusWidth = radius;
+    _robotRadius = radius;
 }
 
 void Bumper::setBumperRadius(double size)
@@ -30,7 +21,7 @@ void Bumper::generateBumperData(const World& world, const Robot& robot, std_msgs
 {
     // Generate laser data to perform bumper check
     sensor_msgs::LaserScan lrf_msg;
-    LRF::generateLaserData(world, robot, lrf_msg);
+    _lrf.generateLaserData(world, robot, lrf_msg);
 
     bool hitF = false;
     bool hitR = false;
@@ -70,14 +61,7 @@ void Bumper::generateBumperData(const World& world, const Robot& robot, std_msgs
 
 double Bumper::_radiusTheta(const double theta) const
 {
-    double ca = cos(theta)/_robotRadiusWidth;
-    ca = ca*ca;
-
-    double sb = sin(theta)/_robotRadiusLength;
-    sb = sb*sb;
-
-    double radius = 1/sqrt(ca + sb);
-    return radius; 
+    return _robotRadius;
 }
 
 double Bumper::_bumperRadiusTheta(const double theta) const

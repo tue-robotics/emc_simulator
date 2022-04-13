@@ -68,9 +68,10 @@ int main(int argc, char **argv){
 
     // The bumper class implementation is a specialization of the lrf class
     Bumper bumper;
-    bumper.setAngleLimits(-M_PI,M_PI);
-    bumper.setNumBeams(50);                 
-    bumper.setRangeLimits(0.01,1); 
+    double robot_radius = 0.36; //[m] TODO check with ruben
+    bumper.setRobotRadius(robot_radius);
+    double bumperSize = 0.05; // [m]
+    bumper.setBumperRadius(bumperSize);
 
     double cycle_freq = 30;
     double cycle_time = 1 / cycle_freq;
@@ -111,11 +112,6 @@ int main(int argc, char **argv){
     geo::CompositeShapePtr robot_shape = makeWorldSimObject(robot_width, robot_length);
     geo::Vector3 robot_color(0, 0, 1);
     
-    // Set robot and bumper sizes
-    double bumperSize = 0.05; // [cm]
-    bumper.setRobotRadius(robot_width,robot_length);
-    bumper.setBumperRadius(bumperSize);
-
     std::vector<Robot*> robots;
 
     Id hero_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color);

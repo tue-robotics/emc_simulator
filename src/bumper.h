@@ -2,12 +2,11 @@
 #include <std_msgs/Bool.h>
 
 
-class Bumper : public LRF
+class Bumper
 {
 
     public:
     Bumper();
-    ~Bumper();
 
     void setRobotRadius(double width, double length);
     void setRobotRadius(double radius);
@@ -17,9 +16,10 @@ class Bumper : public LRF
     void generateBumperData(const World& world, const Robot& robot, std_msgs::Bool& scan_msg_f, std_msgs::Bool& scan_msg_r) const;
 
     private:
+    // The sensor is implemented using an artificial LRF sensor
+    LRF _lrf;
     // Radius of the robot
-    double _robotRadiusWidth;
-    double _robotRadiusLength;
+    double _robotRadius;
     // EXTRA radius of the bumper
     double _bumperRadius;
     // Radius of the robot as a function of theta
