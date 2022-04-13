@@ -68,7 +68,7 @@ int main(int argc, char **argv){
 
     // The bumper class implementation is a specialization of the lrf class
     Bumper bumper;
-    double robot_radius = 0.36; //[m] TODO check with ruben
+    double robot_radius = 0.36; // [m] TODO check with Ruben
     bumper.setRobotRadius(robot_radius);
     double bumperSize = 0.05; // [m]
     bumper.setBumperRadius(bumperSize);
