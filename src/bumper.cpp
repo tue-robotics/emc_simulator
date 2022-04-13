@@ -22,11 +22,15 @@ void Bumper::generateBumperData(const World& world, const Robot& robot, std_msgs
     // Generate laser data to perform bumper check
     sensor_msgs::LaserScan lrf_msg;
     _lrf.generateLaserData(world, robot, lrf_msg);
-
+    // Number of beams
     int N = lrf_msg.ranges.size();
 
+    // Check for front hits
+    // range [0,N/2] corresponds to [-pi/2, pi/2]
     bool hitF = _checkHits(lrf_msg, 0, N/2);
-    bool hitR = _checkHits(lrf_msg, (N/2) + 1, N);
+    // Check for rear hits
+    // range [N/2,N] corresponds to [pi/2, 3/2 pi]
+    bool hitR = _checkHits(lrf_msg, N/2, N);
 
     // Write variables to message
     scan_msg_f.data = hitF;
@@ -40,17 +44,17 @@ bool Bumper::_checkHits(const sensor_msgs::LaserScan& lrf_msg, const int indexSt
     for(int i = indexStart; i<indexEnd; i++)
     {
         double theta_i = lrf_msg.angle_min + i*lrf_msg.angle_increment;
-
         // If range larger than bumper radius do nothing
         if(lrf_msg.ranges[i] > _bumperRadiusTheta(theta_i))
         {
             continue;
         }
+        // If range smaller than min range do nothing
         if(lrf_msg.ranges[i]< lrf_msg.range_min)
         {
             continue;
         }
-
+        // Found a hit, break for-loop and return true
         hit = true;
         break;
     }
@@ -82,5 +86,3 @@ bool Bumper::_isFront(const double theta) const
     bool check2 = theta <= 0.5*M_PI;
     return check1 && check2;
 }
-
-
