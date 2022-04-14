@@ -2,6 +2,7 @@
 #include "visualization.h"
 #include "heightmap.h"
 #include "lrf.h"
+#include "bumper.h"
 #include "door.h"
 #include "robot.h"
 
@@ -19,6 +20,7 @@
 
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
+#include <std_msgs/Bool.h>
 #include <std_msgs/Empty.h>
 #include <std_msgs/String.h>
 #include <iostream>
@@ -64,6 +66,13 @@ int main(int argc, char **argv){
     lrf.setNumBeams(1000);
     lrf.setRangeLimits(0.01, 10);
 
+    // The bumper class implementation uses an artificial lrf sensor
+    Bumper bumper;
+    double robot_radius = 0.27; // [m]
+    bumper.setRobotRadius(robot_radius);
+    double bumperSize = 0.05; // [m]
+    bumper.setBumperRadius(bumperSize);
+
     double cycle_freq = 30;
     double cycle_time = 1 / cycle_freq;
 
@@ -102,7 +111,7 @@ int main(int argc, char **argv){
     double robot_length = 0.16;
     geo::CompositeShapePtr robot_shape = makeWorldSimObject(robot_width, robot_length);
     geo::Vector3 robot_color(0, 0, 1);
-
+    
     std::vector<Robot*> robots;
 
     Id hero_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color);
@@ -294,6 +303,13 @@ int main(int argc, char **argv){
             scan_msg.header.stamp = time;
             lrf.generateLaserData(world, robot, scan_msg);
             robot.pub_laser.publish(scan_msg);
+
+            // Create bumper data 
+            std_msgs::Bool bump_msg_f; // front bumper message
+            std_msgs::Bool bump_msg_r; // rear bumper message
+            bumper.generateBumperData(world,robot,bump_msg_f,bump_msg_r);
+            robot.pub_bumperF.publish(bump_msg_f);
+            robot.pub_bumperR.publish(bump_msg_r);
 
             // Create odom data
             nav_msgs::Odometry odom_msg = robot.base.getOdom();

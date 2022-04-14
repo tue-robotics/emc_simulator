@@ -11,6 +11,7 @@
 #include <nav_msgs/Odometry.h>
 #include <std_msgs/Empty.h>
 #include <std_msgs/String.h>
+#include <std_msgs/Bool.h>
 #include <sensor_msgs/LaserScan.h>
 
 #include <iostream>
@@ -34,6 +35,8 @@ public:
     bool request_open_door_;
 
     // Publisher
+    ros::Publisher pub_bumperF;
+    ros::Publisher pub_bumperR;
     ros::Publisher pub_laser;
     ros::Publisher pub_odom;
 
