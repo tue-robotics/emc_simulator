@@ -33,8 +33,8 @@
 
 #include <vector>
 
-
-int main(int argc, char **argv){
+int main(int argc, char **argv)
+{
 
     ros::init(argc, argv, "hero_simulator");
 
@@ -44,16 +44,19 @@ int main(int argc, char **argv){
     std::string config_filename;
     config_filename = ros::package::getPath("emc_simulator") + "/data/defaultconfig.json";
 
-    for(int i = 1; i < argc; i++){
+    for (int i = 1; i < argc; i++)
+    {
         std::string config_supplied("--config");
         std::string map_supplied("--map");
-        if(config_supplied.compare(argv[i])==0){
+        if (config_supplied.compare(argv[i]) == 0)
+        {
             std::cout << "User config file supplied!" << std::endl;
-            config_filename = std::string(argv[i+1]);
+            config_filename = std::string(argv[i + 1]);
         }
-        if(map_supplied.compare(argv[i])==0){
+        if (map_supplied.compare(argv[i]) == 0)
+        {
             std::cout << "User map file supplied!" << std::endl;
-            heightmap_filename = std::string(argv[i+1]);
+            heightmap_filename = std::string(argv[i + 1]);
         }
     }
 
@@ -68,7 +71,7 @@ int main(int argc, char **argv){
 
     // The bumper class implementation uses an artificial lrf sensor
     Bumper bumper;
-    double robot_radius = 0.27;
+    double robot_radius = 0.27; // [m]
     bumper.setRobotRadius(robot_radius);
     double bumperSize = 0.05; // [m]
     bumper.setBumperRadius(bumperSize);
@@ -89,29 +92,42 @@ int main(int argc, char **argv){
     world.addObject(geo::Pose3D::identity(), heightmap);
 
     // Get centerbox for height map (the visualization is constraining canvas within this box)
-    visualization::Bbox bbox; bbox.xmin = -1; bbox.xmax = 1; bbox.ymin=-1; bbox.ymax = 1;
+    visualization::Bbox bbox;
+    bbox.xmin = -1;
+    bbox.xmax = 1;
+    bbox.ymin = -1;
+    bbox.ymax = 1;
 
     std::vector<geo::Vector3> meshpoints = heightmap->getMesh().getPoints();
 
-    bbox.xmin = std::max_element(meshpoints.begin(), meshpoints.end(),[](geo::Vec3T<double> a, geo::Vec3T<double> b){return a.getX() > b.getX() ;} )->getX();
-    bbox.ymin = std::max_element(meshpoints.begin(), meshpoints.end(),[](geo::Vec3T<double> a, geo::Vec3T<double> b){return a.getY() > b.getY() ;} )->getY();
-    bbox.xmax = std::max_element(meshpoints.begin(), meshpoints.end(),[](geo::Vec3T<double> a, geo::Vec3T<double> b){return a.getX() < b.getX() ;} )->getX();
-    bbox.ymax = std::max_element(meshpoints.begin(), meshpoints.end(),[](geo::Vec3T<double> a, geo::Vec3T<double> b){return a.getY() < b.getY() ;} )->getY();
+    bbox.xmin = std::max_element(meshpoints.begin(), meshpoints.end(), [](geo::Vec3T<double> a, geo::Vec3T<double> b)
+                                 { return a.getX() > b.getX(); })
+                    ->getX();
+    bbox.ymin = std::max_element(meshpoints.begin(), meshpoints.end(), [](geo::Vec3T<double> a, geo::Vec3T<double> b)
+                                 { return a.getY() > b.getY(); })
+                    ->getY();
+    bbox.xmax = std::max_element(meshpoints.begin(), meshpoints.end(), [](geo::Vec3T<double> a, geo::Vec3T<double> b)
+                                 { return a.getX() < b.getX(); })
+                    ->getX();
+    bbox.ymax = std::max_element(meshpoints.begin(), meshpoints.end(), [](geo::Vec3T<double> a, geo::Vec3T<double> b)
+                                 { return a.getY() < b.getY(); })
+                    ->getY();
 
-    //std::cout << "bbox: " << bbox.xmin << "   " << bbox.xmax << "  "  << bbox.ymin << "  " << bbox.ymax << std::endl;
+    // std::cout << "bbox: " << bbox.xmin << "   " << bbox.xmax << "  "  << bbox.ymin << "  " << bbox.ymax << std::endl;
 
     // Ad moving objects
-    for(std::vector<MovingObject>::iterator it = config.moving_objects.value().begin(); it != config.moving_objects.value().end(); ++it) {
-        it->id = world.addObject(it->init_pose,makeWorldSimObject(*it),geo::Vector3(0,1,1));
-        world.setVelocity(it->id,geo::Vector3(0.0,0.0,0.0),0.0);
+    for (std::vector<MovingObject>::iterator it = config.moving_objects.value().begin(); it != config.moving_objects.value().end(); ++it)
+    {
+        it->id = world.addObject(it->init_pose, makeWorldSimObject(*it), geo::Vector3(0, 1, 1));
+        world.setVelocity(it->id, geo::Vector3(0.0, 0.0, 0.0), 0.0);
     }
 
     // Add robots
-//    geo::CompositeShapePtr robot_shape = makeWorldSimObject(robot_radius, robot_radius);
+    //    geo::CompositeShapePtr robot_shape = makeWorldSimObject(robot_radius, robot_radius);
     geo::CompositeShapePtr robot_shape = makeApproxRoundWorldSimObject(robot_radius, 32);
     geo::Vector3 robot_color(0, 0, 1);
-    
-    std::vector<Robot*> robots;
+
+    std::vector<Robot *> robots;
 
     Id hero_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color);
     Robot hero("hero", hero_id);
@@ -119,7 +135,8 @@ int main(int argc, char **argv){
     hero.base.setUncertainOdom(config.uncertain_odom.value());
     robots.push_back(&hero);
 
-    if (config.enable_taco.value()){
+    if (config.enable_taco.value())
+    {
         Id taco_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color);
         robots.push_back(new Robot("taco", taco_id));
         robots.back()->base.setDisableSpeedCap(config.disable_speedcap.value());
@@ -127,9 +144,9 @@ int main(int argc, char **argv){
     }
 
     // Add door
-    for(std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
+    for (std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
     {
-        Door& door = *it;
+        Door &door = *it;
         door.id = world.addObject(door.init_pose, door.shape, geo::Vector3(0, 1, 0));
     }
 
@@ -137,24 +154,26 @@ int main(int argc, char **argv){
     ros::Rate r(cycle_freq);
     double time_ = 0;
     double dt;
-    while(ros::ok())
+    while (ros::ok())
     {
         ros::spinOnce();
         ros::Time time = ros::Time::now();
 
-        if(time_==0){
+        if (time_ == 0)
+        {
             dt = 0;
             time_ = time.toSec();
         }
-        else{
+        else
+        {
             dt = time.toSec() - time_;
             time_ = time.toSec();
         }
         bool collision = false;
 
-        for (std::vector<Robot*>::iterator it = robots.begin(); it != robots.end(); ++it)
+        for (std::vector<Robot *>::iterator it = robots.begin(); it != robots.end(); ++it)
         {
-            Robot& robot = **it;
+            Robot &robot = **it;
             geo::Pose3D robot_pose = world.object(robot.robot_id).pose;
             if (robot.base_ref_) // If there is a twist message in the queue
             {
@@ -163,77 +182,88 @@ int main(int argc, char **argv){
                 robot.base.applyTwistAndUpdate(cmd, dt);
                 robot.base_ref_.reset();
             }
-            else{ // apply previous one again
+            else
+            { // apply previous one again
                 robot.base.update(dt);
             }
             geometry_msgs::Twist actual_twist = robot.base.getActualTwist();
             world.setVelocity(robot.robot_id, geo::Vector3(actual_twist.linear.x, actual_twist.linear.y, 0), actual_twist.angular.z);
 
-            //check if object should start moving
-            for(std::vector<MovingObject>::iterator ito = config.moving_objects.value().begin(); ito != config.moving_objects.value().end(); ++ito){
+            // check if object should start moving
+            for (std::vector<MovingObject>::iterator ito = config.moving_objects.value().begin(); ito != config.moving_objects.value().end(); ++ito)
+            {
 
-                MovingObject& obj = *ito;
+                MovingObject &obj = *ito;
                 // check if it should start
-                geo::Vector3 dist_obj_robot = world.object(robot.robot_id).pose.getOrigin() -  world.object(obj.id).pose.getOrigin();
-                double safety_radius = sqrt( std::pow(obj.width/2,2) + std::pow(obj.length/2,2)) + 0.3;
-                if(dist_obj_robot.length() < obj.trigger_radius && obj.is_moving == false && obj.finished_moving == false){
+                geo::Vector3 dist_obj_robot = world.object(robot.robot_id).pose.getOrigin() - world.object(obj.id).pose.getOrigin();
+                double safety_radius = sqrt(std::pow(obj.width / 2, 2) + std::pow(obj.length / 2, 2)) + 0.3;
+                if (dist_obj_robot.length() < obj.trigger_radius && obj.is_moving == false && obj.finished_moving == false)
+                {
                     obj.is_moving = true;
                     geo::Vector3 unit_vel = (obj.final_pose.getOrigin() - obj.init_pose.getOrigin());
-                    unit_vel =world.object(obj.id).pose.R.transpose()*unit_vel / unit_vel.length();
-                    world.setVelocity(obj.id, unit_vel*obj.velocity,0.0);
+                    unit_vel = world.object(obj.id).pose.R.transpose() * unit_vel / unit_vel.length();
+                    world.setVelocity(obj.id, unit_vel * obj.velocity, 0.0);
                 }
 
                 // check if it should stop
-                geo::Vector3 dist_obj_dest = world.object(obj.id).pose.getOrigin() -  obj.final_pose.getOrigin();
-                if(dist_obj_dest.length() < 0.1 && obj.is_moving == true && obj.finished_moving == false && obj.repeat == false){
+                geo::Vector3 dist_obj_dest = world.object(obj.id).pose.getOrigin() - obj.final_pose.getOrigin();
+                if (dist_obj_dest.length() < 0.1 && obj.is_moving == true && obj.finished_moving == false && obj.repeat == false)
+                {
                     obj.is_moving = false;
                     obj.finished_moving = true;
-                    world.setVelocity(obj.id, geo::Vector3(0.0,0.0,0.0),0.0);
+                    world.setVelocity(obj.id, geo::Vector3(0.0, 0.0, 0.0), 0.0);
                 }
 
                 // reverse and repeat ... :o)
-                if(dist_obj_dest.length() < 0.1 && obj.is_moving == true && obj.finished_moving == false && obj.repeat == true){
+                if (dist_obj_dest.length() < 0.1 && obj.is_moving == true && obj.finished_moving == false && obj.repeat == true)
+                {
                     obj.is_moving = true;
                     obj.finished_moving = false;
                     geo::Pose3D placeholder = obj.init_pose;
                     obj.init_pose = obj.final_pose;
                     obj.final_pose = placeholder;
                     geo::Vector3 unit_vel = (obj.final_pose.getOrigin() - obj.init_pose.getOrigin());
-                    unit_vel =world.object(obj.id).pose.R.transpose()*unit_vel / unit_vel.length();
-                    world.setVelocity(obj.id, unit_vel*obj.velocity,0.0);
+                    unit_vel = world.object(obj.id).pose.R.transpose() * unit_vel / unit_vel.length();
+                    world.setVelocity(obj.id, unit_vel * obj.velocity, 0.0);
                 }
 
                 // Check if it should pause
-                if(dist_obj_robot.length() < safety_radius && obj.is_moving == true && obj.is_paused == false){
+                if (dist_obj_robot.length() < safety_radius && obj.is_moving == true && obj.is_paused == false)
+                {
                     obj.is_paused = true;
-                    world.setVelocity(obj.id, geo::Vector3(0.0,0.0,0.0),0.0);
+                    world.setVelocity(obj.id, geo::Vector3(0.0, 0.0, 0.0), 0.0);
                 }
 
                 // Check if it should continue after being paused
-                if(dist_obj_robot.length() > safety_radius && obj.is_paused == true){
+                if (dist_obj_robot.length() > safety_radius && obj.is_paused == true)
+                {
                     obj.is_paused = false;
                     geo::Vector3 unit_vel = (obj.final_pose.getOrigin() - obj.init_pose.getOrigin());
-                    unit_vel =world.object(obj.id).pose.R.transpose()*unit_vel / unit_vel.length();
-                    world.setVelocity(obj.id, unit_vel*obj.velocity,0.0);
+                    unit_vel = world.object(obj.id).pose.R.transpose() * unit_vel / unit_vel.length();
+                    world.setVelocity(obj.id, unit_vel * obj.velocity, 0.0);
                 }
             }
 
-            //check collisions with robot
-            if(heightmap->intersect(robot_pose.t,robot_radius)){
+            // check collisions with robot
+            if (heightmap->intersect(robot_pose.t, robot_radius))
+            {
                 collision = true;
             }
 
-            for(std::vector<MovingObject>::iterator itobj = config.moving_objects.value().begin(); itobj != config.moving_objects.value().end(); ++itobj){
-                geo::Vector3 objectPoseVec = world.object(itobj->id).pose.inverse()*robot_pose.t;
-                if(  world.object(itobj->id).shape->intersect(world.object(itobj->id).pose.inverse()*robot_pose.t, robot_radius) ){
+            for (std::vector<MovingObject>::iterator itobj = config.moving_objects.value().begin(); itobj != config.moving_objects.value().end(); ++itobj)
+            {
+                geo::Vector3 objectPoseVec = world.object(itobj->id).pose.inverse() * robot_pose.t;
+                if (world.object(itobj->id).shape->intersect(world.object(itobj->id).pose.inverse() * robot_pose.t, robot_radius))
+                {
                     collision = true;
                 }
             }
 
-            for (std::vector<Robot*>::iterator it2 = it+1; it2 != robots.end(); ++it2)
+            for (std::vector<Robot *>::iterator it2 = it + 1; it2 != robots.end(); ++it2)
             {
-                geo::Vector3 objectPoseVec = world.object((*it2)->robot_id).pose.inverse()*robot_pose.t;
-                if(  world.object((*it2)->robot_id).shape->intersect(objectPoseVec, robot_radius) ){
+                geo::Vector3 objectPoseVec = world.object((*it2)->robot_id).pose.inverse() * robot_pose.t;
+                if (world.object((*it2)->robot_id).shape->intersect(objectPoseVec, robot_radius))
+                {
                     collision = true;
                 }
             }
@@ -241,9 +271,9 @@ int main(int argc, char **argv){
             // handle door requests
             if (robot.request_open_door_)
             {
-                for(std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
+                for (std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
                 {
-                    Door& door = *it;
+                    Door &door = *it;
                     if (!door.closed)
                         continue;
 
@@ -259,15 +289,16 @@ int main(int argc, char **argv){
                 robot.request_open_door_ = false;
             }
 
-            if(config.uncertain_odom.value() && time.sec%6 == 0 ){
+            if (config.uncertain_odom.value() && time.sec % 6 == 0)
+            {
                 robot.base.updateWheelUncertaintyFactors();
             }
         } // end iterate robots
 
         // Stop doors that have moved far enough
-        for(std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
+        for (std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
         {
-            Door& door = *it;
+            Door &door = *it;
             if (!door.closed && (door.init_pose.t - world.object(door.id).pose.t).length2() > door.open_distance * door.open_distance)
                 world.setVelocity(door.id, geo::Vector3(0, 0, 0), 0);
         }
@@ -275,9 +306,9 @@ int main(int argc, char **argv){
         world.update(time.toSec());
 
         // create output
-        for (std::vector<Robot*>::iterator it = robots.begin(); it != robots.end(); ++it)
+        for (std::vector<Robot *>::iterator it = robots.begin(); it != robots.end(); ++it)
         {
-            Robot& robot = **it;
+            Robot &robot = **it;
             // Create laser data
             sensor_msgs::LaserScan scan_msg;
             scan_msg.header.frame_id = "laserframe";
@@ -285,16 +316,17 @@ int main(int argc, char **argv){
             lrf.generateLaserData(world, robot, scan_msg);
             robot.pub_laser.publish(scan_msg);
 
-            // Create bumper data 
+            // Create bumper data
             std_msgs::Bool bump_msg_f; // front bumper message
             std_msgs::Bool bump_msg_r; // rear bumper message
-            bumper.generateBumperData(world,robot,bump_msg_f,bump_msg_r);
+            bumper.generateBumperData(world, robot, bump_msg_f, bump_msg_r);
             robot.pub_bumperF.publish(bump_msg_f);
             robot.pub_bumperR.publish(bump_msg_r);
 
             // Create odom data
             nav_msgs::Odometry odom_msg = robot.base.getOdom();
-            if(!config.uncertain_odom.value()){
+            if (!config.uncertain_odom.value())
+            {
                 geo::convert(world.object(robot.robot_id).pose, odom_msg.pose.pose);
             }
             odom_msg.header.stamp = time;
@@ -305,10 +337,13 @@ int main(int argc, char **argv){
 
         // Visualize
         if (visualize)
-            visualization::visualize(world, robots, collision, config.show_full_map.value(),bbox);
+            visualization::visualize(world, robots, collision, config.show_full_map.value(), bbox);
 
         if (collision)
-            std::cout << "\033[1;;7;33m" << "COLLISION!" << "\033[0m\n"  << std::endl;
+            std::cout << "\033[1;;7;33m"
+                      << "COLLISION!"
+                      << "\033[0m\n"
+                      << std::endl;
 
         r.sleep();
     }
