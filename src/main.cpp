@@ -68,7 +68,7 @@ int main(int argc, char **argv){
 
     // The bumper class implementation uses an artificial lrf sensor
     Bumper bumper;
-    double robot_radius = 0.36; // [m] TODO check with Ruben
+    double robot_radius = 0.27; // [m]
     bumper.setRobotRadius(robot_radius);
     double bumperSize = 0.05; // [m]
     bumper.setBumperRadius(bumperSize);
