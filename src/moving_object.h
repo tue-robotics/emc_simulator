@@ -27,6 +27,7 @@ struct MovingObject
 
 geo::CompositeShapePtr makeWorldSimObject(double width, double height);
 geo::CompositeShapePtr makeWorldSimObject(MovingObject object);
+geo::CompositeShapePtr makeApproxRoundWorldSimObject(double radius, int nCorners);
 
 
 #endif //PROJECT_MOVING_OBJECT_H
