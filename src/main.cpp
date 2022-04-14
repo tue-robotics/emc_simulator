@@ -66,11 +66,12 @@ int main(int argc, char **argv){
     lrf.setNumBeams(1000);
     lrf.setRangeLimits(0.01, 10);
 
-    // The bumper class implementation is a specialization of the lrf class
+    // The bumper class implementation uses an artificial lrf sensor
     Bumper bumper;
-    bumper.setAngleLimits(-M_PI,M_PI);
-    bumper.setNumBeams(50);                 
-    bumper.setRangeLimits(0.01,1); 
+    double robot_radius = 0.27;
+    bumper.setRobotRadius(robot_radius);
+    double bumperSize = 0.05; // [m]
+    bumper.setBumperRadius(bumperSize);
 
     double cycle_freq = 30;
     double cycle_time = 1 / cycle_freq;
@@ -106,16 +107,10 @@ int main(int argc, char **argv){
     }
 
     // Add robots
-    double robot_radius = 0.27;
 //    geo::CompositeShapePtr robot_shape = makeWorldSimObject(robot_radius, robot_radius);
     geo::CompositeShapePtr robot_shape = makeApproxRoundWorldSimObject(robot_radius, 32);
     geo::Vector3 robot_color(0, 0, 1);
     
-    // Set robot and bumper sizes
-    double bumperSize = 0.05; // [cm]
-    bumper.setRobotRadius(robot_radius);
-    bumper.setBumperRadius(bumperSize);
-
     std::vector<Robot*> robots;
 
     Id hero_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color);
@@ -291,8 +286,8 @@ int main(int argc, char **argv){
             robot.pub_laser.publish(scan_msg);
 
             // Create bumper data 
-            std_msgs::Bool bump_msg_f;
-            std_msgs::Bool bump_msg_r;
+            std_msgs::Bool bump_msg_f; // front bumper message
+            std_msgs::Bool bump_msg_r; // rear bumper message
             bumper.generateBumperData(world,robot,bump_msg_f,bump_msg_r);
             robot.pub_bumperF.publish(bump_msg_f);
             robot.pub_bumperR.publish(bump_msg_r);

@@ -1,24 +1,15 @@
 #include "bumper.h"
 
-Bumper::Bumper()
+Bumper::Bumper(): _lrf()
 {
-}
-
-Bumper::~Bumper()
-{
-
-}
-
-void Bumper::setRobotRadius(double width, double length)
-{
-    _robotRadiusWidth = width;
-    _robotRadiusLength = length;
+    _lrf.setAngleLimits(-0.5*M_PI,1.5*M_PI);
+    _lrf.setNumBeams(50);
+    _lrf.setRangeLimits(0.01,1);
 }
 
 void Bumper::setRobotRadius(double radius)
 {
-    _robotRadiusLength = radius;
-    _robotRadiusWidth = radius;
+    _robotRadius = radius;
 }
 
 void Bumper::setBumperRadius(double size)
@@ -30,54 +21,50 @@ void Bumper::generateBumperData(const World& world, const Robot& robot, std_msgs
 {
     // Generate laser data to perform bumper check
     sensor_msgs::LaserScan lrf_msg;
-    LRF::generateLaserData(world, robot, lrf_msg);
-
-    bool hitF = false;
-    bool hitR = false;
-
+    _lrf.generateLaserData(world, robot, lrf_msg);
+    // Number of beams
     int N = lrf_msg.ranges.size();
-    for(int i = 0; i<lrf_msg.ranges.size(); i++)
+
+    // Check for front hits
+    // range [0,N/2] corresponds to [-pi/2, pi/2]
+    bool hitF = _checkHits(lrf_msg, 0, N/2);
+    // Check for rear hits
+    // range [N/2,N] corresponds to [pi/2, 3/2 pi]
+    bool hitR = _checkHits(lrf_msg, N/2, N);
+
+    // Write variables to message
+    scan_msg_f.data = hitF;
+    scan_msg_r.data = hitR;
+}
+
+bool Bumper::_checkHits(const sensor_msgs::LaserScan& lrf_msg, const int indexStart, const int indexEnd) const
+{
+    bool hit = false;
+
+    for(int i = indexStart; i<indexEnd; i++)
     {
         double theta_i = lrf_msg.angle_min + i*lrf_msg.angle_increment;
-
         // If range larger than bumper radius do nothing
         if(lrf_msg.ranges[i] > _bumperRadiusTheta(theta_i))
         {
             continue;
         }
+        // If range smaller than min range do nothing
         if(lrf_msg.ranges[i]< lrf_msg.range_min)
         {
             continue;
         }
-        // If range smaller than bumper radius, and is behind the robot
-        if (_isRear(theta_i))
-        {
-            hitR = true;
-            continue;
-        }
-
-        // If range smaller than bumper radius, and is in front of the robot
-        if (_isFront(theta_i))
-        {
-            hitF = true;
-            continue;
-        }
+        // Found a hit, break for-loop and return true
+        hit = true;
+        break;
     }
-    // Write variables to message 
-    scan_msg_f.data = hitF;
-    scan_msg_r.data = hitR;
+
+    return hit;
 }
 
 double Bumper::_radiusTheta(const double theta) const
 {
-    double ca = cos(theta)/_robotRadiusWidth;
-    ca = ca*ca;
-
-    double sb = sin(theta)/_robotRadiusLength;
-    sb = sb*sb;
-
-    double radius = 1/sqrt(ca + sb);
-    return radius; 
+    return _robotRadius;
 }
 
 double Bumper::_bumperRadiusTheta(const double theta) const
@@ -99,5 +86,3 @@ bool Bumper::_isFront(const double theta) const
     bool check2 = theta <= 0.5*M_PI;
     return check1 && check2;
 }
-
-
