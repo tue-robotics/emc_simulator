@@ -40,7 +40,7 @@ Robot::Robot(std::string name, Id id)
     // Subscribers
     sub_base_ref = nh.subscribe<geometry_msgs::Twist>("/" + robot_name + "/base/references", 1, &Robot::baseReferenceCallback, this);
     sub_open_door = nh.subscribe<std_msgs::Empty>("/" + robot_name + "/open_door", 1, &Robot::openDoorCallback, this);
-    sub_speak = nh.subscribe<std_msgs::String>("/" + robot_name + "/speak", 1, &Robot::speakCallback, this);
+    sub_speak = nh.subscribe<std_msgs::String>("/" + robot_name + "/text_to_speech/input", 1, &Robot::speakCallback, this);
 }
 
 // ----------------------------------------------------------------------------------------------------
