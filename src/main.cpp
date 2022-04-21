@@ -283,6 +283,13 @@ int main(int argc, char **argv){
                 }
             }
 
+            for(std::vector<Door>::iterator itobj = doors.begin(); itobj != doors.end(); ++itobj)
+            {
+                if( world.object(itobj->id).shape->intersect(world.object(itobj->id).pose.inverse()*robot_pose.t, robot_radius) ){
+                    collision = true;
+                }
+            }
+
             // handle door requests
             if (robot.request_open_door_)
             {
