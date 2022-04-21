@@ -75,45 +75,22 @@ void visualize(const World& world, const std::vector<Robot*>& robots, bool colli
         const Object& robot = world.object((*it)->robot_id);
         cv::Scalar robot_color(0, 0, 255);
 
-        std::vector<geo::Vector3> robot_points;
+        std::vector<geo::Vector3> robot_head_points;
         std::vector<geo::Vector3> eye_points;
         std::vector<geo::Vector3> eye_pupil_points;
-//        robot_points.push_back(geo::Vector3( 0.1,  -0.2, 0));
-//        robot_points.push_back(geo::Vector3( 0.1,  -0.1, 0));
-//        robot_points.push_back(geo::Vector3( 0.05, -0.1, 0));
-//        robot_points.push_back(geo::Vector3( 0.05,  0.1, 0));
-//        robot_points.push_back(geo::Vector3( 0.1,   0.1, 0));
-//        robot_points.push_back(geo::Vector3( 0.1,   0.2, 0));
-//        robot_points.push_back(geo::Vector3(-0.1,   0.2, 0));
-//        robot_points.push_back(geo::Vector3(-0.1,  -0.2, 0));
-//        int nCorners = 3;
-//        double radius = 0.27;
-//        for (int i = 1; i <= nCorners; i++) {
-//            double x, y ,theta;
-//            for (int i=1; i<=nCorners; i++) {
-//                theta = 2*3.14159*(i-1)/nCorners;
-//                x = radius*cos(theta);
-//                y = radius*sin(theta);
-//                robot_points.push_back(geo::Vector3(x,y,0));
-//            }
-//        }
-        // Arrow in the front direction of the robot
-//        double arrow_scaling = 0.15;
-//        robot_points.push_back(arrow_scaling*geo::Vector3(-1.0,  0.0, 0));
-//        robot_points.push_back(arrow_scaling*geo::Vector3( 1.0,  0.0, 0));
-//        robot_points.push_back(arrow_scaling*geo::Vector3( 0.5, -0.5, 0));
-//        robot_points.push_back(arrow_scaling*geo::Vector3( 1.0,  0.0, 0));
-//        robot_points.push_back(arrow_scaling*geo::Vector3( 0.5,  0.5, 0));
-//        robot_points.push_back(arrow_scaling*geo::Vector3( 1.0,  0.0, 0));
 
-        eye_points.push_back(geo::Vector3( 0.125,  0.1, 0));
-        eye_points.push_back(geo::Vector3( 0.125, -0.1, 0));
-        eye_pupil_points.push_back(geo::Vector3( 0.15,  0.1, 0));
-        eye_pupil_points.push_back(geo::Vector3( 0.15, -0.1, 0));
+        robot_head_points.push_back(geo::Vector3( 0.0, -0.16, 0));
+        robot_head_points.push_back(geo::Vector3( 0.0,  0.16, 0));
+        robot_head_points.push_back(geo::Vector3(-0.15,  0.16, 0));
+        robot_head_points.push_back(geo::Vector3(-0.15, -0.16, 0));
+        eye_points.push_back(geo::Vector3( -0.075,  0.075, 0));
+        eye_points.push_back(geo::Vector3( -0.075, -0.075, 0));
+        eye_pupil_points.push_back(geo::Vector3( -0.06,  0.075, 0));
+        eye_pupil_points.push_back(geo::Vector3( -0.06, -0.075, 0));
 
         if(show_full_map == true) {
-            for (unsigned int i = 0; i < robot_points.size(); ++i) {
-                robot_points[i] = (robot.pose * robot_points[i]) + geo::Vector3(-xview, -yview, 0);
+            for (unsigned int i = 0; i < robot_head_points.size(); ++i) {
+                robot_head_points[i] = (robot.pose * robot_head_points[i]) + geo::Vector3(-xview, -yview, 0);
             }
             for (unsigned int i = 0; i < eye_points.size(); ++i) {
                 eye_points[i] = (robot.pose * eye_points[i]) + geo::Vector3(-xview, -yview, 0);
@@ -124,8 +101,8 @@ void visualize(const World& world, const std::vector<Robot*>& robots, bool colli
         }
         else
         {
-            for (unsigned int i = 0; i < robot_points.size(); ++i) {
-                robot_points[i] = (frame_center_pose.inverse() * robot.pose * robot_points[i]);
+            for (unsigned int i = 0; i < robot_head_points.size(); ++i) {
+                robot_head_points[i] = (frame_center_pose.inverse() * robot.pose * robot_head_points[i]);
             }
             for (unsigned int i = 0; i < eye_points.size(); ++i) {
                 eye_points[i] = (frame_center_pose.inverse() * robot.pose * eye_points[i]);
@@ -135,17 +112,17 @@ void visualize(const World& world, const std::vector<Robot*>& robots, bool colli
             }
         }
 
-        for(unsigned int i = 0; i < robot_points.size(); ++i)
+        for(unsigned int i = 0; i < robot_head_points.size(); ++i)
         {
-            unsigned int j = (i + 1) % robot_points.size();
-            cv::Point2d p1 = worldToCanvas(robot_points[i]);
-            cv::Point2d p2 = worldToCanvas(robot_points[j]);
+            unsigned int j = (i + 1) % robot_head_points.size();
+            cv::Point2d p1 = worldToCanvas(robot_head_points[i]);
+            cv::Point2d p2 = worldToCanvas(robot_head_points[j]);
             cv::line(canvas, p1, p2, robot_color, 2);
         }
         for(unsigned int i = 0; i < eye_points.size(); ++i)
         {
             cv::Point2d pEye = worldToCanvas(eye_points[i]);
-            cv::circle(canvas, pEye, 6, robot_color, 2);
+            cv::circle(canvas, pEye, 4, robot_color, 2);
         }
         for(unsigned int i = 0; i < eye_points.size(); ++i)
         {

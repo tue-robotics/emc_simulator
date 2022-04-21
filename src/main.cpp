@@ -219,8 +219,53 @@ int main(int argc, char **argv){
             }
 
             //check collisions with robot
-            if(heightmap->intersect(robot_pose.t,robot_radius)){
-                collision = true;
+            const double radius = robot_radius;
+            if (robot_pose.t.length()-radius > heightmap->getMesh().getMaxRadius()){
+                return false;
+            }
+
+            if (radius > 0.0) {
+                const double radius2 = radius*radius;
+                const std::vector<geo::Vector3>& t_points = heightmap->getMesh().getPoints();
+
+                for(auto it = heightmap->getMesh().getTriangleIs().begin(); it != heightmap->getMesh().getTriangleIs().end(); ++it) {
+
+                    // check endpoints
+                    if ((t_points[it->i1_]-robot_pose.t).length2() < radius2) collision = true;
+                    if ((t_points[it->i2_]-robot_pose.t).length2() < radius2) collision = true;
+                    if ((t_points[it->i3_]-robot_pose.t).length2() < radius2) collision = true;
+
+                    // check line segments
+                    double l2 = (t_points[it->i2_] - t_points[it->i1_]).length2();
+                    if (l2>0) {
+                        double t = (robot_pose.t - t_points[it->i1_]).dot(t_points[it->i2_] - t_points[it->i1_]) / l2;
+                        t = fmax(0., fmin(1., t));
+                        double dist = (robot_pose.t - ((1-t) * t_points[it->i1_] + t * t_points[it->i2_])).length();
+                        if (dist < radius){
+                            collision = true;
+                        }
+                    }
+                    l2 = (t_points[it->i3_] - t_points[it->i2_]).length2();
+                    if (l2>0) {
+                        double t = (robot_pose.t - t_points[it->i2_]).dot(t_points[it->i3_] - t_points[it->i2_]) / l2;
+                        t = fmax(0., fmin(1., t));
+                        double dist = (robot_pose.t - ((1-t) * t_points[it->i2_] + t * t_points[it->i3_])).length();
+                        if (dist < radius){
+                            collision = true;
+                        }
+                    }
+                    l2 = (t_points[it->i1_] - t_points[it->i3_]).length2();
+                    if (l2>0) {
+                        double t = (robot_pose.t - t_points[it->i3_]).dot(t_points[it->i1_] - t_points[it->i3_]) / l2;
+                        t = fmax(0., fmin(1., t));
+                        double dist = (robot_pose.t - ((1-t) * t_points[it->i3_] + t * t_points[it->i1_])).length();
+                        if (dist < radius){
+                            collision = true;
+                        }
+                    }
+
+                    // TODO: check surface
+                }
             }
 
             for(std::vector<MovingObject>::iterator itobj = config.moving_objects.value().begin(); itobj != config.moving_objects.value().end(); ++itobj){
