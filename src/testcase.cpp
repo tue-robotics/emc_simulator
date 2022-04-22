@@ -15,7 +15,7 @@ int main(int argc, char **argv)
     std::string heightmap_filename;
     heightmap_filename = ros::package::getPath("emc_simulator") + "/data/heightmap_correct.pgm";
 
-    geo::Vector3 rpose;
+    geo::Vector3 rpose; = (0,0,0);
     std::cout<<rpose<<std::endl;
 
     std::vector<Door> doors;
