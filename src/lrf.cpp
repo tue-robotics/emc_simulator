@@ -14,6 +14,7 @@ float randomUniform(float min, float max)
 
 LRF::LRF()
 {
+    noise_level_ = 0.01;
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -35,6 +36,13 @@ void LRF::setAngleLimits(double a_min, double a_max)
 void LRF::setNumBeams(unsigned int n)
 {
     lrf_.setNumBeams(n);
+}
+
+// ----------------------------------------------------------------------------------------------------
+
+void LRF::setNoiseLevel(double noise_level)
+{
+    noise_level_ = noise_level;
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -85,7 +93,7 @@ void LRF::generateLaserData(const World& world, const Robot& robot, sensor_msgs:
     for(unsigned int i = 0; i < ranges.size(); ++i)
     {
         double r = ranges[i];
-        scan_msg.ranges[i] = r + randomUniform(-0.01, 0.01);
+        scan_msg.ranges[i] = r + randomUniform(-noise_level_, noise_level_);
     }
 
     // Stamp with current ROS time
