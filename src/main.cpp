@@ -228,44 +228,34 @@ int main(int argc, char **argv){
                     const std::vector<geo::Vector3>& t_points = heightmap->getMesh().getPoints();
 
                     for(auto it = heightmap->getMesh().getTriangleIs().begin(); it != heightmap->getMesh().getTriangleIs().end(); ++it) {
-
-                        geo::Vector3 p1 = t_points[it->i1_];
-                        geo::Vector3 p2 = t_points[it->i2_];
-                        geo::Vector3 p3 = t_points[it->i3_];
+                        std::vector<geo::Vector3> points;
+                        points.push_back(t_points[it->i1_]);
+                        points.push_back(t_points[it->i2_]);
+                        points.push_back(t_points[it->i3_]);
 
                         // check endpoints
-                        if ((p1-robot_pose.t).length2() < radius2) collision = true;
-                        if ((p2-robot_pose.t).length2() < radius2) collision = true;
-                        if ((p3-robot_pose.t).length2() < radius2) collision = true;
+                        for (unsigned int i = 0; i < points.size(); ++i) {
+                            if ((points[i]-robot_pose.t).length2() < radius2) {collision = true; break;}
+                        }
+                        if (collision) break;
 
                         // check line segments
-                        double l2 = (p2 - p1).length2();
-                        if (l2>0) {
-                            double t = (robot_pose.t - p1).dot(p2 - p1) / l2;
-                            t = fmax(0., fmin(1., t));
-                            double dist = (robot_pose.t - ((1-t) * p1 + t * p2)).length();
-                            if (dist < robot_radius){
-                                collision = true;
+                        for (unsigned int i = 0; i < points.size(); ++i) {
+                            geo::Vector3 p1 = points[i];
+                            geo::Vector3 p2 = points[(i+1) % points.size()];
+
+                            double l2 = (p2 - p1).length2();
+                            if (l2>0) {
+                                double t = (robot_pose.t - p1).dot(p2 - p1) / l2;
+                                t = fmax(0., fmin(1., t));
+                                double dist = (robot_pose.t - ((1-t) * p1 + t * p2)).length();
+                                if (dist < robot_radius) {
+                                    collision = true;
+                                    break;
+                                }
                             }
                         }
-                        l2 = (p3 - p2).length2();
-                        if (l2>0) {
-                            double t = (robot_pose.t - p2).dot(p3 - p2) / l2;
-                            t = fmax(0., fmin(1., t));
-                            double dist = (robot_pose.t - ((1-t) * p2 + t * p3)).length();
-                            if (dist < robot_radius){
-                                collision = true;
-                            }
-                        }
-                        l2 = (p1 - p3).length2();
-                        if (l2>0) {
-                            double t = (robot_pose.t - p3).dot(p1 - p3) / l2;
-                            t = fmax(0., fmin(1., t));
-                            double dist = (robot_pose.t - ((1-t) * p3 + t * p1)).length();
-                            if (dist < robot_radius){
-                                collision = true;
-                            }
-                        }
+                        if (collision) break;
 
                         // TODO: check surface if collisions should be accurate in 3D
                     }
