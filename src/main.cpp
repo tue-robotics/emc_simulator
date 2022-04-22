@@ -274,7 +274,7 @@ int main(int argc, char **argv){
             robot.pub_bumperR.publish(bump_msg_r);
 
             // Detect collission based on bumper data 
-            collision = collision || bump_msg_f || bump_msg_r;
+            collision = collision || bump_msg_f.data || bump_msg_r.data;
 
             // Create odom data
             nav_msgs::Odometry odom_msg = robot.base.getOdom();
