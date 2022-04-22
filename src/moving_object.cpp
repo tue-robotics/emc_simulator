@@ -43,8 +43,6 @@ geo::CompositeShapePtr makeWorldSimObject(MovingObject object){
     return makeWorldSimObject(object.width, object.length);
 }
 
-#include "moving_object.h"
-
 geo::CompositeShapePtr makeApproxRoundWorldSimObject(double radius, int nCorners){
 
     geo::CompositeShapePtr shape_ptr(new geo::CompositeShape);
@@ -75,4 +73,3 @@ geo::CompositeShapePtr makeApproxRoundWorldSimObject(double radius, int nCorners
 
     return shape_ptr;
 }
-
