@@ -68,10 +68,11 @@ int main(int argc, char **argv){
 
     // The bumper class implementation uses an artificial lrf sensor
     Bumper bumper;
-    double robot_radius = 0.27; // [m]
+    double robot_radius = 0.27;
     bumper.setRobotRadius(robot_radius);
     double bumperSize = 0.01; // [m]
     bumper.setBumperRadius(bumperSize);
+    const bool check_collisions_by_bumper = false;
 
     double cycle_freq = 30;
     double cycle_time = 1 / cycle_freq;
@@ -107,9 +108,7 @@ int main(int argc, char **argv){
     }
 
     // Add robots
-    double robot_width = 0.36;
-    double robot_length = 0.16;
-    geo::CompositeShapePtr robot_shape = makeWorldSimObject(robot_width, robot_length);
+    geo::CompositeShapePtr robot_shape = makeApproxRoundWorldSimObject(robot_radius, 32);
     geo::Vector3 robot_color(0, 0, 1);
     
     std::vector<Robot*> robots;
@@ -220,40 +219,81 @@ int main(int argc, char **argv){
             }
 
             //check collisions with robot
-            geo::Vector3 rp1 = robot_pose*geo::Vector3(robot_width/2, robot_length/2, 0.0);
-            geo::Vector3 rp2 = robot_pose*geo::Vector3(robot_width/2, -robot_length/2, 0.0);
-            geo::Vector3 rp3 = robot_pose*geo::Vector3(-robot_width/2, robot_length/2, 0.0);
-            geo::Vector3 rp4 = robot_pose*geo::Vector3(-robot_width/2, -robot_length/2, 0.0);
-            if( heightmap->intersect(rp1,0.001) || heightmap->intersect(rp2,0.001) || heightmap->intersect(rp3,0.001) || heightmap->intersect(rp4,0.001)){
-                collision = true;
-            }
+            if (check_collisions_by_bumper) {
+                // TODO: add code to check collisions by bumper
+            } else {
+                // collisions with walls and static obstacles in map
+                if (robot_radius > 0.0) {
+                    const double radius2 = robot_radius*robot_radius;
+                    const std::vector<geo::Vector3>& t_points = heightmap->getMesh().getPoints();
 
-            for(std::vector<MovingObject>::iterator itobj = config.moving_objects.value().begin(); itobj != config.moving_objects.value().end(); ++itobj){
-                geo::Vector3 op1 = world.object(itobj->id).pose.inverse()* rp1;
-                geo::Vector3 op2 = world.object(itobj->id).pose.inverse()* rp2;
-                geo::Vector3 op3 = world.object(itobj->id).pose.inverse()* rp3;
-                geo::Vector3 op4 = world.object(itobj->id).pose.inverse()* rp4;
+                    for(auto it = heightmap->getMesh().getTriangleIs().begin(); it != heightmap->getMesh().getTriangleIs().end(); ++it) {
 
-                if(  world.object(itobj->id).shape->intersect(op1,0.001) ||
-                     world.object(itobj->id).shape->intersect(op2,0.001) ||
-                     world.object(itobj->id).shape->intersect(op3,0.001) ||
-                     world.object(itobj->id).shape->intersect(op4,0.001)){
-                    collision = true;
+                        geo::Vector3 p1 = t_points[it->i1_];
+                        geo::Vector3 p2 = t_points[it->i2_];
+                        geo::Vector3 p3 = t_points[it->i3_];
+
+                        // check endpoints
+                        if ((p1-robot_pose.t).length2() < radius2) collision = true;
+                        if ((p2-robot_pose.t).length2() < radius2) collision = true;
+                        if ((p3-robot_pose.t).length2() < radius2) collision = true;
+
+                        // check line segments
+                        double l2 = (p2 - p1).length2();
+                        if (l2>0) {
+                            double t = (robot_pose.t - p1).dot(p2 - p1) / l2;
+                            t = fmax(0., fmin(1., t));
+                            double dist = (robot_pose.t - ((1-t) * p1 + t * p2)).length();
+                            if (dist < robot_radius){
+                                collision = true;
+                            }
+                        }
+                        l2 = (p3 - p2).length2();
+                        if (l2>0) {
+                            double t = (robot_pose.t - p2).dot(p3 - p2) / l2;
+                            t = fmax(0., fmin(1., t));
+                            double dist = (robot_pose.t - ((1-t) * p2 + t * p3)).length();
+                            if (dist < robot_radius){
+                                collision = true;
+                            }
+                        }
+                        l2 = (p1 - p3).length2();
+                        if (l2>0) {
+                            double t = (robot_pose.t - p3).dot(p1 - p3) / l2;
+                            t = fmax(0., fmin(1., t));
+                            double dist = (robot_pose.t - ((1-t) * p3 + t * p1)).length();
+                            if (dist < robot_radius){
+                                collision = true;
+                            }
+                        }
+
+                        // TODO: check surface if collisions should be accurate in 3D
+                    }
                 }
-            }
 
-            for (std::vector<Robot*>::iterator it2 = it+1; it2 != robots.end(); ++it2)
-            {
-                geo::Vector3 op1 = world.object((*it2)->robot_id).pose.inverse()* rp1;
-                geo::Vector3 op2 = world.object((*it2)->robot_id).pose.inverse()* rp2;
-                geo::Vector3 op3 = world.object((*it2)->robot_id).pose.inverse()* rp3;
-                geo::Vector3 op4 = world.object((*it2)->robot_id).pose.inverse()* rp4;
+                // collisions with moving objects
+                for(std::vector<MovingObject>::iterator itobj = config.moving_objects.value().begin(); itobj != config.moving_objects.value().end(); ++itobj){
+                    geo::Vector3 objectPoseVec = world.object(itobj->id).pose.inverse()*robot_pose.t;
+                    if(  world.object(itobj->id).shape->intersect(world.object(itobj->id).pose.inverse()*robot_pose.t, robot_radius) ){
+                        collision = true;
+                    }
+                }
 
-                if(  world.object((*it2)->robot_id).shape->intersect(op1,0.001) ||
-                     world.object((*it2)->robot_id).shape->intersect(op2,0.001) ||
-                     world.object((*it2)->robot_id).shape->intersect(op3,0.001) ||
-                     world.object((*it2)->robot_id).shape->intersect(op4,0.001)){
-                    collision = true;
+                // collisions with other robots
+                for (std::vector<Robot*>::iterator it2 = it+1; it2 != robots.end(); ++it2)
+                {
+                    geo::Vector3 objectPoseVec = world.object((*it2)->robot_id).pose.inverse()*robot_pose.t;
+                    if(  world.object((*it2)->robot_id).shape->intersect(objectPoseVec, robot_radius) ){
+                        collision = true;
+                    }
+                }
+
+                // collisions with doors
+                for(std::vector<Door>::iterator itobj = doors.begin(); itobj != doors.end(); ++itobj)
+                {
+                    if( world.object(itobj->id).shape->intersect(world.object(itobj->id).pose.inverse()*robot_pose.t, robot_radius) ){
+                        collision = true;
+                    }
                 }
             }
 
