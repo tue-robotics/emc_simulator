@@ -150,6 +150,7 @@ int main(int argc, char **argv){
             dt = time.toSec() - time_;
             time_ = time.toSec();
         }
+        bool collision = false;
 
         for (std::vector<Robot*>::iterator it = robots.begin(); it != robots.end(); ++it)
         {
@@ -216,72 +217,8 @@ int main(int argc, char **argv){
                     world.setVelocity(obj.id, unit_vel*obj.velocity,0.0);
                 }
             }
-            // handle door requests
-            if (robot.request_open_door_)
-            {
-                for(std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
-                {
-                    Door& door = *it;
-                    if (!door.closed)
-                        continue;
 
-                    // Test if robot is in front of door. If not, don't open it
-                    geo::Pose3D rel_robot_pose = door.init_pose.inverse() * robot_pose;
-
-                    if (std::abs(rel_robot_pose.t.y) > 1 || std::abs(rel_robot_pose.t.x) > door.size / 2)
-                        continue;
-
-                    world.setVelocity(door.id, door.open_vel, 0);
-                    door.closed = false;
-                }
-                robot.request_open_door_ = false;
-            }
-
-            if(config.uncertain_odom.value() && time.sec%6 == 0 ){
-                robot.base.updateWheelUncertaintyFactors();
-            }
-        } // end iterate robots
-
-        // Stop doors that have moved far enough
-        for(std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
-        {
-            Door& door = *it;
-            if (!door.closed && (door.init_pose.t - world.object(door.id).pose.t).length2() > door.open_distance * door.open_distance)
-                world.setVelocity(door.id, geo::Vector3(0, 0, 0), 0);
-        }
-
-        world.update(time.toSec());
-
-        // create output
-        for (std::vector<Robot*>::iterator it = robots.begin(); it != robots.end(); ++it)
-        {
-            Robot& robot = **it;
-            // Create laser data
-            sensor_msgs::LaserScan scan_msg;
-            scan_msg.header.frame_id = "laserframe";
-            scan_msg.header.stamp = time;
-            lrf.generateLaserData(world, robot, scan_msg);
-            robot.pub_laser.publish(scan_msg);
-
-            // Create bumper data 
-            std_msgs::Bool bump_msg_f; // front bumper message
-            std_msgs::Bool bump_msg_r; // rear bumper message
-            bumper.generateBumperData(world,robot,bump_msg_f,bump_msg_r);
-            robot.pub_bumperF.publish(bump_msg_f);
-            robot.pub_bumperR.publish(bump_msg_r);
-
-            // Create odom data
-            nav_msgs::Odometry odom_msg = robot.base.getOdom();
-            if(!config.uncertain_odom.value()){
-                geo::convert(world.object(robot.robot_id).pose, odom_msg.pose.pose);
-            }
-            odom_msg.header.stamp = time;
-            odom_msg.header.frame_id = "odomframe";
-
-            robot.pub_odom.publish(odom_msg);
-        }
-        //check collisions with robot
-            bool collision = false;
+            //check collisions with robot
             if (check_collisions_by_bumper) {
                 // TODO: add code to check collisions by bumper
             } else {
@@ -359,6 +296,71 @@ int main(int argc, char **argv){
                     }
                 }
             }
+
+            // handle door requests
+            if (robot.request_open_door_)
+            {
+                for(std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
+                {
+                    Door& door = *it;
+                    if (!door.closed)
+                        continue;
+
+                    // Test if robot is in front of door. If not, don't open it
+                    geo::Pose3D rel_robot_pose = door.init_pose.inverse() * robot_pose;
+
+                    if (std::abs(rel_robot_pose.t.y) > 1 || std::abs(rel_robot_pose.t.x) > door.size / 2)
+                        continue;
+
+                    world.setVelocity(door.id, door.open_vel, 0);
+                    door.closed = false;
+                }
+                robot.request_open_door_ = false;
+            }
+
+            if(config.uncertain_odom.value() && time.sec%6 == 0 ){
+                robot.base.updateWheelUncertaintyFactors();
+            }
+        } // end iterate robots
+
+        // Stop doors that have moved far enough
+        for(std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
+        {
+            Door& door = *it;
+            if (!door.closed && (door.init_pose.t - world.object(door.id).pose.t).length2() > door.open_distance * door.open_distance)
+                world.setVelocity(door.id, geo::Vector3(0, 0, 0), 0);
+        }
+
+        world.update(time.toSec());
+
+        // create output
+        for (std::vector<Robot*>::iterator it = robots.begin(); it != robots.end(); ++it)
+        {
+            Robot& robot = **it;
+            // Create laser data
+            sensor_msgs::LaserScan scan_msg;
+            scan_msg.header.frame_id = "laserframe";
+            scan_msg.header.stamp = time;
+            lrf.generateLaserData(world, robot, scan_msg);
+            robot.pub_laser.publish(scan_msg);
+
+            // Create bumper data 
+            std_msgs::Bool bump_msg_f; // front bumper message
+            std_msgs::Bool bump_msg_r; // rear bumper message
+            bumper.generateBumperData(world,robot,bump_msg_f,bump_msg_r);
+            robot.pub_bumperF.publish(bump_msg_f);
+            robot.pub_bumperR.publish(bump_msg_r);
+
+            // Create odom data
+            nav_msgs::Odometry odom_msg = robot.base.getOdom();
+            if(!config.uncertain_odom.value()){
+                geo::convert(world.object(robot.robot_id).pose, odom_msg.pose.pose);
+            }
+            odom_msg.header.stamp = time;
+            odom_msg.header.frame_id = "odomframe";
+
+            robot.pub_odom.publish(odom_msg);
+        }
 
         // Visualize
         if (visualize)
