@@ -70,7 +70,7 @@ int main(int argc, char **argv){
     Bumper bumper;
     double robot_radius = 0.27; // [m]
     bumper.setRobotRadius(robot_radius);
-    double bumperSize = 0.05; // [m]
+    double bumperSize = 0.001; // [m]
     bumper.setBumperRadius(bumperSize);
 
     double cycle_freq = 30;
