@@ -2,6 +2,8 @@
 #include "door.h"
 
 #include <geolib/CompositeShape.h>
+#include <geolib/HeightMap.h>
+#include <geolib/Exporter.h>
 
 #include <ros/init.h>
 #include <ros/package.h>
@@ -12,13 +14,15 @@
 
 int main(int argc, char **argv)
 {
-    std::string heightmap_filename;
-    heightmap_filename = ros::package::getPath("emc_simulator") + "/data/heightmap_correct.pgm";
+    std::string heightmap_filename = "/data/heightmap";
+    std::string heightmap_ext = ".pgm";
+    std::string heightmap_export = ".stl"; 
+    std::string heightmap_in = ros::package::getPath("emc_simulator") + heightmap_filename + heightmap_ext;
 
     geo::Vector3 rpose = (0,0,0);
 
     std::vector<Door> doors;
-    geo::ShapePtr heightmap = createHeightMapShape(heightmap_filename, doors);
+    geo::ShapePtr heightmap = createHeightMapShape(heightmap_in, doors);
 
     bool test   =  false;
     double dist = 0;
@@ -37,6 +41,7 @@ int main(int argc, char **argv)
             break;
         }
     }   
+
     if (test)
     {
         std::cout<< "Dist " << dist <<" Collision" <<std::endl;
@@ -46,5 +51,8 @@ int main(int argc, char **argv)
         std::cout<< "Dist " << dist <<"NO Collision" <<std::endl;
     }
 
+    geo::Exporter exp;
+    std::string exportFilename = ros::package::getPath("emc_simulator") + heightmap_filename + heightmap_export;
+    exp.writeMeshFile(exportFilename, *heightmap);
     }
     
