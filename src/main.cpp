@@ -87,7 +87,7 @@ int main(int argc, char **argv){
         std::cout << "[HERO SIMULATOR] Heightmap could not be loaded" << std::endl;
         return 1;
     }
-    world.addObject(geo::Pose3D::identity(), heightmap);
+    world.addObject(geo::Pose3D::identity(), heightmap, geo::Vector3(1, 1, 1), walltype);
 
     // Get centerbox for height map (the visualization is constraining canvas within this box)
     visualization::Bbox bbox; bbox.xmin = -1; bbox.xmax = 1; bbox.ymin=-1; bbox.ymax = 1;
@@ -103,7 +103,7 @@ int main(int argc, char **argv){
 
     // Ad moving objects
     for(std::vector<MovingObject>::iterator it = config.moving_objects.value().begin(); it != config.moving_objects.value().end(); ++it) {
-        it->id = world.addObject(it->init_pose,makeWorldSimObject(*it),geo::Vector3(0,1,1));
+        it->id = world.addObject(it->init_pose,makeWorldSimObject(*it),geo::Vector3(0,1,1), movingObjecttype);
         world.setVelocity(it->id,geo::Vector3(0.0,0.0,0.0),0.0);
     }
 
@@ -114,14 +114,14 @@ int main(int argc, char **argv){
     geo::Vector3 robot_color(0, 0, 1);
     
     std::vector<Robot*> robots;
-    Id hero_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color);
+    Id hero_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color, robottype);
     Robot hero("hero", hero_id);
     hero.base.setDisableSpeedCap(config.disable_speedcap.value());
     hero.base.setUncertainOdom(config.uncertain_odom.value());
     robots.push_back(&hero);
 
     if (config.enable_taco.value()){
-        Id taco_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color);
+        Id taco_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color, robottype);
         robots.push_back(new Robot("taco", taco_id));
         robots.back()->base.setDisableSpeedCap(config.disable_speedcap.value());
         robots.back()->base.setUncertainOdom(config.uncertain_odom.value());
@@ -131,7 +131,7 @@ int main(int argc, char **argv){
     for(std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
     {
         Door& door = *it;
-        door.id = world.addObject(door.init_pose, door.shape, geo::Vector3(0, 1, 0));
+        door.id = world.addObject(door.init_pose, door.shape, geo::Vector3(0, 1, 0), doortype);
     }
 
     std::cout << "start cycle" << std::endl;
