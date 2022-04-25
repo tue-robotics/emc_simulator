@@ -26,6 +26,7 @@
 #include <iostream>
 #include <string>
 
+#include <geolib/shapes.h>
 #include <geolib/CompositeShape.h>
 #include "virtualbase.h"
 #include "moving_object.h"
@@ -107,11 +108,12 @@ int main(int argc, char **argv){
     }
 
     // Add robots
-    geo::CompositeShapePtr robot_shape = makeApproxRoundWorldSimObject(robot_radius, 32);
+    geo::Shape robot_shape_cyl;
+    geo::createCylinder(robot_shape_cyl,robot_radius,1,8);
+    geo::ShapeConstPtr robot_shape(&robot_shape_cyl);
     geo::Vector3 robot_color(0, 0, 1);
     
     std::vector<Robot*> robots;
-
     Id hero_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color);
     Robot hero("hero", hero_id);
     hero.base.setDisableSpeedCap(config.disable_speedcap.value());
