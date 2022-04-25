@@ -72,4 +72,18 @@ add_executable(pico_simulator
     src/moving_object.cpp
     src/bumper.cpp
 )
+
+add_executable(testcase
+    src/testcase.cpp 
+    src/world.cpp
+    src/heightmap.cpp
+    src/visualization.cpp
+    src/lrf.cpp
+    src/robot.cpp
+    src/moving_object.cpp
+    src/bumper.cpp
+)
+
 target_link_libraries(pico_simulator polypartition ${catkin_LIBRARIES})
+
+target_link_libraries(testcase polypartition ${catkin_LIBRARIES})
