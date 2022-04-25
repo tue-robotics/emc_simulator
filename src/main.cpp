@@ -94,10 +94,10 @@ int main(int argc, char **argv){
 
     std::vector<geo::Vector3> meshpoints = heightmap->getMesh().getPoints();
 
-    bbox.xmin = std::max_element(meshpoints.begin(), meshpoints.end(),[](geo::Vec3T<double> a, geo::Vec3T<double> b){return a.getX() > b.getX() ;} )->getX();
-    bbox.ymin = std::max_element(meshpoints.begin(), meshpoints.end(),[](geo::Vec3T<double> a, geo::Vec3T<double> b){return a.getY() > b.getY() ;} )->getY();
-    bbox.xmax = std::max_element(meshpoints.begin(), meshpoints.end(),[](geo::Vec3T<double> a, geo::Vec3T<double> b){return a.getX() < b.getX() ;} )->getX();
-    bbox.ymax = std::max_element(meshpoints.begin(), meshpoints.end(),[](geo::Vec3T<double> a, geo::Vec3T<double> b){return a.getY() < b.getY() ;} )->getY();
+    bbox.xmin = std::max_element(meshpoints.begin(), meshpoints.end(),[](const geo::Vector3& a, const geo::Vector3& b){return a.getX() > b.getX() ;} )->getX();
+    bbox.ymin = std::max_element(meshpoints.begin(), meshpoints.end(),[](const geo::Vector3& a, const geo::Vector3& b){return a.getY() > b.getY() ;} )->getY();
+    bbox.xmax = std::max_element(meshpoints.begin(), meshpoints.end(),[](const geo::Vector3& a, const geo::Vector3& b){return a.getX() < b.getX() ;} )->getX();
+    bbox.ymax = std::max_element(meshpoints.begin(), meshpoints.end(),[](const geo::Vector3& a, const geo::Vector3& b){return a.getY() < b.getY() ;} )->getY();
 
     //std::cout << "bbox: " << bbox.xmin << "   " << bbox.xmax << "  "  << bbox.ymin << "  " << bbox.ymax << std::endl;
 
