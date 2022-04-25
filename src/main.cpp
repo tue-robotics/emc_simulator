@@ -72,7 +72,6 @@ int main(int argc, char **argv){
     bumper.setRobotRadius(robot_radius);
     double bumperSize = 0.01; // [m]
     bumper.setBumperRadius(bumperSize);
-    const bool check_collisions_by_bumper = false;
 
     double cycle_freq = 30;
     double cycle_time = 1 / cycle_freq;
