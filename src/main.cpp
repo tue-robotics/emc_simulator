@@ -114,6 +114,7 @@ int main(int argc, char **argv){
     geo::Vector3 robot_color(0, 0, 1);
     
     std::vector<Robot*> robots;
+    
     Id hero_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color, robottype);
     Robot hero("hero", hero_id);
     hero.base.setDisableSpeedCap(config.disable_speedcap.value());
