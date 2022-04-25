@@ -5,6 +5,7 @@ Bumper::Bumper(): _lrf()
     _lrf.setAngleLimits(-0.5*M_PI,1.5*M_PI);
     _lrf.setNumBeams(50);
     _lrf.setRangeLimits(0.01,1);
+    _lrf.setNoiseLevel(0);
 }
 
 void Bumper::setRobotRadius(double radius)

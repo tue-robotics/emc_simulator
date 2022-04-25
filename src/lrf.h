@@ -25,9 +25,13 @@ public:
 
     void setRangeLimits(double r_min, double r_max);
 
+    void setNoiseLevel(double noise_level);
+
 private:
 
     geo::LaserRangeFinder lrf_;
+
+    double noise_level_;
 
     sensor_msgs::LaserScan msg_prototype_;
 

@@ -68,9 +68,9 @@ int main(int argc, char **argv){
 
     // The bumper class implementation uses an artificial lrf sensor
     Bumper bumper;
-    double robot_radius = 0.27; // [m]
+    double robot_radius = 0.21; // [m]
     bumper.setRobotRadius(robot_radius);
-    double bumperSize = 0.05; // [m]
+    double bumperSize = 0.01; // [m]
     bumper.setBumperRadius(bumperSize);
 
     double cycle_freq = 30;
@@ -107,9 +107,7 @@ int main(int argc, char **argv){
     }
 
     // Add robots
-    double robot_width = 0.36;
-    double robot_length = 0.16;
-    geo::CompositeShapePtr robot_shape = makeWorldSimObject(robot_width, robot_length);
+    geo::CompositeShapePtr robot_shape = makeApproxRoundWorldSimObject(robot_radius, 32);
     geo::Vector3 robot_color(0, 0, 1);
     
     std::vector<Robot*> robots;
@@ -151,7 +149,6 @@ int main(int argc, char **argv){
             dt = time.toSec() - time_;
             time_ = time.toSec();
         }
-        bool collision = false;
 
         for (std::vector<Robot*>::iterator it = robots.begin(); it != robots.end(); ++it)
         {
@@ -219,44 +216,6 @@ int main(int argc, char **argv){
                 }
             }
 
-            //check collisions with robot
-            geo::Vector3 rp1 = robot_pose*geo::Vector3(robot_width/2, robot_length/2, 0.0);
-            geo::Vector3 rp2 = robot_pose*geo::Vector3(robot_width/2, -robot_length/2, 0.0);
-            geo::Vector3 rp3 = robot_pose*geo::Vector3(-robot_width/2, robot_length/2, 0.0);
-            geo::Vector3 rp4 = robot_pose*geo::Vector3(-robot_width/2, -robot_length/2, 0.0);
-            if( heightmap->intersect(rp1,0.001) || heightmap->intersect(rp2,0.001) || heightmap->intersect(rp3,0.001) || heightmap->intersect(rp4,0.001)){
-                collision = true;
-            }
-
-            for(std::vector<MovingObject>::iterator itobj = config.moving_objects.value().begin(); itobj != config.moving_objects.value().end(); ++itobj){
-                geo::Vector3 op1 = world.object(itobj->id).pose.inverse()* rp1;
-                geo::Vector3 op2 = world.object(itobj->id).pose.inverse()* rp2;
-                geo::Vector3 op3 = world.object(itobj->id).pose.inverse()* rp3;
-                geo::Vector3 op4 = world.object(itobj->id).pose.inverse()* rp4;
-
-                if(  world.object(itobj->id).shape->intersect(op1,0.001) ||
-                     world.object(itobj->id).shape->intersect(op2,0.001) ||
-                     world.object(itobj->id).shape->intersect(op3,0.001) ||
-                     world.object(itobj->id).shape->intersect(op4,0.001)){
-                    collision = true;
-                }
-            }
-
-            for (std::vector<Robot*>::iterator it2 = it+1; it2 != robots.end(); ++it2)
-            {
-                geo::Vector3 op1 = world.object((*it2)->robot_id).pose.inverse()* rp1;
-                geo::Vector3 op2 = world.object((*it2)->robot_id).pose.inverse()* rp2;
-                geo::Vector3 op3 = world.object((*it2)->robot_id).pose.inverse()* rp3;
-                geo::Vector3 op4 = world.object((*it2)->robot_id).pose.inverse()* rp4;
-
-                if(  world.object((*it2)->robot_id).shape->intersect(op1,0.001) ||
-                     world.object((*it2)->robot_id).shape->intersect(op2,0.001) ||
-                     world.object((*it2)->robot_id).shape->intersect(op3,0.001) ||
-                     world.object((*it2)->robot_id).shape->intersect(op4,0.001)){
-                    collision = true;
-                }
-            }
-
             // handle door requests
             if (robot.request_open_door_)
             {
@@ -293,6 +252,8 @@ int main(int argc, char **argv){
 
         world.update(time.toSec());
 
+        bool collision = false;
+
         // create output
         for (std::vector<Robot*>::iterator it = robots.begin(); it != robots.end(); ++it)
         {
@@ -310,6 +271,9 @@ int main(int argc, char **argv){
             bumper.generateBumperData(world,robot,bump_msg_f,bump_msg_r);
             robot.pub_bumperF.publish(bump_msg_f);
             robot.pub_bumperR.publish(bump_msg_r);
+
+            // Detect collission based on bumper data 
+            collision = collision || bump_msg_f.data || bump_msg_r.data;
 
             // Create odom data
             nav_msgs::Odometry odom_msg = robot.base.getOdom();
