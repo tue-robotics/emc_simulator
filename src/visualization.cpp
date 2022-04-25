@@ -135,12 +135,16 @@ void visualize(const World& world, const std::vector<Robot*>& robots, bool colli
         }
         cv::Point2d pLRF = worldToCanvas(lrf_point[0]);
         cv::circle(canvas, pLRF, 2, robot_color, 2);
+        cv::Point2d pcent = worldToCanvas((0,0,0));
+        cv::circle(canvas, pcent, 0.21/resolution, robot_color, 2);
     }
 
     for(std::vector<Object>::const_iterator it = world.objects().begin(); it != world.objects().end(); ++it)
     {
         const Object& obj = *it;
         if (!obj.shape)
+            continue;
+        if (obj.type == robottype)
             continue;
 
         const std::vector<geo::Vector3>& vertices = obj.shape->getMesh().getPoints();
