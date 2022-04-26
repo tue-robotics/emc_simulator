@@ -9,6 +9,10 @@
 
 #include <geolib/CompositeShape.h>
 
+namespace geo {
+    typedef std::shared_ptr<geo::Mesh> MeshPtr;
+}
+
 struct MovingObject
 {
     Id id;

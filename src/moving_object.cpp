@@ -2,9 +2,10 @@
 
 geo::CompositeShapePtr makeWorldSimObject(double width, double length){
 
-    geo::CompositeShapePtr shape_ptr(new geo::CompositeShape);
-    geo::Shape* sub_shape = new geo::Shape();
-    geo::Mesh* mesh = new geo::Mesh();
+    geo::CompositeShapePtr shape_ptr = std::make_shared<geo::CompositeShape>();
+    geo::ShapePtr sub_shape = std::make_shared<geo::Shape>();
+    geo::MeshPtr mesh = std::make_shared<geo::Mesh>();
+
     mesh->addPoint(geo::Vector3(-length/2, -width/2, -1));
     mesh->addPoint(geo::Vector3(-length/2, -width/2, 1));
     mesh->addPoint(geo::Vector3(-length/2, width/2, 1));
