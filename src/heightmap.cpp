@@ -254,7 +254,7 @@ geo::ShapePtr createHeightMapShape(const std::string& filename, std::vector<Door
     cv::Mat vertex_index_map(image.rows, image.cols, CV_32SC1, -1);
     cv::Mat contour_map(image.rows, image.cols, CV_8UC1, cv::Scalar(0));
 
-    geo::CompositeShapePtr shape(new geo::CompositeShape);
+    geo::CompositeShapePtr shape = std::make_shared<geo::CompositeShape>();
 
     for(int y = 0; y < image.rows; ++y)
     {
