@@ -9,6 +9,10 @@
 
 #include <geolib/CompositeShape.h>
 
+namespace geo {
+    typedef std::shared_ptr<geo::Mesh> MeshPtr;
+}
+
 struct MovingObject
 {
     Id id;
@@ -25,9 +29,7 @@ struct MovingObject
     geo::ShapePtr shape;
 };
 
-geo::CompositeShapePtr makeWorldSimObject(double width, double height);
-geo::CompositeShapePtr makeWorldSimObject(MovingObject object);
-geo::CompositeShapePtr makeApproxRoundWorldSimObject(double radius, int nCorners);
-
+geo::ShapePtr makeWorldSimObject(double width, double height);
+geo::ShapePtr makeWorldSimObject(MovingObject object);
 
 #endif //PROJECT_MOVING_OBJECT_H

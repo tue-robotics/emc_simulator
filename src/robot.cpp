@@ -1,5 +1,4 @@
 #include "robot.h"
-
 // ----------------------------------------------------------------------------------------------------
 
 void Robot::baseReferenceCallback(const geometry_msgs::Twist::ConstPtr& msg)

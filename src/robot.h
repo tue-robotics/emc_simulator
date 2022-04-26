@@ -53,4 +53,7 @@ private:
 
 };
 
+typedef std::shared_ptr<Robot> RobotPtr;
+
+
 #endif

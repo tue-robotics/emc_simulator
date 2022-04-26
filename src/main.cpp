@@ -26,7 +26,7 @@
 #include <iostream>
 #include <string>
 
-#include <geolib/CompositeShape.h>
+#include <geolib/shapes.h>
 #include "virtualbase.h"
 #include "moving_object.h"
 #include "random"
@@ -86,41 +86,41 @@ int main(int argc, char **argv){
         std::cout << "[HERO SIMULATOR] Heightmap could not be loaded" << std::endl;
         return 1;
     }
-    world.addObject(geo::Pose3D::identity(), heightmap);
+    world.addObject(geo::Pose3D::identity(), heightmap, geo::Vector3(1, 1, 1), walltype);
 
     // Get centerbox for height map (the visualization is constraining canvas within this box)
     visualization::Bbox bbox; bbox.xmin = -1; bbox.xmax = 1; bbox.ymin=-1; bbox.ymax = 1;
 
     std::vector<geo::Vector3> meshpoints = heightmap->getMesh().getPoints();
 
-    bbox.xmin = std::max_element(meshpoints.begin(), meshpoints.end(),[](geo::Vec3T<double> a, geo::Vec3T<double> b){return a.getX() > b.getX() ;} )->getX();
-    bbox.ymin = std::max_element(meshpoints.begin(), meshpoints.end(),[](geo::Vec3T<double> a, geo::Vec3T<double> b){return a.getY() > b.getY() ;} )->getY();
-    bbox.xmax = std::max_element(meshpoints.begin(), meshpoints.end(),[](geo::Vec3T<double> a, geo::Vec3T<double> b){return a.getX() < b.getX() ;} )->getX();
-    bbox.ymax = std::max_element(meshpoints.begin(), meshpoints.end(),[](geo::Vec3T<double> a, geo::Vec3T<double> b){return a.getY() < b.getY() ;} )->getY();
+    bbox.xmin = std::max_element(meshpoints.begin(), meshpoints.end(),[](const geo::Vector3& a, const geo::Vector3& b){return a.getX() > b.getX() ;} )->getX();
+    bbox.ymin = std::max_element(meshpoints.begin(), meshpoints.end(),[](const geo::Vector3& a, const geo::Vector3& b){return a.getY() > b.getY() ;} )->getY();
+    bbox.xmax = std::max_element(meshpoints.begin(), meshpoints.end(),[](const geo::Vector3& a, const geo::Vector3& b){return a.getX() < b.getX() ;} )->getX();
+    bbox.ymax = std::max_element(meshpoints.begin(), meshpoints.end(),[](const geo::Vector3& a, const geo::Vector3& b){return a.getY() < b.getY() ;} )->getY();
 
     //std::cout << "bbox: " << bbox.xmin << "   " << bbox.xmax << "  "  << bbox.ymin << "  " << bbox.ymax << std::endl;
 
     // Ad moving objects
     for(std::vector<MovingObject>::iterator it = config.moving_objects.value().begin(); it != config.moving_objects.value().end(); ++it) {
-        it->id = world.addObject(it->init_pose,makeWorldSimObject(*it),geo::Vector3(0,1,1));
+        it->id = world.addObject(it->init_pose,makeWorldSimObject(*it),geo::Vector3(0,1,1), movingObjecttype);
         world.setVelocity(it->id,geo::Vector3(0.0,0.0,0.0),0.0);
     }
 
     // Add robots
-    geo::CompositeShapePtr robot_shape = makeApproxRoundWorldSimObject(robot_radius, 32);
+    geo::Shape robot_shape_cyl;
+    geo::createCylinder(robot_shape_cyl,robot_radius,1,32); // height = 1, nvertices = 32;
+    geo::ShapePtr robot_shape = std::make_shared<geo::Shape>(robot_shape_cyl);
     geo::Vector3 robot_color(0, 0, 1);
     
-    std::vector<Robot*> robots;
-
-    Id hero_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color);
-    Robot hero("hero", hero_id);
-    hero.base.setDisableSpeedCap(config.disable_speedcap.value());
-    hero.base.setUncertainOdom(config.uncertain_odom.value());
-    robots.push_back(&hero);
+    std::vector<RobotPtr> robots;
+    Id hero_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color, robottype);
+    robots.push_back(std::make_shared<Robot>("hero", hero_id));
+    robots.back()->base.setDisableSpeedCap(config.disable_speedcap.value());
+    robots.back()->base.setUncertainOdom(config.uncertain_odom.value());
 
     if (config.enable_taco.value()){
-        Id taco_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color);
-        robots.push_back(new Robot("taco", taco_id));
+        Id taco_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color, robottype);
+        robots.push_back(std::make_shared<Robot>("taco", taco_id));
         robots.back()->base.setDisableSpeedCap(config.disable_speedcap.value());
         robots.back()->base.setUncertainOdom(config.uncertain_odom.value());
     }
@@ -129,7 +129,7 @@ int main(int argc, char **argv){
     for(std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
     {
         Door& door = *it;
-        door.id = world.addObject(door.init_pose, door.shape, geo::Vector3(0, 1, 0));
+        door.id = world.addObject(door.init_pose, door.shape, geo::Vector3(0, 1, 0), doortype);
     }
 
     std::cout << "start cycle" << std::endl;
@@ -150,7 +150,7 @@ int main(int argc, char **argv){
             time_ = time.toSec();
         }
 
-        for (std::vector<Robot*>::iterator it = robots.begin(); it != robots.end(); ++it)
+        for (std::vector<RobotPtr>::iterator it = robots.begin(); it != robots.end(); ++it)
         {
             Robot& robot = **it;
             geo::Pose3D robot_pose = world.object(robot.robot_id).pose;
@@ -255,7 +255,7 @@ int main(int argc, char **argv){
         bool collision = false;
 
         // create output
-        for (std::vector<Robot*>::iterator it = robots.begin(); it != robots.end(); ++it)
+        for (std::vector<RobotPtr>::iterator it = robots.begin(); it != robots.end(); ++it)
         {
             Robot& robot = **it;
             // Create laser data
