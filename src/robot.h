@@ -53,7 +53,7 @@ private:
 
 };
 
-typedef Robot* RobotPtr;
+typedef std::shared_ptr<Robot> RobotPtr;
 
 
 #endif

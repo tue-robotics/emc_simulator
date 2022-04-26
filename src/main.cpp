@@ -115,14 +115,13 @@ int main(int argc, char **argv){
     
     std::vector<RobotPtr> robots;
     Id hero_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color, robottype);
-    Robot hero("hero", hero_id);
-    hero.base.setDisableSpeedCap(config.disable_speedcap.value());
-    hero.base.setUncertainOdom(config.uncertain_odom.value());
-    robots.push_back(&hero);
+    robots.push_back(std::make_shared<Robot>("hero", hero_id));
+    robots.back()->base.setDisableSpeedCap(config.disable_speedcap.value());
+    robots.back()->base.setUncertainOdom(config.uncertain_odom.value());
 
     if (config.enable_taco.value()){
         Id taco_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color, robottype);
-        robots.push_back(new Robot("taco", taco_id));
+        robots.push_back(std::make_shared<Robot>("taco", taco_id));
         robots.back()->base.setDisableSpeedCap(config.disable_speedcap.value());
         robots.back()->base.setUncertainOdom(config.uncertain_odom.value());
     }

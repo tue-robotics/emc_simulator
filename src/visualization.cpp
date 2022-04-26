@@ -73,7 +73,7 @@ void visualize(const World& world, const std::vector<RobotPtr>& robots, bool col
 //    frame_center_pose.t.y = yview;
 
     // Draw robots
-    for (std::vector<Robot*>::const_iterator it = robots.begin(); it != robots.end(); ++it)
+    for (std::vector<RobotPtr>::const_iterator it = robots.begin(); it != robots.end(); ++it)
     {
         const Object& robot = world.object((*it)->robot_id);
         cv::Scalar robot_color(0, 0, 255);
