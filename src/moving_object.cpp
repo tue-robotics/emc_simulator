@@ -2,7 +2,7 @@
 
 geo::ShapePtr makeWorldSimObject(double width, double length){
 
-    geo::ShapePtr sub_shape = std::make_shared<geo::Shape>();
+    geo::ShapePtr shapePtr = std::make_shared<geo::Shape>();
     geo::MeshPtr mesh = std::make_shared<geo::Mesh>();
 
     mesh->addPoint(geo::Vector3(-length/2, -width/2, -1));
@@ -35,7 +35,7 @@ geo::ShapePtr makeWorldSimObject(double width, double length){
     mesh->addTriangle(12,14,15);
     sub_shape->setMesh(*mesh);
 
-    return sub_shape;
+    return shapePtr;
 }
 
 geo::ShapePtr makeWorldSimObject(MovingObject object){
