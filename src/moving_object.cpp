@@ -33,7 +33,7 @@ geo::ShapePtr makeWorldSimObject(double width, double length){
     mesh->addTriangle(8,10,11);
     mesh->addTriangle(12,13,14);
     mesh->addTriangle(12,14,15);
-    sub_shape->setMesh(*mesh);
+    shapePtr->setMesh(*mesh);
 
     return shapePtr;
 }
