@@ -27,7 +27,6 @@
 #include <string>
 
 #include <geolib/shapes.h>
-#include <geolib/CompositeShape.h>
 #include "virtualbase.h"
 #include "moving_object.h"
 #include "random"
