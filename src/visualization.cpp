@@ -11,7 +11,7 @@
 double resolution = 0.01;
 cv::Point2d canvas_center;
 
-double robotRadius= 0.21;
+double robotRadius = 0.21;
 
 
 namespace visualization
@@ -78,20 +78,23 @@ void visualize(const World& world, const std::vector<RobotPtr>& robots, bool col
         const Object& robot = world.object((*it)->robot_id);
         cv::Scalar robot_color(0, 0, 255);
 
+        // scaling of the head and LRF (which should be drawn inside the circumference of the robot)
+        const double scaling = 1.0;
+
         std::vector<geo::Vector3> robot_head_points;
         std::vector<geo::Vector3> eye_points;
         std::vector<geo::Vector3> eye_pupil_points;
         std::vector<geo::Vector3> lrf_point;
 
-        robot_head_points.push_back(geo::Vector3( 0.075, -0.175, 0));
-        robot_head_points.push_back(geo::Vector3( 0.075,  0.175, 0));
-        robot_head_points.push_back(geo::Vector3(-0.075,  0.175, 0));
-        robot_head_points.push_back(geo::Vector3(-0.075, -0.175, 0));
-        eye_points.push_back(geo::Vector3( 0.0,  0.075, 0));
-        eye_points.push_back(geo::Vector3( 0.0, -0.075, 0));
-        eye_pupil_points.push_back(geo::Vector3( 0.015,  0.075, 0));
-        eye_pupil_points.push_back(geo::Vector3( 0.015, -0.075, 0));
-        lrf_point.push_back(geo::Vector3( 0.175, 0.0, 0));
+        robot_head_points.push_back(scaling*geo::Vector3( 0.08, -0.16, 0));
+        robot_head_points.push_back(scaling*geo::Vector3( 0.08,  0.16, 0));
+        robot_head_points.push_back(scaling*geo::Vector3(-0.08,  0.16, 0));
+        robot_head_points.push_back(scaling*geo::Vector3(-0.08, -0.16, 0));
+        eye_points.push_back(scaling*geo::Vector3( 0.0,  0.07, 0));
+        eye_points.push_back(scaling*geo::Vector3( 0.0, -0.07, 0));
+        eye_pupil_points.push_back(scaling*geo::Vector3( 0.025,  0.07, 0));
+        eye_pupil_points.push_back(scaling*geo::Vector3( 0.025, -0.07, 0));
+        lrf_point.push_back(scaling*geo::Vector3( 0.15, 0.0, 0));
 
         if(show_full_map == true) {
             for (unsigned int i = 0; i < robot_head_points.size(); ++i) {
@@ -129,17 +132,17 @@ void visualize(const World& world, const std::vector<RobotPtr>& robots, bool col
         for(unsigned int i = 0; i < eye_points.size(); ++i)
         {
             cv::Point2d pEye = worldToCanvas(eye_points[i]);
-            cv::circle(canvas, pEye, 4, robot_color, 2);
+            cv::circle(canvas, pEye, scaling*4, robot_color, 2);
         }
         for(unsigned int i = 0; i < eye_pupil_points.size(); ++i)
         {
             cv::Point2d pEyePupil = worldToCanvas(eye_pupil_points[i]);
-            cv::circle(canvas, pEyePupil, 1, robot_color, 2);
+            cv::circle(canvas, pEyePupil, scaling*1.5, robot_color, 2);
         }
         cv::Point2d pLRF = worldToCanvas(lrf_point[0]);
-        cv::circle(canvas, pLRF, 2, robot_color, 2);
-        cv::Point2d pcent = worldToCanvas((0,0,0));
-        cv::circle(canvas, pcent, robotRadius/resolution, robot_color, 2);
+        cv::circle(canvas, pLRF, scaling*2, robot_color, 2);
+        cv::Point2d pRobotCenter = worldToCanvas((0,0,0));
+        cv::circle(canvas, pRobotCenter, robotRadius/resolution, robot_color, 2);
     }
 
     for(std::vector<Object>::const_iterator it = world.objects().begin(); it != world.objects().end(); ++it)
