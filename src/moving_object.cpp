@@ -1,8 +1,7 @@
 #include "moving_object.h"
 
-geo::CompositeShapePtr makeWorldSimObject(double width, double length){
+geo::ShapePtr makeWorldSimObject(double width, double length){
 
-    geo::CompositeShapePtr shape_ptr = std::make_shared<geo::CompositeShape>();
     geo::ShapePtr sub_shape = std::make_shared<geo::Shape>();
     geo::MeshPtr mesh = std::make_shared<geo::Mesh>();
 
@@ -35,12 +34,11 @@ geo::CompositeShapePtr makeWorldSimObject(double width, double length){
     mesh->addTriangle(12,13,14);
     mesh->addTriangle(12,14,15);
     sub_shape->setMesh(*mesh);
-    shape_ptr->addShape(*sub_shape, geo::Pose3D::identity());
 
-    return shape_ptr;
+    return sub_shape;
 }
 
-geo::CompositeShapePtr makeWorldSimObject(MovingObject object){
+geo::ShapePtr makeWorldSimObject(MovingObject object){
     return makeWorldSimObject(object.width, object.length);
 }
 

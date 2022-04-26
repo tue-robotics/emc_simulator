@@ -29,7 +29,7 @@ struct MovingObject
     geo::ShapePtr shape;
 };
 
-geo::CompositeShapePtr makeWorldSimObject(double width, double height);
-geo::CompositeShapePtr makeWorldSimObject(MovingObject object);
+geo::ShapePtr makeWorldSimObject(double width, double height);
+geo::ShapePtr makeWorldSimObject(MovingObject object);
 
 #endif //PROJECT_MOVING_OBJECT_H
