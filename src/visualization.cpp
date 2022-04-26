@@ -81,10 +81,11 @@ void visualize(const World& world, const std::vector<RobotPtr>& robots, bool col
         // scaling of the head and LRF (which should be drawn inside the circumference of the robot)
         const double scaling = 1.0;
 
+        geo::Vector3 robot_center_point = geo::Vector3( 0.0, 0.0, 0);
+        geo::Vector3 lrf_point = scaling*geo::Vector3( 0.15, 0.0, 0);
         std::vector<geo::Vector3> robot_head_points;
         std::vector<geo::Vector3> eye_points;
         std::vector<geo::Vector3> eye_pupil_points;
-        std::vector<geo::Vector3> lrf_point;
 
         robot_head_points.push_back(scaling*geo::Vector3( 0.08, -0.16, 0));
         robot_head_points.push_back(scaling*geo::Vector3( 0.08,  0.16, 0));
@@ -94,9 +95,10 @@ void visualize(const World& world, const std::vector<RobotPtr>& robots, bool col
         eye_points.push_back(scaling*geo::Vector3( 0.0, -0.07, 0));
         eye_pupil_points.push_back(scaling*geo::Vector3( 0.025,  0.07, 0));
         eye_pupil_points.push_back(scaling*geo::Vector3( 0.025, -0.07, 0));
-        lrf_point.push_back(scaling*geo::Vector3( 0.15, 0.0, 0));
 
         if(show_full_map == true) {
+            robot_center_point = (robot.pose * robot_center_point) + geo::Vector3(-xview, -yview, 0);
+            lrf_point = (robot.pose * lrf_point) + geo::Vector3(-xview, -yview, 0);
             for (unsigned int i = 0; i < robot_head_points.size(); ++i) {
                 robot_head_points[i] = (robot.pose * robot_head_points[i]) + geo::Vector3(-xview, -yview, 0);
             }
@@ -106,10 +108,11 @@ void visualize(const World& world, const std::vector<RobotPtr>& robots, bool col
             for (unsigned int i = 0; i < eye_pupil_points.size(); ++i) {
                 eye_pupil_points[i] = (robot.pose * eye_pupil_points[i]) + geo::Vector3(-xview, -yview, 0);
             }
-            lrf_point[0] = (robot.pose * lrf_point[0]) + geo::Vector3(-xview, -yview, 0);
         }
         else
         {
+            robot_center_point = (frame_center_pose.inverse() * robot.pose * robot_center_point);
+            lrf_point = (frame_center_pose.inverse() * robot.pose * lrf_point);
             for (unsigned int i = 0; i < robot_head_points.size(); ++i) {
                 robot_head_points[i] = (frame_center_pose.inverse() * robot.pose * robot_head_points[i]);
             }
@@ -119,8 +122,12 @@ void visualize(const World& world, const std::vector<RobotPtr>& robots, bool col
             for (unsigned int i = 0; i < eye_pupil_points.size(); ++i) {
                 eye_pupil_points[i] = (frame_center_pose.inverse() * robot.pose * eye_pupil_points[i]);
             }
-            lrf_point[0] = (frame_center_pose.inverse() * robot.pose * lrf_point[0]);
         }
+
+        cv::Point2d pLRF = worldToCanvas(lrf_point);
+        cv::circle(canvas, pLRF, scaling*2, robot_color, 2);
+        cv::Point2d pRobotCenter = worldToCanvas(robot_center_point);
+        cv::circle(canvas, pRobotCenter, robotRadius/resolution, robot_color, 2);
 
         for(unsigned int i = 0; i < robot_head_points.size(); ++i)
         {
@@ -139,10 +146,6 @@ void visualize(const World& world, const std::vector<RobotPtr>& robots, bool col
             cv::Point2d pEyePupil = worldToCanvas(eye_pupil_points[i]);
             cv::circle(canvas, pEyePupil, scaling*1.5, robot_color, 2);
         }
-        cv::Point2d pLRF = worldToCanvas(lrf_point[0]);
-        cv::circle(canvas, pLRF, scaling*2, robot_color, 2);
-        cv::Point2d pRobotCenter = worldToCanvas((0,0,0));
-        cv::circle(canvas, pRobotCenter, robotRadius/resolution, robot_color, 2);
     }
 
     for(std::vector<Object>::const_iterator it = world.objects().begin(); it != world.objects().end(); ++it)
