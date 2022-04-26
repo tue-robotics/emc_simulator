@@ -9,7 +9,6 @@
 
 #include <geolib/datatypes.h>
 
-
 struct MovingObject
 {
     Id id;
