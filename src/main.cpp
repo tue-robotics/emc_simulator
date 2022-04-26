@@ -109,8 +109,8 @@ int main(int argc, char **argv){
 
     // Add robots
     geo::Shape robot_shape_cyl;
-    geo::createCylinder(robot_shape_cyl,robot_radius,1,8);
-    geo::ShapeConstPtr robot_shape(&robot_shape_cyl);
+    geo::createCylinder(robot_shape_cyl,robot_radius,1,32); // height = 1, nvertices = 32;
+    geo::ShapePtr robot_shape = std::make_shared<geo::Shape>(robot_shape_cyl);
     geo::Vector3 robot_color(0, 0, 1);
     
     std::vector<RobotPtr> robots;
