@@ -10,7 +10,7 @@ namespace visualization
         double xmin, ymin, xmax, ymax;
     };
 
-void visualize(const World& world, const std::vector<Robot*>& robots, bool collision, bool show_full_map,Bbox bbox);
+void visualize(const World& world, const std::vector<RobotPtr>& robots, bool collision, bool show_full_map,Bbox bbox);
 
 }
 

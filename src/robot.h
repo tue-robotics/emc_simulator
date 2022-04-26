@@ -53,4 +53,7 @@ private:
 
 };
 
+typedef Robot* RobotPtr;
+
+
 #endif

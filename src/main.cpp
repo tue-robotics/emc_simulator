@@ -113,7 +113,7 @@ int main(int argc, char **argv){
     geo::ShapeConstPtr robot_shape(&robot_shape_cyl);
     geo::Vector3 robot_color(0, 0, 1);
     
-    std::vector<Robot*> robots;    
+    std::vector<RobotPtr> robots;
     Id hero_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color, robottype);
     Robot hero("hero", hero_id);
     hero.base.setDisableSpeedCap(config.disable_speedcap.value());
@@ -152,7 +152,7 @@ int main(int argc, char **argv){
             time_ = time.toSec();
         }
 
-        for (std::vector<Robot*>::iterator it = robots.begin(); it != robots.end(); ++it)
+        for (std::vector<RobotPtr>::iterator it = robots.begin(); it != robots.end(); ++it)
         {
             Robot& robot = **it;
             geo::Pose3D robot_pose = world.object(robot.robot_id).pose;
@@ -257,7 +257,7 @@ int main(int argc, char **argv){
         bool collision = false;
 
         // create output
-        for (std::vector<Robot*>::iterator it = robots.begin(); it != robots.end(); ++it)
+        for (std::vector<RobotPtr>::iterator it = robots.begin(); it != robots.end(); ++it)
         {
             Robot& robot = **it;
             // Create laser data
