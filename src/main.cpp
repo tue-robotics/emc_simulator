@@ -7,7 +7,6 @@
 #include "robot.h"
 
 #include <unistd.h>
-#include <tue/profiling/timer.h>
 #include <geolib/ros/msg_conversions.h>
 #include <geolib/Box.h>
 #include "jsonconfig.h"

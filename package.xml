@@ -13,7 +13,6 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <depend>code_profiler</depend>
   <depend>geolib2</depend>
   <depend>roscpp</depend>
   <depend>roslib</depend>
