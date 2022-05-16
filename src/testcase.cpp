@@ -14,45 +14,49 @@
 
 int main(int argc, char **argv)
 {
-    std::string heightmap_filename = "/data/heightmap";
+    std::string heightmap_filename = "data/heightmap";
+    if (argc > 1)
+        heightmap_filename = argv[1];
     std::string heightmap_ext = ".pgm";
     std::string heightmap_export = ".stl"; 
-    std::string heightmap_in = ros::package::getPath("emc_simulator") + heightmap_filename + heightmap_ext;
+    std::string heightmap_in = ros::package::getPath("emc_simulator") + "/" + heightmap_filename + heightmap_ext;
 
-    geo::Vector3 rpose = (0,0,0);
+    geo::Vector3 rpose(0, 0, 0);
+    if (argc > 4)
+            rpose = geo::Vector3(std::atof(argv[2]), std::atof(argv[3]), std::atof(argv[4]));
 
     std::vector<Door> doors;
     geo::ShapePtr heightmap = createHeightMapShape(heightmap_in, doors);
 
-    bool test   =  false;
+    bool collision = false;
     double dist = 0;
 
     double dist_0 = 0.15;
-    double dist_st= 0.004;
+    double dist_step= 0.004;
     int N = 100;
 
     for (int i = 0; i < N; i++)
     {
-        dist = dist_0 + i * dist_st;
-        test = heightmap->intersect(rpose,dist);
+        dist = dist_0 + i * dist_step;
+        collision = heightmap->intersect(rpose,dist);
  
-        if (test)
+        if (collision)
         {
             break;
         }
     }   
 
-    if (test)
+    if (collision)
     {
-        std::cout<< "Dist " << dist <<" Collision" <<std::endl;
+        std::cout<< "Dist: " << dist << " Collision" <<std::endl;
     }
     else
     {
-        std::cout<< "Dist " << dist <<"NO Collision" <<std::endl;
+        std::cout<< "Dist: " << dist << " NO Collision" <<std::endl;
     }
 
     geo::Exporter exp;
-    std::string exportFilename = ros::package::getPath("emc_simulator") + heightmap_filename + heightmap_export;
+    std::string exportFilename = ros::package::getPath("emc_simulator") + "/" + heightmap_filename + heightmap_export;
     exp.writeMeshFile(exportFilename, *heightmap);
     }
     
