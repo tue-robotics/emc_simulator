@@ -57,7 +57,7 @@ speedBindings={
 class PublishThread(threading.Thread):
     def __init__(self, rate, robot_name):
         super(PublishThread, self).__init__()
-        self.publisher = rospy.Publisher('/' + robot_name + '/base/references', Twist, queue_size=1)
+        self.publisher = rospy.Publisher('/ropod/cmd_vel', Twist, queue_size=1)
         self.x = 0.0
         self.y = 0.0
         self.th = 0.0
