@@ -94,6 +94,14 @@ public:
             enable_taco = false;
         }
 
+        //Check if pyro is used in json
+        if(doc.find("use_pyro") != doc.end()){
+            use_pyro = doc.at("use_pyro");
+        }
+        else{
+            use_pyro = true;
+        }
+
     }
 
     void print(){
@@ -102,6 +110,7 @@ public:
         std::cout << "Show full map: " << show_full_map.value() << std::endl;
         std::cout << "disable_speedcap: " << disable_speedcap.value() << std::endl;
         std::cout << "enable taco: " << enable_taco.value() << std::endl;
+        std::cout << "use pyro: " << use_pyro.value() << std::endl;
         std::cout << "imported " << moving_objects.value().size() << " moving objects" << std::endl;
     }
 
@@ -113,6 +122,7 @@ public:
     boost::optional<std::vector<MovingObject>> moving_objects;
     boost::optional<bool> disable_speedcap;
     boost::optional<bool> enable_taco;
+    boost::optional<bool> use_pyro;
 };
 
 
