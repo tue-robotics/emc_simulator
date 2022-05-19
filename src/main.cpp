@@ -270,8 +270,10 @@ int main(int argc, char **argv){
             std_msgs::Bool bump_msg_f; // front bumper message
             std_msgs::Bool bump_msg_r; // rear bumper message
             bumper.generateBumperData(world,robot,bump_msg_f,bump_msg_r);
-            robot.pub_bumperF.publish(bump_msg_f);
-            robot.pub_bumperR.publish(bump_msg_r);
+            if(!config.use_pyro.value()){
+                robot.pub_bumperF.publish(bump_msg_f);
+                robot.pub_bumperR.publish(bump_msg_r);
+            }
 
             // Detect collission based on bumper data 
             collision = collision || bump_msg_f.data || bump_msg_r.data;
