@@ -33,11 +33,11 @@ Robot::Robot(std::string name, Id id)
     // Publishers
     pub_bumperF = nh.advertise<std_msgs::Bool>("/" + robot_name + "/base_f_bumper_sensor", 1);
     pub_bumperR = nh.advertise<std_msgs::Bool>("/" + robot_name + "/base_b_bumper_sensor", 1);
-    pub_laser = nh.advertise<sensor_msgs::LaserScan>("/" + robot_name + "/base_scan", 1);
-    pub_odom = nh.advertise<nav_msgs::Odometry>("/" + robot_name + "/base/measurements", 1);
+    pub_laser = nh.advertise<sensor_msgs::LaserScan>("/scan", 1);
+    pub_odom = nh.advertise<nav_msgs::Odometry>("/odom", 1);
 
     // Subscribers
-    sub_base_ref = nh.subscribe<geometry_msgs::Twist>("/" + robot_name + "/base/references", 1, &Robot::baseReferenceCallback, this);
+    sub_base_ref = nh.subscribe<geometry_msgs::Twist>("/cmd_vel", 1, &Robot::baseReferenceCallback, this);
     sub_open_door = nh.subscribe<std_msgs::Empty>("/" + robot_name + "/open_door", 1, &Robot::openDoorCallback, this);
     sub_speak = nh.subscribe<std_msgs::String>("/" + robot_name + "/text_to_speech/input", 1, &Robot::speakCallback, this);
 }

@@ -35,7 +35,7 @@
 
 int main(int argc, char **argv){
 
-    ros::init(argc, argv, "hero_simulator");
+    ros::init(argc, argv, "pyro_simulator");
 
     std::string heightmap_filename;
     heightmap_filename = ros::package::getPath("emc_simulator") + "/data/heightmap.pgm";
@@ -82,7 +82,7 @@ int main(int argc, char **argv){
     geo::ShapePtr heightmap = createHeightMapShape(heightmap_filename, doors);
     if (!heightmap)
     {
-        std::cout << "[HERO SIMULATOR] Heightmap could not be loaded" << std::endl;
+        std::cout << "[pyro SIMULATOR] Heightmap could not be loaded" << std::endl;
         return 1;
     }
     world.addObject(geo::Pose3D::identity(), heightmap, geo::Vector3(1, 1, 1), walltype);
@@ -111,8 +111,8 @@ int main(int argc, char **argv){
     geo::Vector3 robot_color(0, 0, 1);
     
     std::vector<RobotPtr> robots;
-    Id hero_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color, robottype);
-    robots.push_back(std::make_shared<Robot>("hero", hero_id));
+    Id pyro_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color, robottype);
+    robots.push_back(std::make_shared<Robot>("pyro", pyro_id));
     robots.back()->base.setDisableSpeedCap(config.disable_speedcap.value());
     robots.back()->base.setUncertainOdom(config.uncertain_odom.value());
 
