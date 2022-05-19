@@ -7,11 +7,7 @@
 
 #include "world.h"
 
-#include <geolib/CompositeShape.h>
-
-namespace geo {
-    typedef std::shared_ptr<geo::Mesh> MeshPtr;
-}
+#include <geolib/datatypes.h>
 
 struct MovingObject
 {
