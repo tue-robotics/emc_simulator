@@ -68,7 +68,10 @@ int main(int argc, char **argv){
 
     // The bumper class implementation uses an artificial lrf sensor
     Bumper bumper;
-    double robot_radius = 0.21; // [m]
+    double robot_radius = 0.21; // HERO radius [m]
+    if (config.use_pyro.value()) {
+        robot_radius = 0.17; // PYRO radius [m]
+    }
     bumper.setRobotRadius(robot_radius);
     double bumperSize = 0.01; // [m]
     bumper.setBumperRadius(bumperSize);
