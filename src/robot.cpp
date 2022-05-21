@@ -33,7 +33,7 @@ Robot::Robot(std::string name, Id id)
     // Publishers
     pub_bumperF = nh.advertise<std_msgs::Bool>("/" + robot_name + "/base_f_bumper_sensor", 1);
     pub_bumperR = nh.advertise<std_msgs::Bool>("/" + robot_name + "/base_b_bumper_sensor", 1);
-    pub_laser = nh.advertise<sensor_msgs::LaserScan>("/scan", 1);
+    pub_laser = nh.advertise<sensor_msgs::LaserScan>("/transformed_scan", 1);
     pub_odom = nh.advertise<nav_msgs::Odometry>("/odom", 1);
 
     // Subscribers
