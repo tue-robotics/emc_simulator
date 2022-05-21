@@ -2,6 +2,7 @@
   "uncertain_odom":true,
   "show_full_map":true,
   "enable_taco":true,
+  "use_pyro":true,
   "objects":[
     {
       "length": 1.0,

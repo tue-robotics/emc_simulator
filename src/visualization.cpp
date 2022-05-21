@@ -11,8 +11,6 @@
 double resolution = 0.01;
 cv::Point2d canvas_center;
 
-double robotRadius = 0.21;
-
 
 namespace visualization
 {
@@ -25,7 +23,7 @@ cv::Point2d worldToCanvas(const geo::Vector3& p)
 
 // ----------------------------------------------------------------------------------------------------
 
-void visualize(const World& world, const std::vector<RobotPtr>& robots, bool collision = false, bool show_full_map = false, Bbox centerframe = {-1e5, -1e5, 1e5, 1e5})
+void visualize(const World& world, const std::vector<RobotPtr>& robots, bool collision = false, bool show_full_map = false, Bbox centerframe = {-1e5, -1e5, 1e5, 1e5}, double robotRadius = 0.17)
 {
     int dim = 500;
     if(show_full_map){
@@ -79,7 +77,7 @@ void visualize(const World& world, const std::vector<RobotPtr>& robots, bool col
         cv::Scalar robot_color(0, 0, 255);
 
         // scaling of the head and LRF (which should be drawn inside the circumference of the robot)
-        const double scaling = 1.0;
+        const double scaling = robotRadius/0.21;
 
         geo::Vector3 robot_center_point = geo::Vector3( 0.0, 0.0, 0);
         geo::Vector3 lrf_point = scaling*geo::Vector3( 0.15, 0.0, 0);

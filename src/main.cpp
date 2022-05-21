@@ -35,7 +35,7 @@
 
 int main(int argc, char **argv){
 
-    ros::init(argc, argv, "hero_simulator");
+    ros::init(argc, argv, "pyro_simulator");
 
     std::string heightmap_filename;
     heightmap_filename = ros::package::getPath("emc_simulator") + "/data/heightmap.pgm";
@@ -67,7 +67,10 @@ int main(int argc, char **argv){
 
     // The bumper class implementation uses an artificial lrf sensor
     Bumper bumper;
-    double robot_radius = 0.21; // [m]
+    double robot_radius = 0.21; // HERO radius [m]
+    if (config.use_pyro.value()) {
+        robot_radius = 0.17; // PYRO radius [m]
+    }
     bumper.setRobotRadius(robot_radius);
     double bumperSize = 0.01; // [m]
     bumper.setBumperRadius(bumperSize);
@@ -82,7 +85,7 @@ int main(int argc, char **argv){
     geo::ShapePtr heightmap = createHeightMapShape(heightmap_filename, doors);
     if (!heightmap)
     {
-        std::cout << "[HERO SIMULATOR] Heightmap could not be loaded" << std::endl;
+        std::cout << "[pyro SIMULATOR] Heightmap could not be loaded" << std::endl;
         return 1;
     }
     world.addObject(geo::Pose3D::identity(), heightmap, geo::Vector3(1, 1, 1), walltype);
@@ -111,8 +114,8 @@ int main(int argc, char **argv){
     geo::Vector3 robot_color(0, 0, 1);
     
     std::vector<RobotPtr> robots;
-    Id hero_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color, robottype);
-    robots.push_back(std::make_shared<Robot>("hero", hero_id));
+    Id pyro_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color, robottype);
+    robots.push_back(std::make_shared<Robot>("pyro", pyro_id));
     robots.back()->base.setDisableSpeedCap(config.disable_speedcap.value());
     robots.back()->base.setUncertainOdom(config.uncertain_odom.value());
 
@@ -267,8 +270,10 @@ int main(int argc, char **argv){
             std_msgs::Bool bump_msg_f; // front bumper message
             std_msgs::Bool bump_msg_r; // rear bumper message
             bumper.generateBumperData(world,robot,bump_msg_f,bump_msg_r);
-            robot.pub_bumperF.publish(bump_msg_f);
-            robot.pub_bumperR.publish(bump_msg_r);
+            if(!config.use_pyro.value()){
+                robot.pub_bumperF.publish(bump_msg_f);
+                robot.pub_bumperR.publish(bump_msg_r);
+            }
 
             // Detect collission based on bumper data 
             collision = collision || bump_msg_f.data || bump_msg_r.data;
@@ -286,7 +291,7 @@ int main(int argc, char **argv){
 
         // Visualize
         if (visualize)
-            visualization::visualize(world, robots, collision, config.show_full_map.value(),bbox);
+            visualization::visualize(world, robots, collision, config.show_full_map.value(),bbox, robot_radius);
 
         if (collision)
             std::cout << "\033[1;;7;33m" << "COLLISION!" << "\033[0m\n"  << std::endl;
