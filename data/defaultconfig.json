@@ -1,4 +1,6 @@
 {
   "uncertain_odom":false,
-  "objects":[]
+  "show_full_map":false,
+  "objects":[],
+  "spawn":[0,0,1]
 }

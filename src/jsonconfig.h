@@ -106,6 +106,16 @@ public:
         else{
             use_pyro = true;
         }
+        
+        if(doc.find("spawn") != doc.end()){
+            std::vector<double> spawn_location = doc.at("spawn");
+            assert(spawn_location.size()==3);
+            spawn = geo::Pose3D(spawn_location[0],spawn_location[1],0,0,0,spawn_location[2]);
+        }
+        else{
+            spawn = geo::Pose3D::identity();
+        }
+        
 
     }
 
@@ -128,6 +138,7 @@ public:
     boost::optional<bool> disable_speedcap;
     boost::optional<bool> enable_taco;
     boost::optional<bool> use_pyro;
+    boost::optional<geo::Pose3D> spawn;
 };
 
 
