@@ -34,15 +34,20 @@ public:
 //        mapfile = s;
 
         // Read odometry settings
-        assert(doc.find("uncertain_odom") != doc.end());
-        bool b = doc.at("uncertain_odom");
-        uncertain_odom = b;
+        if(doc.find("uncertain_odom") != doc.end()){
+            uncertain_odom = doc.at("uncertain_odom");
+        }
+        else{
+            uncertain_odom = false;
+        }
 
-        // Read odometry settings
-        assert(doc.find("show_full_map") != doc.end());
-        bool b2 = doc.at("show_full_map");
-        show_full_map = b2;
-
+        // Read full map settings
+        if(doc.find("show_full_map") != doc.end()){
+            show_full_map = doc.at("show_full_map");
+        }
+        else{
+            show_full_map = false;
+        }
 
         // read moving objects
         std::vector<MovingObject> ms;

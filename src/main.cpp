@@ -290,8 +290,12 @@ int main(int argc, char **argv){
         }
 
         // Visualize
+        bool full_map = false;
+        if (config.show_full_map.value())
+            full_map = true;	
+        
         if (visualize)
-            visualization::visualize(world, robots, collision, config.show_full_map.value(),bbox, robot_radius);
+            visualization::visualize(world, robots, collision, full_map, bbox, robot_radius);
 
         if (collision)
             std::cout << "\033[1;;7;33m" << "COLLISION!" << "\033[0m\n"  << std::endl;
