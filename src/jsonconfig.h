@@ -51,35 +51,38 @@ public:
 
         // read moving objects
         std::vector<MovingObject> ms;
-        for (const auto& object : doc.at("objects") )
+        if(doc.find("objects") != doc.end())
         {
-            assert(object.is_object());
-            assert(object.find("length") != object.end());  //
-            assert(object.find("width") != object.end());  //
-            assert(object.find("trigger_radius") != object.end());  //
-            assert(object.find("init_pose") != object.end());  //
-            assert(object.find("final_pose") != object.end());  //
-            assert(object.find("velocity") != object.end());  //
-            assert(object.find("repeat") != object.end());  //
+            for (const auto& object : doc.at("objects") )
+            {
+                assert(object.is_object());
+                assert(object.find("length") != object.end());  //
+                assert(object.find("width") != object.end());  //
+                assert(object.find("trigger_radius") != object.end());  //
+                assert(object.find("init_pose") != object.end());  //
+                assert(object.find("final_pose") != object.end());  //
+                assert(object.find("velocity") != object.end());  //
+                assert(object.find("repeat") != object.end());  //
 
-            MovingObject m;
+                MovingObject m;
 
-            m.length = object.at("length");
-            m.width = object.at("width");
-            m.trigger_radius = object.at("trigger_radius");
-            m.velocity = object.at("velocity");
-            m.init_pose.setOrigin(geo::Vector3(object.at("init_pose")[0], object.at("init_pose")[1],0));
-            m.init_pose.setRPY(0,0,object.at("init_pose")[2]);
-            m.final_pose.setOrigin(geo::Vector3(object.at("final_pose")[0], object.at("final_pose")[1],0));
-            m.final_pose.setRPY(0,0,object.at("final_pose")[2]);
-            m.repeat = object.at("repeat");
+                m.length = object.at("length");
+                m.width = object.at("width");
+                m.trigger_radius = object.at("trigger_radius");
+                m.velocity = object.at("velocity");
+                m.init_pose.setOrigin(geo::Vector3(object.at("init_pose")[0], object.at("init_pose")[1],0));
+                m.init_pose.setRPY(0,0,object.at("init_pose")[2]);
+                m.final_pose.setOrigin(geo::Vector3(object.at("final_pose")[0], object.at("final_pose")[1],0));
+                m.final_pose.setRPY(0,0,object.at("final_pose")[2]);
+                m.repeat = object.at("repeat");
 
-            m.is_moving = false;
-            m.is_paused = false;
-            m.finished_moving = false;
+                m.is_moving = false;
+                m.is_paused = false;
+                m.finished_moving = false;
 
-            ms.push_back(m);
+                ms.push_back(m);
 
+            }
         }
         moving_objects = ms;
 
