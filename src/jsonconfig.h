@@ -119,7 +119,7 @@ public:
 
     }
 
-    void print(){// todo add custom spawn location
+    void print(){
         std::cout << "Simulator configuration settings:" << std::endl;
         std::cout << "Uncertain odom: " << uncertain_odom.value() << std::endl;
         std::cout << "Show full map: " << show_full_map.value() << std::endl;
