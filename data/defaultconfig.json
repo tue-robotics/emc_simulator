@@ -2,5 +2,5 @@
   "uncertain_odom":false,
   "show_full_map":false,
   "objects":[],
-  "spawn":[1,0,2]
+  "spawn":[0,0,0]
 }
