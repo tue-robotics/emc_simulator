@@ -114,13 +114,14 @@ int main(int argc, char **argv){
     geo::Vector3 robot_color(0, 0, 1);
     
     std::vector<RobotPtr> robots;
-    Id pyro_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color, robottype);
+    geo::Pose3D spawnLocation = config.spawn.value();
+    Id pyro_id = world.addObject(spawnLocation, robot_shape, robot_color, robottype);
     robots.push_back(std::make_shared<Robot>("pyro", pyro_id));
     robots.back()->base.setDisableSpeedCap(config.disable_speedcap.value());
     robots.back()->base.setUncertainOdom(config.uncertain_odom.value());
 
     if (config.enable_taco.value()){
-        Id taco_id = world.addObject(geo::Pose3D::identity(), robot_shape, robot_color, robottype);
+        Id taco_id = world.addObject(spawnLocation, robot_shape, robot_color, robottype);
         robots.push_back(std::make_shared<Robot>("taco", taco_id));
         robots.back()->base.setDisableSpeedCap(config.disable_speedcap.value());
         robots.back()->base.setUncertainOdom(config.uncertain_odom.value());
@@ -289,9 +290,9 @@ int main(int argc, char **argv){
             robot.pub_odom.publish(odom_msg);
         }
 
-        // Visualize
+        // Visualize             
         if (visualize)
-            visualization::visualize(world, robots, collision, config.show_full_map.value(),bbox, robot_radius);
+            visualization::visualize(world, robots, collision, config.show_full_map.value(), bbox, robot_radius);
 
         if (collision)
             std::cout << "\033[1;;7;33m" << "COLLISION!" << "\033[0m\n"  << std::endl;

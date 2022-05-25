@@ -1,5 +1,6 @@
 {
   "uncertain_odom":false,
   "show_full_map":false,
-  "objects":[]
+  "objects":[],
+  "initial_pose":[0,0,0]
 }
