@@ -290,11 +290,9 @@ int main(int argc, char **argv){
             robot.pub_odom.publish(odom_msg);
         }
 
-        // Visualize
-        bool full_map = config.show_full_map.value();
-              
+        // Visualize             
         if (visualize)
-            visualization::visualize(world, robots, collision, full_map, bbox, robot_radius);
+            visualization::visualize(world, robots, collision, config.show_full_map.value();, bbox, robot_radius);
 
         if (collision)
             std::cout << "\033[1;;7;33m" << "COLLISION!" << "\033[0m\n"  << std::endl;

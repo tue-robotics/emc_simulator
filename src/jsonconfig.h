@@ -107,8 +107,8 @@ public:
             use_pyro = true;
         }
         
-        if(doc.find("spawn") != doc.end()){
-            std::vector<double> spawn_location = doc.at("spawn");
+        if(doc.find("initial_pose") != doc.end()){
+            std::vector<double> spawn_location = doc.at("initial_pose");
             assert(spawn_location.size()==3);
             spawn = geo::Pose3D(spawn_location[0],spawn_location[1],0,0,0,spawn_location[2]); // config value is [x,y,theta] = [x,y,0,0,0,yaw]
         }
