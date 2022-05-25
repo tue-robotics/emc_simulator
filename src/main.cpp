@@ -114,13 +114,14 @@ int main(int argc, char **argv){
     geo::Vector3 robot_color(0, 0, 1);
     
     std::vector<RobotPtr> robots;
-    Id pyro_id = world.addObject(config.spawn.value(), robot_shape, robot_color, robottype);
+    geo::Pose3D spawnLocation = config.spawn.value();
+    Id pyro_id = world.addObject(spawnLocation, robot_shape, robot_color, robottype);
     robots.push_back(std::make_shared<Robot>("pyro", pyro_id));
     robots.back()->base.setDisableSpeedCap(config.disable_speedcap.value());
     robots.back()->base.setUncertainOdom(config.uncertain_odom.value());
 
     if (config.enable_taco.value()){
-        Id taco_id = world.addObject(config.spawn.value(), robot_shape, robot_color, robottype);
+        Id taco_id = world.addObject(spawnLocation, robot_shape, robot_color, robottype);
         robots.push_back(std::make_shared<Robot>("taco", taco_id));
         robots.back()->base.setDisableSpeedCap(config.disable_speedcap.value());
         robots.back()->base.setUncertainOdom(config.uncertain_odom.value());
@@ -290,10 +291,8 @@ int main(int argc, char **argv){
         }
 
         // Visualize
-        bool full_map = false;
-        if (config.show_full_map.value())
-            full_map = true;	
-        
+        bool full_map = config.show_full_map.value();
+              
         if (visualize)
             visualization::visualize(world, robots, collision, full_map, bbox, robot_radius);
 

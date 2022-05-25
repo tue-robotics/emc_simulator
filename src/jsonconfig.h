@@ -110,10 +110,10 @@ public:
         if(doc.find("spawn") != doc.end()){
             std::vector<double> spawn_location = doc.at("spawn");
             assert(spawn_location.size()==3);
-            spawn = geo::Pose3D(spawn_location[0],spawn_location[1],0,0,0,spawn_location[2]);
+            spawn = geo::Pose3D(spawn_location[0],spawn_location[1],0,0,0,spawn_location[2]); // config value is [x,y,theta] = [x,y,0,0,0,yaw]
         }
         else{
-            spawn = geo::Pose3D::identity();
+            spawn = geo::Pose3D::identity(); // [x,y,theta] = [0,0,0]
         }
         
 
@@ -126,6 +126,8 @@ public:
         std::cout << "disable_speedcap: " << disable_speedcap.value() << std::endl;
         std::cout << "enable taco: " << enable_taco.value() << std::endl;
         std::cout << "use pyro: " << use_pyro.value() << std::endl;
+        std::cout << "Spawn Location: "<< spawn.value().getOrigin()<< std::endl;
+        std::cout << "Spawn Rotation: " << spawn.value().getBasis() << std::endl; // Todo get yaw, geolib implm gives unexpected results.
         std::cout << "imported " << moving_objects.value().size() << " moving objects" << std::endl;
     }
 
