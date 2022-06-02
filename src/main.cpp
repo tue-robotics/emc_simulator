@@ -69,7 +69,7 @@ int main(int argc, char **argv){
     Bumper bumper;
     double robot_radius = 0.21; // HERO radius [m]
     if (config.use_pyro.value()) {
-        robot_radius = 0.17; // PYRO radius [m]
+        robot_radius = 0.13; // PYRO radius [m]
     }
     bumper.setRobotRadius(robot_radius);
     double bumperSize = 0.01; // [m]
