@@ -18,6 +18,11 @@ void Robot::speakCallback(const std_msgs::String::ConstPtr& msg)
     std::cout << robot_name << " says: " << "\033[1;31m" << msg->data << "\033[0m\n"  << std::endl;
 }
 
+void Robot::playCallback(const std_msgs::String::ConstPtr& msg)
+{
+    std::cout << robot_name << " plays: " << "\033[1;32m" << msg->data << "\033[0m\n"  << std::endl;
+}
+
 // ----------------------------------------------------------------------------------------------------
 
 Robot::Robot(std::string name, Id id)
@@ -40,6 +45,7 @@ Robot::Robot(std::string name, Id id)
     sub_base_ref = nh.subscribe<geometry_msgs::Twist>("/cmd_vel", 1, &Robot::baseReferenceCallback, this);
     sub_open_door = nh.subscribe<std_msgs::Empty>("/" + robot_name + "/open_door", 1, &Robot::openDoorCallback, this);
     sub_speak = nh.subscribe<std_msgs::String>("/" + robot_name + "/text_to_speech/input", 1, &Robot::speakCallback, this);
+    sub_play = nh.subscribe<std_msgs::String>("/" + robot_name + "/text_to_speech/file", 1, &Robot::playCallback, this);
 }
 
 // ----------------------------------------------------------------------------------------------------

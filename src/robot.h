@@ -47,9 +47,11 @@ private:
     ros::Subscriber sub_base_ref;
     ros::Subscriber sub_open_door;
     ros::Subscriber sub_speak;
+    ros::Subscriber sub_play;
     void baseReferenceCallback(const geometry_msgs::Twist::ConstPtr& msg);
     void openDoorCallback(const std_msgs::Empty::ConstPtr& msg);
     void speakCallback(const std_msgs::String::ConstPtr& msg);
+    void playCallback(const std_msgs::String::ConstPtr& msg);
 
 };
 
