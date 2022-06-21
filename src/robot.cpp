@@ -24,6 +24,7 @@ Robot::Robot(std::string name, Id id)
 {
     robot_name = name;
     robot_id = id;
+    request_open_door_ = false;
 
     // Set laser pose (in robot frame)
     laser_pose = geo::Pose3D::identity();
