@@ -7,7 +7,7 @@
 
 float randomUniform(float min, float max)
 {
-    return ((float)rand() / RAND_MAX) * (max - min) + min;
+    return (rand() / static_cast<float>(RAND_MAX)) * (max - min) + min;
 }
 
 // ----------------------------------------------------------------------------------------------------
