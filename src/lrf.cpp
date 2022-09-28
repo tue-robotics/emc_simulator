@@ -99,5 +99,3 @@ void LRF::generateLaserData(const World& world, const Robot& robot, sensor_msgs:
     // Stamp with current ROS time
     scan_msg.header.stamp = ros::Time(world.time());
 }
-
-
