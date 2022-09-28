@@ -56,6 +56,7 @@ catkin_package(
 
 include_directories(
     include
+    SYSTEM
     3rdparty
     ${catkin_INCLUDE_DIRS}
 )

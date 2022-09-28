@@ -6,7 +6,7 @@
 #define PROJECT_JSONCONFIG_H
 
 #include "moving_object.h"
-#include "../3rdparty/json.hpp"
+#include "json.hpp"
 #include <fstream>
 #include <boost/optional.hpp>
 
@@ -118,7 +118,6 @@ public:
         else{
             spawn = geo::Pose3D::identity(); // [x,y,theta] = [0,0,0]
         }
-        
 
     }
 
@@ -145,7 +144,5 @@ public:
     boost::optional<bool> use_pyro;
     boost::optional<geo::Pose3D> spawn;
 };
-
-
 
 #endif //PROJECT_JSONCONFIG_H
