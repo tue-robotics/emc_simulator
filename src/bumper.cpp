@@ -63,7 +63,7 @@ bool Bumper::_checkHits(const sensor_msgs::LaserScan& lrf_msg, const int indexSt
     return hit;
 }
 
-double Bumper::_radiusTheta(const double theta) const
+double Bumper::_radiusTheta(const double /*theta*/) const
 {
     return _robotRadius;
 }
