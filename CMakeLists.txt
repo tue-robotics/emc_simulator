@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(emc_simulator)
 
+add_compile_options(-Wall -Werror=all)
+add_compile_options(-Wextra -Werror=extra)
+
 find_package(catkin REQUIRED COMPONENTS
     geolib2
     roscpp
@@ -53,6 +56,7 @@ catkin_package(
 
 include_directories(
     include
+    SYSTEM
     3rdparty
     ${catkin_INCLUDE_DIRS}
 )

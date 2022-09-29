@@ -6,19 +6,19 @@
 #include <vector>
 
 typedef int Id;
-typedef enum {walltype, movingObjecttype, doortype, robottype, undefinedtype} TYPE;
+typedef enum {undefinedtype, walltype, movingObjecttype, doortype, robottype} ObjectType;
 
 
 struct Object
 {
-    Object() : vel_trans(0, 0, 0), vel_angular(0), color(1, 1, 1) {}
+    Object() : shape(nullptr), pose(), vel_trans(0, 0, 0), vel_angular(0), color(1, 1, 1), type(undefinedtype) {}
 
     geo::ShapeConstPtr shape;
     geo::Pose3D pose;
     geo::Vector3 vel_trans;
     double vel_angular;
     geo::Vector3 color;
-    TYPE type;
+    ObjectType type;
 };
 
 class World
@@ -32,7 +32,7 @@ public:
 
     void update(double dt);
 
-    Id addObject(const geo::Pose3D& pose, const geo::ShapeConstPtr& shape = geo::ShapeConstPtr(), const geo::Vector3& color = geo::Vector3(1, 1, 1), TYPE type = undefinedtype)
+    Id addObject(const geo::Pose3D& pose, const geo::ShapeConstPtr& shape = geo::ShapeConstPtr(), const geo::Vector3& color = geo::Vector3(1, 1, 1), ObjectType type = undefinedtype)
     {
         objects_.push_back(Object());
         Object& obj = objects_.back();

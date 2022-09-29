@@ -76,7 +76,6 @@ int main(int argc, char **argv){
     bumper.setBumperRadius(bumperSize);
 
     double cycle_freq = 30;
-    double cycle_time = 1 / cycle_freq;
 
     bool visualize = true;
 

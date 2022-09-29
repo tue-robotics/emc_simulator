@@ -7,7 +7,7 @@
 
 float randomUniform(float min, float max)
 {
-    return ((float)rand() / RAND_MAX) * (max - min) + min;
+    return (rand() / static_cast<float>(RAND_MAX)) * (max - min) + min;
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -99,5 +99,3 @@ void LRF::generateLaserData(const World& world, const Robot& robot, sensor_msgs:
     // Stamp with current ROS time
     scan_msg.header.stamp = ros::Time(world.time());
 }
-
-

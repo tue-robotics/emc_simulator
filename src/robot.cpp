@@ -8,7 +8,7 @@ void Robot::baseReferenceCallback(const geometry_msgs::Twist::ConstPtr& msg)
 
 // ----------------------------------------------------------------------------------------------------
 
-void Robot::openDoorCallback(const std_msgs::Empty::ConstPtr& msg)
+void Robot::openDoorCallback(const std_msgs::Empty::ConstPtr& /*msg*/)
 {
     request_open_door_ = true;
 }

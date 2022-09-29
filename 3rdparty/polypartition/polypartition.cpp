@@ -429,7 +429,10 @@ int TPPLPartition::Triangulate_EC(TPPLPoly *poly, list<TPPLPoly> *triangles) {
 		if(i==numvertices-4) break;
 
 		UpdateVertex(ear->previous,vertices,numvertices);
-		UpdateVertex(ear->next,vertices,numvertices);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+	UpdateVertex(ear->next,vertices,numvertices);
+#pragma GCC diagnostic pop
 	}
 	for(i=0;i<numvertices;i++) {
 		if(vertices[i].isActive) {
