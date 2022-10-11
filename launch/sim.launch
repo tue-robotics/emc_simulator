@@ -1,0 +1,4 @@
+<launch>
+	<rosparam command="load" file="$(find emc_system)/parameters.yaml" />
+	<node pkg="emc_simulator" type="pico_simulator" name="simulator"/>
+</launch>
