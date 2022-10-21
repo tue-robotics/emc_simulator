@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
 <launch>
-	<rosparam command="load" file="$(find emc_system)/parameters.yaml" />
+	<rosparam command="load" file="$(find emc_simulator)/config/simbot_config.yaml" />
 	<node pkg="emc_simulator" type="pico_simulator" name="simulator"/>
 </launch>
