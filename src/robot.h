@@ -14,6 +14,10 @@
 #include <std_msgs/Bool.h>
 #include <sensor_msgs/LaserScan.h>
 
+#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/static_transform_broadcaster.h>
+#include <geometry_msgs/TransformStamped.h>
+
 #include <iostream>
 #include <string>
 
@@ -25,6 +29,8 @@ public:
     Robot(std::string name, Id id);
 
     ~Robot();
+
+    void pubTransform(geo::Pose3D pose);
 
     geo::Pose3D laser_pose;
     std::string robot_name;
@@ -39,6 +45,8 @@ public:
     ros::Publisher pub_bumperR;
     ros::Publisher pub_laser;
     ros::Publisher pub_odom;
+    tf2_ros::TransformBroadcaster pub_tf2;
+    tf2_ros::StaticTransformBroadcaster pub_tf2static;
 
 private:
     ros::NodeHandle nh;
@@ -50,7 +58,6 @@ private:
     void baseReferenceCallback(const geometry_msgs::Twist::ConstPtr& msg);
     void openDoorCallback(const std_msgs::Empty::ConstPtr& msg);
     void speakCallback(const std_msgs::String::ConstPtr& msg);
-
 };
 
 typedef std::shared_ptr<Robot> RobotPtr;
