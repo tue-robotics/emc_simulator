@@ -1,0 +1,13 @@
+<launch>
+
+    <arg name="heightmap" value="$(find emc_simulator)/data/heightmap.pgm"/>
+    <arg name="configfile" value="$(find emc_simulator)/data/defaultconfig.json"/>
+
+    <node name="mrc_sim" pkg = "emc_simulator" type="pico_simulator">
+        <param name = "heightmap" value = "$(arg heightmap)" type="string"/> 
+        <param name = "configfile" value = "$(arg configfile)" type ="string"/>    
+    </node>
+
+    <node name="mrc_sim_gui" pkg="rviz" type="rviz" args = "-d $(find emc_simulator)/config/default.rviz" />
+
+</launch>

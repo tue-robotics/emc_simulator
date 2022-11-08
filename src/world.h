@@ -3,6 +3,10 @@
 
 #include <geolib/datatypes.h>
 
+#include <ros/node_handle.h>
+#include <ros/publisher.h>
+#include <nav_msgs/OccupancyGrid.h>
+
 #include <vector>
 
 typedef int Id;
@@ -62,6 +66,8 @@ private:
 
     std::vector<Object> objects_;
 
+    ros::NodeHandle nh;
+    ros::Publisher pub_map;
 };
 
 #endif
