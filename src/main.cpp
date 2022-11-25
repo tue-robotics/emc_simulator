@@ -15,6 +15,7 @@
 #include <ros/init.h>
 #include <ros/publisher.h>
 #include <ros/node_handle.h>
+#include <nav_msgs/OccupancyGrid.h>
 #include <ros/package.h>
 
 #include <geometry_msgs/Twist.h>
@@ -32,10 +33,15 @@
 
 #include <vector>
 
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/viz/types.hpp>
+
 
 int main(int argc, char **argv){
 
     ros::init(argc, argv, "pyro_simulator");
+    ros::NodeHandle nodeHandle;
 
     std::string heightmap_filename;
     heightmap_filename = ros::package::getPath("emc_simulator") + "/data/heightmap.pgm";
@@ -78,6 +84,34 @@ int main(int argc, char **argv){
     double cycle_freq = 30;
 
     bool visualize = true;
+
+    // Publish map
+    ros::Publisher MapPublisher = nodeHandle.advertise<nav_msgs::OccupancyGrid>("map", 10, true);
+    cv::Mat image;
+    cv::imread(heightmap_filename, cv::IMREAD_GRAYSCALE).convertTo(image, CV_16UC1);
+    nav_msgs::OccupancyGrid map;
+    //fill in some map parameters
+    map.header.stamp = ros::Time(0);
+    map.header.frame_id = "map";
+    map.info.width = image.cols;
+    map.info.height = image.rows;
+    map.info.origin.orientation.w = 1;
+    map.info.resolution = 0.025;
+    map.info.origin.position.x = -((image.cols + 1) * map.info.resolution * 0.5f);
+    map.info.origin.position.y = -((image.rows + 1) * map.info.resolution * 0.5f);
+
+    //read the pixels of the image and fill the map table
+    int data;
+    for(int i = image.rows -1; i >= 0; i--)
+    {
+        for (int j = 0; j < image.cols; j++)
+        {
+            data = image.at<ushort>(i, j);
+            data = data * 100 / 255;
+            map.data.push_back(data);
+        }
+    }
+    MapPublisher.publish(map);
 
     // Load heightmap
     std::vector<Door> doors;
