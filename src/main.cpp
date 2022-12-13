@@ -271,7 +271,7 @@ int main(int argc, char **argv){
             LocationMsg.child_frame_id = "base_link";
             LocationMsg.transform.translation.x = robot_pose.t.x;
             LocationMsg.transform.translation.y = robot_pose.t.y;
-            LocationMsg.transform.translation.z = robot_pose.t.z-0.044;
+            LocationMsg.transform.translation.z = robot_pose.t.z+0.044;
             tf2::Quaternion q;
             q.setRPY(0, 0, robot_pose.getYaw());
             LocationMsg.transform.rotation.x = q.x();
