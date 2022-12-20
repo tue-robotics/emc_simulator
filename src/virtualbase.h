@@ -11,7 +11,6 @@
 #include "tf/tf.h"
 
 #include "random"
-#define _USE_MATH_DEFINES
 #include <cmath>
 
 /**
@@ -26,22 +25,21 @@ class Virtualbase
 {
 
 public:
-    Virtualbase()
+    Virtualbase(bool disable_speedcap = false, bool uncertain_odom = false) : disable_speedcap_(disable_speedcap), uncertain_odom_(uncertain_odom)
     {
         std::random_device rd;
         gen = std::mt19937(rd());
         //std::normal_distribution<double> dis(0.0,0.003);
         dis = std::uniform_real_distribution<double>(-0.002,0.002);
 
-        ROS_WARN("%s", uncertain_odom_ ? "true" : "false");
         if (uncertain_odom_) {
-            std::uniform_real_distribution<double> pos = std::uniform_real_distribution<double>(-2.0,2.0);
-            odometry_state.pose.pose.position.x = pos(gen);
-            odometry_state.pose.pose.position.y = pos(gen);
+            std::uniform_real_distribution<double> dis2 = std::uniform_real_distribution<double>(-2.0,2.0);
+            odometry_state.pose.pose.position.x = dis2(gen);
+            odometry_state.pose.pose.position.y = dis2(gen);
             odometry_state.pose.pose.position.z = 0.0;
-            pos = std::uniform_real_distribution<double>(0.0, 2 * M_PI);
+            dis2 = std::uniform_real_distribution<double>(0.0, 2 * M_PI);
             tf2::Quaternion q;
-            q.setRPY(0, 0, pos(gen));
+            q.setRPY(0, 0, dis2(gen));
             odometry_state.pose.pose.orientation.x = q.x();
             odometry_state.pose.pose.orientation.y = q.y();
             odometry_state.pose.pose.orientation.z = q.z();
@@ -59,12 +57,6 @@ public:
         }
 
         updateWheelUncertaintyFactors();
-    }
-
-    Virtualbase(bool disable_speedcap, bool uncertain_odom) : disable_speedcap_(disable_speedcap), uncertain_odom_(uncertain_odom)
-    {
-        ROS_WARN("Special constructor");
-        Virtualbase();
     }
 
     /**

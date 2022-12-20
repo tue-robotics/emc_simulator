@@ -20,11 +20,10 @@ void Robot::speakCallback(const std_msgs::String::ConstPtr& msg)
 
 // ----------------------------------------------------------------------------------------------------
 
-Robot::Robot(std::string name, Id id, bool disable_speedcap, bool uncertain_odom)
+Robot::Robot(std::string name, Id id, bool disable_speedcap, bool uncertain_odom) : base(disable_speedcap, uncertain_odom)
 {
     robot_name = name;
     robot_id = id;
-    base = Virtualbase(disable_speedcap, uncertain_odom);
     request_open_door_ = false;
 
     // Set laser pose (in robot frame)
@@ -43,8 +42,6 @@ Robot::Robot(std::string name, Id id, bool disable_speedcap, bool uncertain_odom
     sub_open_door = nh.subscribe<std_msgs::Empty>("/" + robot_name + "/open_door", 1, &Robot::openDoorCallback, this);
     sub_speak = nh.subscribe<std_msgs::String>("/" + robot_name + "/text_to_speech/input", 1, &Robot::speakCallback, this);
 }
-
-//Robot::Robot(std::string name, Id id):Robot(name, id, false, false) {}
 
 // ----------------------------------------------------------------------------------------------------
 
