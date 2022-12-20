@@ -11,6 +11,8 @@
 #include "tf/tf.h"
 
 #include "random"
+#define _USE_MATH_DEFINES
+#include <cmath>
 
 /**
  * Class that contains functionality for "virtual base" to mimic uncertainty
@@ -26,18 +28,34 @@ class Virtualbase
 public:
     Virtualbase()
     {
-        odometry_state.pose.pose.position.x = 0.0;
-        odometry_state.pose.pose.position.y = 0.0;
-        odometry_state.pose.pose.position.z = 0.0;
-        odometry_state.pose.pose.orientation.x = 0.0;
-        odometry_state.pose.pose.orientation.y = 0.0;
-        odometry_state.pose.pose.orientation.z = 0.0;
-        odometry_state.pose.pose.orientation.w = 1.0;
-
         std::random_device rd;
         gen = std::mt19937(rd());
         //std::normal_distribution<double> dis(0.0,0.003);
         dis = std::uniform_real_distribution<double>(-0.002,0.002);
+
+        if (uncertain_odom_) {
+            pos = std::uniform_real_distribution<double>(-2.0,2.0);
+            odometry_state.pose.pose.position.x = pos(gen);
+            odometry_state.pose.pose.position.y = pos(gen);
+            odometry_state.pose.pose.position.z = 0.0;
+            rot = std::uniform_real_distribution<double>(0.0, 2 * M_PI);
+            tf2::Quaternion q;
+            q.setRPY(0, 0, rot(gen));
+            odometry_state.pose.pose.orientation.x = q.x();
+            odometry_state.pose.pose.orientation.y = q.y();
+            odometry_state.pose.pose.orientation.z = q.z();
+            odometry_state.pose.pose.orientation.w = q.w();
+        }
+        else
+        {
+            odometry_state.pose.pose.position.x = 0.0;
+            odometry_state.pose.pose.position.y = 0.0;
+            odometry_state.pose.pose.position.z = 0.0;
+            odometry_state.pose.pose.orientation.x = 0.0;
+            odometry_state.pose.pose.orientation.y = 0.0;
+            odometry_state.pose.pose.orientation.z = 0.0;
+            odometry_state.pose.pose.orientation.w = 1.0;
+        }
 
         updateWheelUncertaintyFactors();
     }
