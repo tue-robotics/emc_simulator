@@ -33,6 +33,7 @@ public:
         //std::normal_distribution<double> dis(0.0,0.003);
         dis = std::uniform_real_distribution<double>(-0.002,0.002);
 
+        ROS_WARN("%s", uncertain_odom_ ? "true" : "false");
         if (uncertain_odom_) {
             std::uniform_real_distribution<double> pos = std::uniform_real_distribution<double>(-2.0,2.0);
             odometry_state.pose.pose.position.x = pos(gen);
@@ -62,6 +63,7 @@ public:
 
     Virtualbase(bool disable_speedcap, bool uncertain_odom) : disable_speedcap_(disable_speedcap), uncertain_odom_(uncertain_odom)
     {
+        ROS_WARN("Special constructor");
         Virtualbase();
     }
 
