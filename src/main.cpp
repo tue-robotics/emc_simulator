@@ -89,6 +89,7 @@ int main(int argc, char **argv){
     ros::Publisher MapPublisher = nodeHandle.advertise<nav_msgs::OccupancyGrid>("map", 10, true);
     cv::Mat image;
     cv::imread(heightmap_filename, cv::IMREAD_GRAYSCALE).convertTo(image, CV_16UC1);
+    cv::rotate(image, image, cv::ROTATE_90_CLOCKWISE);
     nav_msgs::OccupancyGrid map;
     //fill in some map parameters
     map.header.stamp = ros::Time(0);
