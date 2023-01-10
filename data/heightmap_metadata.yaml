@@ -1,0 +1,7 @@
+image: heightmap.pgm
+resolution: 0.025
+origin: [-13.25, -7.1125, 0.0]
+occupied_thresh: 1
+free_thresh: 0
+negate: 0
+mode: scale

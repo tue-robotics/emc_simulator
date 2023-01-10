@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <launch>
 	<rosparam command="load" file="$(find emc_simulator)/config/simbot_config.yaml" />
+	<node pkg="map_server" type="map_server" name="map_server" args="$(find emc_simulator)/data/heightmap_metadata.yaml"/>
 	<node pkg="emc_simulator" type="pico_simulator" name="simulator"/>
 </launch>
