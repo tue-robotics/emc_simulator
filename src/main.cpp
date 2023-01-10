@@ -31,6 +31,7 @@
 #include "virtualbase.h"
 #include "moving_object.h"
 #include "random"
+#include <opencv2/highgui/highgui.hpp>
 
 #include <vector>
 
@@ -48,6 +49,13 @@ int main(int argc, char **argv){
     // Create jointstate publisher (for use with state_publisher node)
     ros::NodeHandle nodehandle;
     ros::Publisher JointPublisher = nodehandle.advertise<sensor_msgs::JointState>("joint_states", 10, false);
+    double originX;
+    double originY;
+    {
+        cv::Mat image = cv::imread(heightmap_filename, cv::IMREAD_GRAYSCALE);
+        originX = (image.rows * 0.025 / 2);
+        originY = -(image.cols * 0.025 / 2);
+    }
 
     // Create location broadcaster
     tf2_ros::TransformBroadcaster LocationBroadcaster;
@@ -251,6 +259,7 @@ int main(int argc, char **argv){
                 robot.base.updateWheelUncertaintyFactors();
             }
             // Publish robot position
+
             sensor_msgs::JointState jointState;
             jointState.header.stamp = time;
 
@@ -269,8 +278,8 @@ int main(int argc, char **argv){
             LocationMsg.header.stamp = time;
             LocationMsg.header.frame_id = "map";
             LocationMsg.child_frame_id = "base_link";
-            LocationMsg.transform.translation.x = robot_pose.t.x;
-            LocationMsg.transform.translation.y = robot_pose.t.y;
+            LocationMsg.transform.translation.x = robot_pose.t.x + originX;
+            LocationMsg.transform.translation.y = robot_pose.t.y + originY;
             LocationMsg.transform.translation.z = robot_pose.t.z+0.044;
             tf2::Quaternion q;
             q.setRPY(0, 0, robot_pose.getYaw());
