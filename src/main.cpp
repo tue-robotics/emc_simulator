@@ -18,6 +18,7 @@
 #include <ros/package.h>
 #include <sensor_msgs/JointState.h>
 #include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/static_transform_broadcaster.h>
 
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
@@ -49,16 +50,31 @@ int main(int argc, char **argv){
     // Create jointstate publisher (for use with state_publisher node)
     ros::NodeHandle nodehandle;
     ros::Publisher JointPublisher = nodehandle.advertise<sensor_msgs::JointState>("joint_states", 10, false);
-    double originX;
-    double originY;
-    {
-        cv::Mat image = cv::imread(heightmap_filename, cv::IMREAD_GRAYSCALE);
-        originX = (image.rows * 0.025 / 2);
-        originY = -(image.cols * 0.025 / 2);
-    }
 
     // Create location broadcaster
     tf2_ros::TransformBroadcaster LocationBroadcaster;
+    tf2_ros::StaticTransformBroadcaster OriginBroadcaster;
+
+    {
+        cv::Mat image = cv::imread(heightmap_filename, cv::IMREAD_GRAYSCALE);
+        double originX = (image.cols * 0.025 / 2);
+        double originY = (image.rows * 0.025 / 2);
+        geometry_msgs::TransformStamped OriginMsg;
+        OriginMsg.header.stamp = ros::Time(0);
+        OriginMsg.header.frame_id = "map";
+        OriginMsg.child_frame_id = "origin";
+        OriginMsg.transform.translation.x = originX;
+        OriginMsg.transform.translation.y = originY;
+        OriginMsg.transform.translation.z = 0;
+        tf2::Quaternion q;
+        q.setRPY(0, 0, 1.570796);
+        OriginMsg.transform.rotation.x = q.x();
+        OriginMsg.transform.rotation.y = q.y();
+        OriginMsg.transform.rotation.z = q.z();
+        OriginMsg.transform.rotation.w = q.w();
+
+        OriginBroadcaster.sendTransform(OriginMsg);
+    }
 
     for(int i = 1; i < argc; i++){
         std::string config_supplied("--config");
@@ -276,10 +292,10 @@ int main(int argc, char **argv){
 
             geometry_msgs::TransformStamped LocationMsg;
             LocationMsg.header.stamp = time;
-            LocationMsg.header.frame_id = "map";
+            LocationMsg.header.frame_id = "origin";
             LocationMsg.child_frame_id = "base_link";
-            LocationMsg.transform.translation.x = robot_pose.t.x + originX;
-            LocationMsg.transform.translation.y = robot_pose.t.y + originY;
+            LocationMsg.transform.translation.x = robot_pose.t.x;
+            LocationMsg.transform.translation.y = robot_pose.t.y;
             LocationMsg.transform.translation.z = robot_pose.t.z+0.044;
             tf2::Quaternion q;
             q.setRPY(0, 0, robot_pose.getYaw());
@@ -310,7 +326,7 @@ int main(int argc, char **argv){
             Robot& robot = **it;
             // Create laser data
             sensor_msgs::LaserScan scan_msg;
-            scan_msg.header.frame_id = "laserframe";
+            scan_msg.header.frame_id = "base_link";
             scan_msg.header.stamp = time;
             lrf.generateLaserData(world, robot, scan_msg);
             robot.pub_laser.publish(scan_msg);
