@@ -19,6 +19,7 @@
 #include <sensor_msgs/JointState.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/static_transform_broadcaster.h>
+#include <visualization_msgs/Marker.h>
 
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
@@ -50,6 +51,7 @@ int main(int argc, char **argv){
     // Create jointstate publisher (for use with state_publisher node)
     ros::NodeHandle nodehandle;
     ros::Publisher JointPublisher = nodehandle.advertise<sensor_msgs::JointState>("joint_states", 10, false);
+    ros::Publisher marker_pub = nodehandle.advertise<visualization_msgs::Marker>("geometry", 10);
 
     // Create location broadcaster
     tf2_ros::TransformBroadcaster LocationBroadcaster;
@@ -355,6 +357,85 @@ int main(int argc, char **argv){
         // Visualize             
         if (visualize)
             visualization::visualize(world, robots, collision, config.show_full_map.value(), bbox, robot_radius);
+
+        visualization_msgs::Marker doors, moving_objects, undefined_objects;
+        doors.header.frame_id = "origin";
+        doors.header.stamp = ros::Time::now();
+        doors.ns = "geometry";
+        doors.action = visualization_msgs::Marker::ADD;
+        doors.pose.orientation.w = 1.0;
+        doors.type = visualization_msgs::Marker::LINE_LIST;
+        doors.id = 0;
+        doors.scale.x = 0.05;
+        doors.color.a = 1.0;
+        moving_objects = undefined_objects = doors;
+        doors.id = 0;
+        moving_objects.id = 1;
+        undefined_objects.id = 2;
+
+        doors.color.g = 1.0;
+        moving_objects.color.r = 1.0;
+
+        for(std::vector<Object>::const_iterator it = world.objects().begin(); it != world.objects().end(); ++it)
+        {
+            const Object& obj = *it;
+            if (!obj.shape)
+                continue;
+            if (obj.type == robottype)
+                continue;
+            if (obj.type == walltype)
+                continue;
+
+            const std::vector<geo::Vector3>& vertices = obj.shape->getMesh().getPoints();
+            const std::vector<geo::TriangleI>& triangles = obj.shape->getMesh().getTriangleIs();
+            
+            for(std::vector<geo::TriangleI>::const_iterator it2 = triangles.begin(); it2 != triangles.end(); ++it2)
+            {
+                const geo::TriangleI& triangle = *it2;
+                geo::Vec2d p1vec = (obj.pose * vertices[triangle.i1_]).projectTo2d();
+                geo::Vec2d p2vec = (obj.pose * vertices[triangle.i2_]).projectTo2d();
+                geo::Vec2d p3vec = (obj.pose * vertices[triangle.i3_]).projectTo2d();
+
+                geometry_msgs::Point p1;
+                p1.x = p1vec.x; p1.y = p1vec.y; p1.z = 0;
+                geometry_msgs::Point p2;
+                p2.x = p2vec.x; p2.y = p2vec.y; p2.z = 0;
+                geometry_msgs::Point p3;
+                p3.x = p3vec.x; p3.y = p3vec.y; p3.z = 0;
+
+                if (obj.type == doortype)
+                {
+                    doors.points.push_back(p1);
+                    doors.points.push_back(p2);
+                    doors.points.push_back(p2);
+                    doors.points.push_back(p3);
+                    doors.points.push_back(p3);
+                    doors.points.push_back(p1);
+                }
+                else if (obj.type == movingObjecttype)
+                {
+                    moving_objects.points.push_back(p1);
+                    moving_objects.points.push_back(p2);
+                    moving_objects.points.push_back(p2);
+                    moving_objects.points.push_back(p3);
+                    moving_objects.points.push_back(p3);
+                    moving_objects.points.push_back(p1);
+                }
+                else
+                {
+                    undefined_objects.points.push_back(p1);
+                    undefined_objects.points.push_back(p2);
+                    undefined_objects.points.push_back(p2);
+                    undefined_objects.points.push_back(p3);
+                    undefined_objects.points.push_back(p3);
+                    undefined_objects.points.push_back(p1);
+                }
+            }
+
+        }
+        marker_pub.publish(doors);
+        marker_pub.publish(moving_objects);
+        marker_pub.publish(undefined_objects);
 
         if (collision)
             std::cout << "\033[1;;7;33m" << "COLLISION!" << "\033[0m\n"  << std::endl;
