@@ -116,14 +116,10 @@ int main(int argc, char **argv){
     geo::Pose3D spawnLocation = config.spawn.value();
     Id pyro_id = world.addObject(spawnLocation, robot_shape, robot_color, robottype);
     robots.push_back(std::make_shared<Robot>("pyro", pyro_id, config.disable_speedcap.value(), config.uncertain_odom.value()));
-    //robots.back()->base.setDisableSpeedCap(config.disable_speedcap.value());
-    //robots.back()->base.setUncertainOdom(config.uncertain_odom.value());
 
     if (config.enable_taco.value()){
         Id taco_id = world.addObject(spawnLocation, robot_shape, robot_color, robottype);
         robots.push_back(std::make_shared<Robot>("taco", taco_id, config.disable_speedcap.value(), config.uncertain_odom.value()));
-        //robots.back()->base.setDisableSpeedCap(config.disable_speedcap.value());
-        //robots.back()->base.setUncertainOdom(config.uncertain_odom.value());
     }
 
     // Add door
