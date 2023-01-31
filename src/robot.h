@@ -6,8 +6,9 @@
 #include "world.h"
 
 // ROS
-#include <ros/ros.h>
+#include <ros/node_handle.h>
 #include <ros/publisher.h>
+#include <ros/subscriber.h>
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
 #include <std_msgs/Empty.h>
