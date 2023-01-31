@@ -1,5 +1,8 @@
 #include "virtualbase.h"
 
+#include <tf2/LinearMath/Transform.h>
+#include <tf2/LinearMath/Quaternion.h>
+
 Virtualbase::Virtualbase(bool disable_speedcap, bool uncertain_odom) : disable_speedcap_(disable_speedcap), uncertain_odom_(uncertain_odom)
 {
     std::random_device rd;
