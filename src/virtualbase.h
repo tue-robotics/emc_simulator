@@ -34,12 +34,12 @@ public:
 
         if (uncertain_odom_) {
             std::uniform_real_distribution<double> dis_pos_init = std::uniform_real_distribution<double>(-2.0,2.0);
-            odometry_state.pose.pose.position.x = dis2(gen);
-            odometry_state.pose.pose.position.y = dis2(gen);
+            odometry_state.pose.pose.position.x = dis_pos_init(gen);
+            odometry_state.pose.pose.position.y = dis_pos_init(gen);
             odometry_state.pose.pose.position.z = 0.0;
-             std::uniform_real_distribution<double> dis_angle_init = std::uniform_real_distribution<double>(0.0, 2 * M_PI);
+            std::uniform_real_distribution<double> dis_angle_init = std::uniform_real_distribution<double>(0.0, 2 * M_PI);
             tf2::Quaternion q;
-            q.setRPY(0, 0, dis2(gen));
+            q.setRPY(0, 0, dis_angle_init(gen));
             odometry_state.pose.pose.orientation.x = q.x();
             odometry_state.pose.pose.orientation.y = q.y();
             odometry_state.pose.pose.orientation.z = q.z();
