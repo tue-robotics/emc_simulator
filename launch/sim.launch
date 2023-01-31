@@ -4,5 +4,4 @@
 	<rosparam command="load" file="$(find emc_simulator)/config/simbot_config.yaml" />
 	<node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" />
 	<node pkg="emc_simulator" type="pico_simulator" name="simulator"/>
-	<node type="rviz" name="rviz" pkg="rviz" args="-d $(find emc_simulator)/rviz/config.rviz" />
 </launch>
