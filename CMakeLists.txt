@@ -71,6 +71,7 @@ add_executable(pico_simulator
     src/world.cpp
     src/heightmap.cpp
     src/visualization.cpp
+    src/virtualbase.cpp
     src/lrf.cpp
     src/robot.cpp
     src/moving_object.cpp
