@@ -19,7 +19,7 @@
 #include <sensor_msgs/JointState.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/static_transform_broadcaster.h>
-#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
 
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
@@ -48,36 +48,6 @@ int main(int argc, char **argv){
     std::string config_filename;
     config_filename = ros::package::getPath("emc_simulator") + "/data/defaultconfig.json";
 
-    // Create jointstate publisher (for use with state_publisher node)
-    ros::NodeHandle nodehandle;
-    ros::Publisher JointPublisher = nodehandle.advertise<sensor_msgs::JointState>("joint_states", 10, false);
-    ros::Publisher marker_pub = nodehandle.advertise<visualization_msgs::Marker>("geometry", 10);
-
-    // Create location broadcaster
-    tf2_ros::TransformBroadcaster LocationBroadcaster;
-    tf2_ros::StaticTransformBroadcaster OriginBroadcaster;
-
-    {
-        cv::Mat image = cv::imread(heightmap_filename, cv::IMREAD_GRAYSCALE);
-        double originX = (image.cols * 0.025 / 2);
-        double originY = (image.rows * 0.025 / 2);
-        geometry_msgs::TransformStamped OriginMsg;
-        OriginMsg.header.stamp = ros::Time(0);
-        OriginMsg.header.frame_id = "map";
-        OriginMsg.child_frame_id = "origin";
-        OriginMsg.transform.translation.x = originX;
-        OriginMsg.transform.translation.y = originY;
-        OriginMsg.transform.translation.z = 0;
-        tf2::Quaternion q;
-        q.setRPY(0, 0, 1.570796);
-        OriginMsg.transform.rotation.x = q.x();
-        OriginMsg.transform.rotation.y = q.y();
-        OriginMsg.transform.rotation.z = q.z();
-        OriginMsg.transform.rotation.w = q.w();
-
-        OriginBroadcaster.sendTransform(OriginMsg);
-    }
-
     for(int i = 1; i < argc; i++){
         std::string config_supplied("--config");
         std::string map_supplied("--map");
@@ -89,6 +59,23 @@ int main(int argc, char **argv){
             std::cout << "User map file supplied!" << std::endl;
             heightmap_filename = std::string(argv[i+1]);
         }
+    }
+
+    // Create jointstate publisher (for use with state_publisher node)
+    ros::NodeHandle nodehandle;
+    ros::Publisher JointPublisher = nodehandle.advertise<sensor_msgs::JointState>("joint_states", 10, false);
+    ros::Publisher marker_pub = nodehandle.advertise<visualization_msgs::MarkerArray>("geometry", 10);
+
+    // Create location broadcaster
+    tf2_ros::TransformBroadcaster LocationBroadcaster;
+
+    double mapOffsetX, mapOffsetY, mapRotation;
+    {
+        cv::Mat image = cv::imread(heightmap_filename, cv::IMREAD_GRAYSCALE);
+        mapOffsetX = (image.cols * 0.025 / 2);
+        mapOffsetY = (image.rows * 0.025 / 2);
+        mapRotation = 1.570796;
+        
     }
 
     Config config(config_filename);
@@ -294,13 +281,13 @@ int main(int argc, char **argv){
 
             geometry_msgs::TransformStamped LocationMsg;
             LocationMsg.header.stamp = time;
-            LocationMsg.header.frame_id = "origin";
+            LocationMsg.header.frame_id = "map";
             LocationMsg.child_frame_id = "base_link";
-            LocationMsg.transform.translation.x = robot_pose.t.x;
-            LocationMsg.transform.translation.y = robot_pose.t.y;
+            LocationMsg.transform.translation.x = robot_pose.t.x + mapOffsetX;
+            LocationMsg.transform.translation.y = robot_pose.t.y + mapOffsetY;
             LocationMsg.transform.translation.z = robot_pose.t.z+0.044;
             tf2::Quaternion q;
-            q.setRPY(0, 0, robot_pose.getYaw());
+            q.setRPY(0, 0, robot_pose.getYaw() + mapRotation);
             LocationMsg.transform.rotation.x = q.x();
             LocationMsg.transform.rotation.y = q.y();
             LocationMsg.transform.rotation.z = q.z();
@@ -358,23 +345,27 @@ int main(int argc, char **argv){
         if (visualize)
             visualization::visualize(world, robots, collision, config.show_full_map.value(), bbox, robot_radius);
 
-        visualization_msgs::Marker doors, moving_objects, undefined_objects;
-        doors.header.frame_id = "origin";
-        doors.header.stamp = ros::Time::now();
-        doors.ns = "geometry";
-        doors.action = visualization_msgs::Marker::ADD;
-        doors.pose.orientation.w = 1.0;
-        doors.type = visualization_msgs::Marker::LINE_LIST;
-        doors.id = 0;
-        doors.scale.x = 0.05;
-        doors.color.a = 1.0;
-        moving_objects = undefined_objects = doors;
-        doors.id = 0;
-        moving_objects.id = 1;
-        undefined_objects.id = 2;
-
-        doors.color.g = 1.0;
-        moving_objects.color.r = 1.0;
+        visualization_msgs::MarkerArray objects;
+        visualization_msgs::Marker object;
+        object.header.frame_id = "map";
+        object.header.stamp = ros::Time::now();
+        object.ns = "geometry";
+        object.action = visualization_msgs::Marker::MODIFY;
+        object.pose.position.x = mapOffsetX;
+        object.pose.position.y = mapOffsetY;
+        object.pose.position.z = 0.01;
+        tf2::Quaternion q;
+        q.setRPY(0, 0, mapRotation);
+        object.pose.orientation.x = q.x();
+        object.pose.orientation.y = q.y();
+        object.pose.orientation.z = q.z();
+        object.pose.orientation.w = q.w();
+        object.type = visualization_msgs::Marker::TRIANGLE_LIST;
+        object.scale.x = 1;
+        object.scale.y = 1;
+        object.scale.z = 1;
+        object.color.a = 1.0;
+        object.id = 0;
 
         for(std::vector<Object>::const_iterator it = world.objects().begin(); it != world.objects().end(); ++it)
         {
@@ -386,9 +377,30 @@ int main(int argc, char **argv){
             if (obj.type == walltype)
                 continue;
 
+            if (obj.type == doortype)
+            {
+                object.color.r = 0.0;
+                object.color.b = 0.0;
+                object.color.g = 1.0;
+            }
+            else if (obj.type == movingObjecttype)
+            {
+                object.color.r = 1.0;
+                object.color.b = 0.0;
+                object.color.g = 0.0;
+            }
+            else
+            {
+                object.color.r = 0.0;
+                object.color.b = 0.0;
+                object.color.g = 0.0;
+            }
+
+            object.points.clear();
+
             const std::vector<geo::Vector3>& vertices = obj.shape->getMesh().getPoints();
             const std::vector<geo::TriangleI>& triangles = obj.shape->getMesh().getTriangleIs();
-            
+
             for(std::vector<geo::TriangleI>::const_iterator it2 = triangles.begin(); it2 != triangles.end(); ++it2)
             {
                 const geo::TriangleI& triangle = *it2;
@@ -403,39 +415,15 @@ int main(int argc, char **argv){
                 geometry_msgs::Point p3;
                 p3.x = p3vec.x; p3.y = p3vec.y; p3.z = 0;
 
-                if (obj.type == doortype)
-                {
-                    doors.points.push_back(p1);
-                    doors.points.push_back(p2);
-                    doors.points.push_back(p2);
-                    doors.points.push_back(p3);
-                    doors.points.push_back(p3);
-                    doors.points.push_back(p1);
-                }
-                else if (obj.type == movingObjecttype)
-                {
-                    moving_objects.points.push_back(p1);
-                    moving_objects.points.push_back(p2);
-                    moving_objects.points.push_back(p2);
-                    moving_objects.points.push_back(p3);
-                    moving_objects.points.push_back(p3);
-                    moving_objects.points.push_back(p1);
-                }
-                else
-                {
-                    undefined_objects.points.push_back(p1);
-                    undefined_objects.points.push_back(p2);
-                    undefined_objects.points.push_back(p2);
-                    undefined_objects.points.push_back(p3);
-                    undefined_objects.points.push_back(p3);
-                    undefined_objects.points.push_back(p1);
-                }
+                object.points.push_back(p1);
+                object.points.push_back(p2);
+                object.points.push_back(p3);
             }
 
+            objects.markers.push_back(object);
+            object.id ++;
         }
-        marker_pub.publish(doors);
-        marker_pub.publish(moving_objects);
-        marker_pub.publish(undefined_objects);
+        marker_pub.publish(objects);
 
         if (collision)
             std::cout << "\033[1;;7;33m" << "COLLISION!" << "\033[0m\n"  << std::endl;

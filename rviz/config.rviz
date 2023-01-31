@@ -7,7 +7,6 @@ Panels:
         - /Global Options1
         - /Status1
         - /RobotModel1
-        - /Marker1/Status1
       Splitter Ratio: 0.5
     Tree Height: 651
   - Class: rviz/Selection
@@ -147,10 +146,10 @@ Visualization Manager:
       Update Interval: 0
       Value: true
       Visual Enabled: true
-    - Class: rviz/Marker
+    - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /geometry
-      Name: Marker
+      Name: MarkerArray
       Namespaces:
         geometry: true
       Queue Size: 100
