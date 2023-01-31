@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
     geolib2
     roscpp
     roslib
+    tf2
 )
 
 # find_package(Boost REQUIRED COMPONENTS system program_options)
