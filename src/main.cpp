@@ -27,6 +27,7 @@
 #include <iostream>
 #include <string>
 
+#include <tf2/LinearMath/Quaternion.h>
 #include <geolib/shapes.h>
 #include "virtualbase.h"
 #include "moving_object.h"
