@@ -20,7 +20,7 @@ void Robot::speakCallback(const std_msgs::String::ConstPtr& msg)
 
 // ----------------------------------------------------------------------------------------------------
 
-Robot::Robot(std::string name, Id id, bool disable_speedcap, bool uncertain_odom) : base(disable_speedcap, uncertain_odom)
+Robot::Robot(const std::string &name, Id id, bool disable_speedcap, bool uncertain_odom) : base(disable_speedcap, uncertain_odom)
 {
     robot_name = name;
     robot_id = id;

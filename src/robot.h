@@ -23,7 +23,7 @@ class Robot
 {
 
 public:
-    Robot(std::string name, Id id, bool disable_speedcap = false, bool uncertain_odom = false);
+    Robot(const std::string &name, Id id, bool disable_speedcap = false, bool uncertain_odom = false);
 
     ~Robot();
 
