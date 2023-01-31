@@ -69,20 +69,23 @@ void Virtualbase::applyTwistAndUpdate(const geometry_msgs::Twist& cmd, double dt
 
 nav_msgs::Odometry Virtualbase::update_odometry(const nav_msgs::Odometry odom, const geometry_msgs::Twist twist, double dt) const
 {
-    tf::Transform delta;
-    delta.setOrigin( tf::Vector3(twist.linear.x*dt, twist.linear.y*dt, 0));
-    delta.setRotation(tf::createQuaternionFromYaw(twist.angular.z*dt));
+    tf2::Transform delta;
+    delta.setOrigin( tf2::Vector3(twist.linear.x*dt, twist.linear.y*dt, 0));
 
-    tf::Transform Todom;
-    Todom.setRotation(tf::Quaternion(odom.pose.pose.orientation.x,
+    tf2::Quaternion q;
+    q.setRPY(0, 0, twist.angular.z*dt); 
+    delta.setRotation(q);
+
+    tf2::Transform Todom;
+    Todom.setRotation(tf2::Quaternion(odom.pose.pose.orientation.x,
                                         odom.pose.pose.orientation.y,
                                         odom.pose.pose.orientation.z,
                                         odom.pose.pose.orientation.w));
-    Todom.setOrigin(tf::Vector3(odom.pose.pose.position.x,
+    Todom.setOrigin(tf2::Vector3(odom.pose.pose.position.x,
                                 odom.pose.pose.position.y,
                                 0));
 
-    tf::Transform new_odom = Todom*delta;
+    tf2::Transform new_odom = Todom*delta;
 
     nav_msgs::Odometry new_odom_msg;
     new_odom_msg.pose.pose.position.x = new_odom.getOrigin()[0];
