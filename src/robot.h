@@ -6,6 +6,7 @@
 #include "world.h"
 
 // ROS
+#include <ros/ros.h>
 #include <ros/publisher.h>
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
