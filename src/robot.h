@@ -19,7 +19,9 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/static_transform_broadcaster.h>
+
 #include <geometry_msgs/TransformStamped.h>
+#include <sensor_msgs/JointState.h>
 
 #include <iostream>
 #include <string>
@@ -32,7 +34,7 @@ public:
 
     ~Robot();
 
-    void pubTransform(geo::Pose3D pose);
+    void pubTransform(const geo::Pose3D &pose, const double &mapOffsetX, const &double mapOffsetY, const double &mapRotation);
 
     geo::Pose3D laser_pose;
     std::string robot_name;
@@ -49,6 +51,7 @@ public:
     ros::Publisher pub_odom;
     tf2_ros::TransformBroadcaster pub_tf2;
     tf2_ros::StaticTransformBroadcaster pub_tf2static;
+    ros::Publisher pub_joints;
 
 private:
     ros::NodeHandle nh;
