@@ -47,7 +47,7 @@ Robot::Robot(std::string name, Id id)
 
     tfbase2lrf.header.stamp = ros::Time::now();
     tfbase2lrf.header.frame_id = robot_name + "/base_link";
-    tfbase2lrf.child_frame_id = robot_name + "/laser";
+    tfbase2lrf.child_frame_id = "laserframe";
     tfbase2lrf.transform.translation.x = 0;
     tfbase2lrf.transform.translation.y = 0;
     tfbase2lrf.transform.translation.z = 0;
