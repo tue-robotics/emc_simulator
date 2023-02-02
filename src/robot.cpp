@@ -50,7 +50,7 @@ Robot::~Robot()
 {
 }
 
-void Robot::pubTransform(const geo::Pose3D &pose, const double &mapOffsetX, const &double mapOffsetY, const double &mapRotation)
+void Robot::pubTransform(const geo::Pose3D &pose, const double &mapOffsetX, const double &mapOffsetY, const double &mapRotation)
 {
     // Publish jointstate
     sensor_msgs::JointState jointState;
@@ -61,16 +61,15 @@ void Robot::pubTransform(const geo::Pose3D &pose, const double &mapOffsetX, cons
                        "rear_left_wheel_hinge", 
                        "rear_right_wheel_hinge"};
     jointState.position = {0, 0, 0, 0};
-    JointPublisher.publish(jointState);
+    pub_joints.publish(jointState);
 
     // Publish tf transform
     geometry_msgs::TransformStamped transformStamped;
-    
     transformStamped.header.stamp = ros::Time::now();
     transformStamped.header.frame_id = "map";
-    transformStamped.child_frame_id = robot_name + "/base_link";
-    transformStamped.transform.translation.x = pose.t.x;
-    transformStamped.transform.translation.y = pose.t.y;
+    transformStamped.child_frame_id = "/body_link";
+    transformStamped.transform.translation.x = pose.t.x + mapOffsetX;
+    transformStamped.transform.translation.y = pose.t.y + mapOffsetY;
     transformStamped.transform.translation.z = pose.t.z;
     tf2::Quaternion q;
     q.setRPY(0, 0, pose.getYaw() + mapRotation);
@@ -78,6 +77,5 @@ void Robot::pubTransform(const geo::Pose3D &pose, const double &mapOffsetX, cons
     transformStamped.transform.rotation.y = q.y();
     transformStamped.transform.rotation.z = q.z();
     transformStamped.transform.rotation.w = q.w();
-
     pub_tf2.sendTransform(transformStamped);
 }

@@ -34,7 +34,7 @@ public:
 
     ~Robot();
 
-    void pubTransform(const geo::Pose3D &pose, const double &mapOffsetX, const &double mapOffsetY, const double &mapRotation);
+    void pubTransform(const geo::Pose3D &pose, const double &mapOffsetX, const double &mapOffsetY, const double &mapRotation);
 
     geo::Pose3D laser_pose;
     std::string robot_name;
