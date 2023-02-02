@@ -6,7 +6,9 @@
 #include "world.h"
 
 // ROS
+#include <ros/node_handle.h>
 #include <ros/publisher.h>
+#include <ros/subscriber.h>
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
 #include <std_msgs/Empty.h>
@@ -21,8 +23,7 @@ class Robot
 {
 
 public:
-
-    Robot(std::string name, Id id);
+    Robot(const std::string &name, Id id, bool disable_speedcap = false, bool uncertain_odom = false);
 
     ~Robot();
 

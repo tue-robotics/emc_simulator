@@ -1,9 +1,13 @@
 <?xml version="1.0"?>
 <launch>
+	<arg name="config" default="$(find emc_simulator)/data/defaultconfig.json"/>
+	<arg name="map" default="$(find emc_simulator)/data/heightmap.pgm"/>
+
 	<param name="robot_description" textfile="$(find emc_simulator)/urdf/rosbot.urdf"/>
 	<rosparam command="load" file="$(find emc_simulator)/config/simbot_config.yaml" />
 	<node pkg="map_server" type="map_server" name="map_server" args="$(find emc_simulator)/data/heightmap_metadata.yaml"/>
 	<node pkg="robot_state_publisher" type="robot_state_publisher" name="rob_st_pub" />
+	
 	<node pkg="emc_simulator" type="pico_simulator" name="simulator"/>
 	<node type="rviz" name="rviz" pkg="rviz" args="-d $(find emc_simulator)/rviz/config.rviz" />
 </launch>

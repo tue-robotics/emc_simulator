@@ -14,6 +14,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <depend>geolib2</depend>
+  <depend>tf2</depend>
   <depend>roscpp</depend>
   <depend>roslib</depend>
 
