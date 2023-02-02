@@ -336,6 +336,9 @@ int main(int argc, char **argv){
             odom_msg.header.frame_id = "odomframe";
 
             robot.pub_odom.publish(odom_msg);
+            // Write tf2 data
+            geo::Pose3D pose = world.object(robot.robot_id).pose;
+            robot.pubTransform(pose, mapOffsetX, mapOffsetY, mapRotation);
         }
 
         // Visualize             

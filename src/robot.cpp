@@ -36,15 +36,48 @@ Robot::Robot(const std::string &name, Id id, bool disable_speedcap, bool uncerta
     pub_bumperR = nh.advertise<std_msgs::Bool>("/" + robot_name + "/base_b_bumper_sensor", 1);
     pub_laser = nh.advertise<sensor_msgs::LaserScan>("/transformed_scan", 1);
     pub_odom = nh.advertise<nav_msgs::Odometry>("/odom", 1);
+    pub_joints = nh.advertise<sensor_msgs::JointState>("/joint_states", 1);
 
     // Subscribers
     sub_base_ref = nh.subscribe<geometry_msgs::Twist>("/cmd_vel", 1, &Robot::baseReferenceCallback, this);
     sub_open_door = nh.subscribe<std_msgs::Empty>("/" + robot_name + "/open_door", 1, &Robot::openDoorCallback, this);
     sub_speak = nh.subscribe<std_msgs::String>("/" + robot_name + "/text_to_speech/input", 1, &Robot::speakCallback, this);
-}
+}   
 
 // ----------------------------------------------------------------------------------------------------
 
 Robot::~Robot()
 {
+}
+
+void Robot::pubTransform(const geo::Pose3D &pose, const double &mapOffsetX, const &double mapOffsetY, const double &mapRotation)
+{
+    // Publish jointstate
+    sensor_msgs::JointState jointState;
+    jointState.header.stamp = ros::Time::now();
+
+    jointState.name = {"front_left_wheel_hinge", 
+                       "front_right_wheel_hinge", 
+                       "rear_left_wheel_hinge", 
+                       "rear_right_wheel_hinge"};
+    jointState.position = {0, 0, 0, 0};
+    JointPublisher.publish(jointState);
+
+    // Publish tf transform
+    geometry_msgs::TransformStamped transformStamped;
+    
+    transformStamped.header.stamp = ros::Time::now();
+    transformStamped.header.frame_id = "map";
+    transformStamped.child_frame_id = robot_name + "/base_link";
+    transformStamped.transform.translation.x = pose.t.x;
+    transformStamped.transform.translation.y = pose.t.y;
+    transformStamped.transform.translation.z = pose.t.z;
+    tf2::Quaternion q;
+    q.setRPY(0, 0, pose.getYaw() + mapRotation);
+    transformStamped.transform.rotation.x = q.x();
+    transformStamped.transform.rotation.y = q.y();
+    transformStamped.transform.rotation.z = q.z();
+    transformStamped.transform.rotation.w = q.w();
+
+    pub_tf2.sendTransform(transformStamped);
 }
