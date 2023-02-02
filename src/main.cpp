@@ -37,15 +37,24 @@ int main(int argc, char **argv){
 
     ros::init(argc, argv, "pyro_simulator");
 
-    std::string config_filename;
     std::string heightmap_filename;
+    heightmap_filename = ros::package::getPath("emc_simulator") + "/data/heightmap.pgm";
 
-    heightmap_filename = ros::param::param<std::string>("/mrc_sim/heightmap");
-    config_filename = ros::param::param<std::string>("/mrc_sim/configfile");
+    std::string config_filename;
+    config_filename = ros::package::getPath("emc_simulator") + "/data/defaultconfig.json";
 
-    ROS_INFO_STREAM("Starting the simulation software");
-    ROS_WARN_STREAM("Using Config file: "<<config_filename);
-    ROS_INFO_STREAM("Using heightmap: "<<heightmap_filename);
+    for(int i = 1; i < argc; i++){
+        std::string config_supplied("--config");
+        std::string map_supplied("--map");
+        if(config_supplied.compare(argv[i])==0){
+            std::cout << "User config file supplied!" << std::endl;
+            config_filename = std::string(argv[i+1]);
+        }
+        if(map_supplied.compare(argv[i])==0){
+            std::cout << "User map file supplied!" << std::endl;
+            heightmap_filename = std::string(argv[i+1]);
+        }
+    }
 
     Config config(config_filename);
     config.print();

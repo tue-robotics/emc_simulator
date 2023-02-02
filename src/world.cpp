@@ -4,16 +4,6 @@
 
 World::World() : time_(0)
 {
-    nh = ros::NodeHandle();
-    pub_map = nh.advertise<nav_msgs::OccupancyGrid>("/map",1);
-
-    nav_msgs::OccupancyGrid msg;
-    msg.header.seq = 0;
-    msg.header.frame_id = "/map";
-    msg.header.stamp = ros::Time();
-
-    //msg.data = 
-    //pub_map.publish(msg);
 }
 
 // ----------------------------------------------------------------------------------------------------
