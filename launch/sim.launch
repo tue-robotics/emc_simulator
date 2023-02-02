@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+	<arg name="config" default="$(find emc_simulator)/data/defaultconfig.json"/>
+	<arg name="map" default="$(find emc_simulator)/data/heightmap.pgm"/>
+
+	<param name="robot_description" textfile="$(find emc_simulator)/urdf/rosbot.urdf"/>
+	<rosparam command="load" file="$(find emc_simulator)/config/simbot_config.yaml"/>
+	<node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher"/>
+
+	<node pkg="emc_simulator" type="pico_simulator" name="simulator" args="--config $(arg config) --map $(arg map)"/>
+</launch>

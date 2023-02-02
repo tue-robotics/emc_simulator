@@ -16,6 +16,8 @@
 #include <ros/publisher.h>
 #include <ros/node_handle.h>
 #include <ros/package.h>
+#include <sensor_msgs/JointState.h>
+#include <tf2_ros/transform_broadcaster.h>
 
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
@@ -25,6 +27,7 @@
 #include <iostream>
 #include <string>
 
+#include <tf2/LinearMath/Quaternion.h>
 #include <geolib/shapes.h>
 #include "virtualbase.h"
 #include "moving_object.h"
@@ -42,6 +45,13 @@ int main(int argc, char **argv){
 
     std::string config_filename;
     config_filename = ros::package::getPath("emc_simulator") + "/data/defaultconfig.json";
+
+    // Create jointstate publisher (for use with state_publisher node)
+    ros::NodeHandle nodehandle;
+    ros::Publisher JointPublisher = nodehandle.advertise<sensor_msgs::JointState>("joint_states", 10, false);
+
+    // Create location broadcaster
+    tf2_ros::TransformBroadcaster LocationBroadcaster;
 
     for(int i = 1; i < argc; i++){
         std::string config_supplied("--config");
@@ -115,15 +125,11 @@ int main(int argc, char **argv){
     std::vector<RobotPtr> robots;
     geo::Pose3D spawnLocation = config.spawn.value();
     Id pyro_id = world.addObject(spawnLocation, robot_shape, robot_color, robottype);
-    robots.push_back(std::make_shared<Robot>("pyro", pyro_id));
-    robots.back()->base.setDisableSpeedCap(config.disable_speedcap.value());
-    robots.back()->base.setUncertainOdom(config.uncertain_odom.value());
+    robots.push_back(std::make_shared<Robot>("pyro", pyro_id, config.disable_speedcap.value(), config.uncertain_odom.value()));
 
     if (config.enable_taco.value()){
         Id taco_id = world.addObject(spawnLocation, robot_shape, robot_color, robottype);
-        robots.push_back(std::make_shared<Robot>("taco", taco_id));
-        robots.back()->base.setDisableSpeedCap(config.disable_speedcap.value());
-        robots.back()->base.setUncertainOdom(config.uncertain_odom.value());
+        robots.push_back(std::make_shared<Robot>("taco", taco_id, config.disable_speedcap.value(), config.uncertain_odom.value()));
     }
 
     // Add door
@@ -241,6 +247,37 @@ int main(int argc, char **argv){
             if(config.uncertain_odom.value() && time.sec%6 == 0 ){
                 robot.base.updateWheelUncertaintyFactors();
             }
+            // Publish robot position
+            sensor_msgs::JointState jointState;
+            jointState.header.stamp = time;
+
+            jointState.name.push_back("front_left_wheel_hinge");
+            jointState.position.push_back(0);
+            jointState.name.push_back("front_right_wheel_hinge");
+            jointState.position.push_back(0);
+            jointState.name.push_back("rear_left_wheel_hinge");
+            jointState.position.push_back(0);
+            jointState.name.push_back("rear_right_wheel_hinge");
+            jointState.position.push_back(0);
+
+            JointPublisher.publish(jointState);
+
+            geometry_msgs::TransformStamped LocationMsg;
+            LocationMsg.header.stamp = time;
+            LocationMsg.header.frame_id = "map";
+            LocationMsg.child_frame_id = "base_link";
+            LocationMsg.transform.translation.x = robot_pose.t.x;
+            LocationMsg.transform.translation.y = robot_pose.t.y;
+            LocationMsg.transform.translation.z = robot_pose.t.z+0.044;
+            tf2::Quaternion q;
+            q.setRPY(0, 0, robot_pose.getYaw());
+            LocationMsg.transform.rotation.x = q.x();
+            LocationMsg.transform.rotation.y = q.y();
+            LocationMsg.transform.rotation.z = q.z();
+            LocationMsg.transform.rotation.w = q.w();
+
+            LocationBroadcaster.sendTransform(LocationMsg);
+
         } // end iterate robots
 
         // Stop doors that have moved far enough
