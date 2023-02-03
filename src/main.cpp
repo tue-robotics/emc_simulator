@@ -69,9 +69,9 @@ int main(int argc, char **argv){
     double mapOffsetX, mapOffsetY, mapRotation;
     {
         cv::Mat image = cv::imread(heightmap_filename, cv::IMREAD_GRAYSCALE);
-        mapOffsetX = (image.cols * 0.025 / 2);
-        mapOffsetY = (image.rows * 0.025 / 2);
-        mapRotation = 1.570796;
+        mapOffsetX =  (image.cols * 0.025 / 2);
+        mapOffsetY =  (image.rows * 0.025 / 2);
+        mapRotation = 0;
         
     }
 
@@ -315,8 +315,8 @@ int main(int argc, char **argv){
         object.header.stamp = ros::Time::now();
         object.ns = "geometry";
         object.action = visualization_msgs::Marker::MODIFY;
-        object.pose.position.x = mapOffsetX;
-        object.pose.position.y = mapOffsetY;
+        object.pose.position.x =  mapOffsetY;
+        object.pose.position.y = -mapOffsetX;
         object.pose.position.z = 0.01;
         tf2::Quaternion q;
         q.setRPY(0, 0, mapRotation);

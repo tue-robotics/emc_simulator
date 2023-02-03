@@ -67,8 +67,8 @@ void Robot::pubTransform(const geo::Pose3D &pose, const double &mapOffsetX, cons
     transformStamped.header.stamp = ros::Time::now();
     transformStamped.header.frame_id = "map";
     transformStamped.child_frame_id = "/base_link";
-    transformStamped.transform.translation.x =   pose.t.x*std::cos(mapRotation) - pose.t.y*std::sin(mapRotation) + mapOffsetX;
-    transformStamped.transform.translation.y =   pose.t.x*std::sin(mapRotation) + pose.t.y*std::cos(mapRotation) + mapOffsetY;
+    transformStamped.transform.translation.x =   pose.t.x + mapOffsetY;
+    transformStamped.transform.translation.y =   pose.t.y - mapOffsetX;
     transformStamped.transform.translation.z =   pose.t.z + 0.044;
     tf2::Quaternion q;
     q.setRPY(0, 0, pose.getYaw() + mapRotation);
