@@ -191,7 +191,7 @@ void visualize(const World& world, const std::vector<RobotPtr>& robots, bool col
     cv::waitKey(3);
 }
 
-visualization_msgs::MarkerArray create_rviz_objectmsg(const World &world, double mapOffsetX, double mapOffsetY, double mapRotation)
+visualization_msgs::MarkerArray create_rviz_objectmsg(const World &world, const MapConfig &mapconfig)
 {
     visualization_msgs::MarkerArray objects;
     visualization_msgs::Marker object;
@@ -200,11 +200,11 @@ visualization_msgs::MarkerArray create_rviz_objectmsg(const World &world, double
     object.header.stamp = ros::Time::now();
     object.ns = "geometry";
     object.action = visualization_msgs::Marker::MODIFY;
-    object.pose.position.x =  mapOffsetY;
-    object.pose.position.y = -mapOffsetX;
+    object.pose.position.x =  mapconfig.mapOffsetX;
+    object.pose.position.y = -mapconfig.mapOffsetY;
     object.pose.position.z = 0.01;
     tf2::Quaternion q;
-    q.setRPY(0, 0, mapRotation);
+    q.setRPY(0, 0, mapconfig.mapOrientation);
     object.pose.orientation.x = q.x();
     object.pose.orientation.y = q.y();
     object.pose.orientation.z = q.z();
@@ -273,5 +273,7 @@ visualization_msgs::MarkerArray create_rviz_objectmsg(const World &world, double
         object.id ++;
     }
     return objects;
+    }
 }
-}
+
+

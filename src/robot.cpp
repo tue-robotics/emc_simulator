@@ -18,6 +18,15 @@ void Robot::speakCallback(const std_msgs::String::ConstPtr& msg)
     std::cout << robot_name << " says: " << "\033[1;31m" << msg->data << "\033[0m\n"  << std::endl;
 }
 
+void Robot::mapCallback(const nav_msgs::MapMetaData::ConstPtr& msg)
+{
+    mapconfig.mapResolution = msg->resolution;
+    mapconfig.mapOffsetX = ((msg->height)*msg->resolution)/2;
+    mapconfig.mapOffsetY = ((msg->width)*msg->resolution)/2;
+    mapconfig.mapOrientation = ((msg->width)*msg->resolution)/2; // TODO
+    mapconfig.mapInitialised = true;
+}
+
 // ----------------------------------------------------------------------------------------------------
 
 Robot::Robot(const std::string &name, Id id, bool disable_speedcap, bool uncertain_odom) : base(disable_speedcap, uncertain_odom)
@@ -42,6 +51,8 @@ Robot::Robot(const std::string &name, Id id, bool disable_speedcap, bool uncerta
     sub_base_ref = nh.subscribe<geometry_msgs::Twist>("/cmd_vel", 1, &Robot::baseReferenceCallback, this);
     sub_open_door = nh.subscribe<std_msgs::Empty>("/" + robot_name + "/open_door", 1, &Robot::openDoorCallback, this);
     sub_speak = nh.subscribe<std_msgs::String>("/" + robot_name + "/text_to_speech/input", 1, &Robot::speakCallback, this);
+    sub_mapdata = nh.subscribe<nav_msgs::MapMetaData>("/map_metadata",1, &Robot::mapCallback, this);
+
 }   
 
 // ----------------------------------------------------------------------------------------------------
@@ -50,7 +61,7 @@ Robot::~Robot()
 {
 }
 
-void Robot::pubTransform(const geo::Pose3D &pose, const double &mapOffsetX, const double &mapOffsetY, const double &mapRotation)
+void Robot::pubTransform(const geo::Pose3D &pose, const MapConfig &mapconfig)
 {
     // Publish jointstate
     sensor_msgs::JointState jointState;
@@ -67,11 +78,11 @@ void Robot::pubTransform(const geo::Pose3D &pose, const double &mapOffsetX, cons
     transformStamped.header.stamp = ros::Time::now();
     transformStamped.header.frame_id = "map";
     transformStamped.child_frame_id = "/base_link";
-    transformStamped.transform.translation.x =   pose.t.x + mapOffsetY;
-    transformStamped.transform.translation.y =   pose.t.y - mapOffsetX;
+    transformStamped.transform.translation.x =   pose.t.x + mapconfig.mapOffsetX;
+    transformStamped.transform.translation.y =   pose.t.y - mapconfig.mapOffsetY;
     transformStamped.transform.translation.z =   pose.t.z + 0.044;
     tf2::Quaternion q;
-    q.setRPY(0, 0, pose.getYaw() + mapRotation);
+    q.setRPY(0, 0, pose.getYaw() + mapconfig.mapOrientation);
     transformStamped.transform.rotation.x = q.x();
     transformStamped.transform.rotation.y = q.y();
     transformStamped.transform.rotation.z = q.z();

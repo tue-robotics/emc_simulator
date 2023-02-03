@@ -63,17 +63,8 @@ int main(int argc, char **argv){
     }
 
     // Create jointstate publisher (for use with state_publisher node)
-    ros::NodeHandle nodehandle;
-    ros::Publisher marker_pub = nodehandle.advertise<visualization_msgs::MarkerArray>("geometry", 10);
-
-    double mapOffsetX, mapOffsetY, mapRotation;
-    {
-        cv::Mat image = cv::imread(heightmap_filename, cv::IMREAD_GRAYSCALE);
-        mapOffsetX =  (image.cols * 0.025 / 2);
-        mapOffsetY =  (image.rows * 0.025 / 2);
-        mapRotation = 0;
-        
-    }
+    ros::NodeHandle nh;
+    ros::Publisher marker_pub = nh.advertise<visualization_msgs::MarkerArray>("geometry", 10);
 
     Config config(config_filename);
     config.print();
@@ -302,16 +293,20 @@ int main(int argc, char **argv){
             robot.pub_odom.publish(odom_msg);
             // Write tf2 data
             geo::Pose3D pose = world.object(robot.robot_id).pose;
-            robot.pubTransform(pose, mapOffsetX, mapOffsetY, mapRotation);
+            if (robot.mapconfig.mapInitialised)
+                robot.pubTransform(pose, robot.mapconfig);
         }
 
         // Visualize             
         if (visualize)
             visualization::visualize(world, robots, collision, config.show_full_map.value(), bbox, robot_radius);
 
-        auto objects = visualization::create_rviz_objectmsg(world, mapOffsetX, mapOffsetY, mapRotation);
-        marker_pub.publish(objects);
-
+        if (robots[0]->mapconfig.mapInitialised)
+        {
+            auto objects = visualization::create_rviz_objectmsg(world, robots[0]->mapconfig);
+            marker_pub.publish(objects);
+        }
+            
         if (collision)
             std::cout << "\033[1;;7;33m" << "COLLISION!" << "\033[0m\n"  << std::endl;
 

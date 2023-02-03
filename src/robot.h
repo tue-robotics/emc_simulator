@@ -15,6 +15,7 @@
 #include <std_msgs/String.h>
 #include <std_msgs/Bool.h>
 #include <sensor_msgs/LaserScan.h>
+#include <nav_msgs/MapMetaData.h>
 
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_ros/transform_broadcaster.h>
@@ -26,6 +27,10 @@
 #include <iostream>
 #include <string>
 
+struct MapConfig{
+    double mapResolution, mapOffsetX, mapOffsetY, mapOrientation;
+    bool mapInitialised;
+};
 class Robot
 {
 
@@ -34,12 +39,13 @@ public:
 
     ~Robot();
 
-    void pubTransform(const geo::Pose3D &pose, const double &mapOffsetX, const double &mapOffsetY, const double &mapRotation);
+    void pubTransform(const geo::Pose3D &pose, const MapConfig &mapconfig);
 
     geo::Pose3D laser_pose;
     std::string robot_name;
     Id robot_id;
     Virtualbase base;
+    MapConfig mapconfig;
 
     geometry_msgs::Twist::ConstPtr base_ref_;
     bool request_open_door_;
@@ -60,10 +66,13 @@ private:
     ros::Subscriber sub_base_ref;
     ros::Subscriber sub_open_door;
     ros::Subscriber sub_speak;
+    ros::Subscriber sub_mapdata;
     void baseReferenceCallback(const geometry_msgs::Twist::ConstPtr& msg);
     void openDoorCallback(const std_msgs::Empty::ConstPtr& msg);
     void speakCallback(const std_msgs::String::ConstPtr& msg);
+    void mapCallback(const nav_msgs::MapMetaData::ConstPtr& msg);
 };
+
 
 typedef std::shared_ptr<Robot> RobotPtr;
 

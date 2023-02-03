@@ -14,8 +14,6 @@ namespace visualization
 
 void visualize(const World& world, const std::vector<RobotPtr>& robots, bool collision, bool show_full_map,Bbox bbox, double robotRadius);
 
-visualization_msgs::MarkerArray create_rviz_objectmsg(const World &world, double mapOffsetX, double mapOffsetY, double mapRotation);
-
+visualization_msgs::MarkerArray create_rviz_objectmsg(const World &world, const MapConfig &mapconfig);
 }
-
 #endif
