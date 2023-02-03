@@ -10,5 +10,4 @@
 	<node pkg="map_server" type="map_server" name="map_server" args="$(find emc_simulator)/data/heightmap_metadata.yaml"/>
 	
 	<node pkg="emc_simulator" type="pico_simulator" name="simulator" args="--config $(arg config) --map $(arg map)"/>
-	<node type="rviz" name="rviz" pkg="rviz" args="-d $(find emc_simulator)/rviz/config.rviz" />
 </launch>
