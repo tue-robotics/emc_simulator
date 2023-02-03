@@ -23,7 +23,18 @@ void Robot::mapCallback(const nav_msgs::MapMetaData::ConstPtr& msg)
     mapconfig.mapResolution = msg->resolution;
     mapconfig.mapOffsetX = ((msg->height)*msg->resolution)/2;
     mapconfig.mapOffsetY = ((msg->width)*msg->resolution)/2;
-    mapconfig.mapOrientation = ((msg->width)*msg->resolution)/2; // TODO
+
+    tf2::Quaternion q(msg->origin.orientation.x, 
+                      msg->origin.orientation.y, 
+                      msg->origin.orientation.z, 
+                      msg->origin.orientation.w);
+
+    tf2::Matrix3x3 T(q);
+
+    double roll, pitch, yaw;
+    T.getRPY(roll, pitch, yaw);
+
+    mapconfig.mapOrientation = yaw + M_PI/2;
     mapconfig.mapInitialised = true;
 }
 
