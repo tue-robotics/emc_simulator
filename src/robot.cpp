@@ -55,7 +55,6 @@ void Robot::pubTransform(const geo::Pose3D &pose, const double &mapOffsetX, cons
     // Publish jointstate
     sensor_msgs::JointState jointState;
     jointState.header.stamp = ros::Time::now();
-
     jointState.name = {"front_left_wheel_hinge", 
                        "front_right_wheel_hinge", 
                        "rear_left_wheel_hinge", 
@@ -67,10 +66,10 @@ void Robot::pubTransform(const geo::Pose3D &pose, const double &mapOffsetX, cons
     geometry_msgs::TransformStamped transformStamped;
     transformStamped.header.stamp = ros::Time::now();
     transformStamped.header.frame_id = "map";
-    transformStamped.child_frame_id = "/body_link";
+    transformStamped.child_frame_id = "/base_link";
     transformStamped.transform.translation.x =   pose.t.x*std::cos(mapRotation) - pose.t.y*std::sin(mapRotation) + mapOffsetX;
     transformStamped.transform.translation.y =   pose.t.x*std::sin(mapRotation) + pose.t.y*std::cos(mapRotation) + mapOffsetY;
-    transformStamped.transform.translation.z = pose.t.z;
+    transformStamped.transform.translation.z =   pose.t.z + 0.044;
     tf2::Quaternion q;
     q.setRPY(0, 0, pose.getYaw() + mapRotation);
     transformStamped.transform.rotation.x = q.x();
