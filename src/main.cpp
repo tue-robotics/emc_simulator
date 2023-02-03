@@ -34,7 +34,6 @@
 #include "virtualbase.h"
 #include "moving_object.h"
 #include "random"
-#include <opencv2/highgui/highgui.hpp>
 
 #include <vector>
 
