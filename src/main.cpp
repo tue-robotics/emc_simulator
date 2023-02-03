@@ -301,7 +301,7 @@ int main(int argc, char **argv){
         if (visualize)
             visualization::visualize(world, robots, collision, config.show_full_map.value(), bbox, robot_radius);
 
-        if (robots[0]->mapconfig.mapInitialised)
+        if (robots.size()>0 && robots[0]->mapconfig.mapInitialised)
         {
             auto objects = visualization::create_rviz_objectmsg(world, robots[0]->mapconfig);
             marker_pub.publish(objects);
