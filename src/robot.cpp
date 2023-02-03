@@ -21,8 +21,8 @@ void Robot::speakCallback(const std_msgs::String::ConstPtr& msg)
 void Robot::mapCallback(const nav_msgs::MapMetaData::ConstPtr& msg)
 {
     mapconfig.mapResolution = msg->resolution;
-    mapconfig.mapOffsetX = ((msg->height)*msg->resolution)/2;
-    mapconfig.mapOffsetY = ((msg->width)*msg->resolution)/2;
+    mapconfig.mapOffsetX =  ((msg->height)*msg->resolution)/2;
+    mapconfig.mapOffsetY = -((msg->width)*msg->resolution)/2;
 
     tf2::Quaternion q(msg->origin.orientation.x, 
                       msg->origin.orientation.y, 
@@ -89,8 +89,12 @@ void Robot::pubTransform(const geo::Pose3D &pose, const MapConfig &mapconfig)
     transformStamped.header.stamp = ros::Time::now();
     transformStamped.header.frame_id = "map";
     transformStamped.child_frame_id = "/base_link";
-    transformStamped.transform.translation.x =   pose.t.x + mapconfig.mapOffsetX;
-    transformStamped.transform.translation.y =   pose.t.y - mapconfig.mapOffsetY;
+    transformStamped.transform.translation.x =   pose.t.x + cos(mapconfig.mapOrientation) * mapconfig.mapOffsetX 
+                                                          + sin(mapconfig.mapOrientation) * mapconfig.mapOffsetY;
+
+    transformStamped.transform.translation.y =   pose.t.y - sin(mapconfig.mapOrientation) * mapconfig.mapOffsetX
+                                                          + cos(mapconfig.mapOrientation) * mapconfig.mapOffsetY;
+
     transformStamped.transform.translation.z =   pose.t.z + 0.044;
     tf2::Quaternion q;
     q.setRPY(0, 0, pose.getYaw() + mapconfig.mapOrientation);
