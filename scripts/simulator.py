@@ -1,9 +1,7 @@
+import argparse
+from os.path import abspath, isfile
 import roslaunch
 import rospy
-
-import argparse
-
-from os.path import abspath, isfile
 
 parser = argparse.ArgumentParser(description='Process some integers.')
 parser.add_argument('-c', '--config',
