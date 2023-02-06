@@ -239,7 +239,7 @@ visualization_msgs::MarkerArray create_rviz_objectmsg(const World &world, const 
         else if (obj.type == movingObjecttype)
         {
             object.type = visualization_msgs::Marker::LINE_STRIP;
-            object.scale.x = 1.0;
+            object.scale.x = 0.05;
             object.color.r = 1.0;
             object.color.b = 0.0;
             object.color.g = 0.0;
