@@ -91,6 +91,7 @@ private:
     double a1, a2, a3;
     bool disable_speedcap_;
     bool uncertain_odom_;
+    bool holonomic_operation_;
 
     // random effects
     std::mt19937 gen;

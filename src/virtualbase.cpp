@@ -33,7 +33,7 @@ Virtualbase::Virtualbase(bool disable_speedcap, bool uncertain_odom) : disable_s
         odometry_state.pose.pose.orientation.z = 0.0;
         odometry_state.pose.pose.orientation.w = 1.0;
     }
-
+    holonomic_operation_ = false;
     updateWheelUncertaintyFactors();
 }
 
@@ -43,8 +43,16 @@ void Virtualbase::applyTwistAndUpdate(const geometry_msgs::Twist& cmd, double dt
     geometry_msgs::Twist twist;
     if(disable_speedcap_ == false){
         twist.linear.x  = sgn<double>(cmd.linear.x)  * std::min(std::abs(cmd.linear.x),0.5);
-        twist.linear.y  = sgn<double>(cmd.linear.y)  * std::min(std::abs(cmd.linear.y),0.5);
         twist.angular.z = sgn<double>(cmd.angular.z) * std::min(std::abs(cmd.angular.z),1.2);
+
+        if (holonomic_operation_)
+        {
+            twist.linear.y  = sgn<double>(cmd.linear.y)  * std::min(std::abs(cmd.linear.y),0.5);
+        }
+        else
+        {
+            twist.linear.y = 0;
+        }
     }
     else{
         twist = cmd;
