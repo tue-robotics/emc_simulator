@@ -59,6 +59,7 @@ public:
     tf2_ros::TransformBroadcaster pub_tf2;
     tf2_ros::StaticTransformBroadcaster pub_tf2static;
     ros::Publisher pub_joints;
+    ros::Subscriber sub_mapdata;
 
 private:
     ros::NodeHandle nh;
@@ -67,7 +68,6 @@ private:
     ros::Subscriber sub_base_ref;
     ros::Subscriber sub_open_door;
     ros::Subscriber sub_speak;
-    ros::Subscriber sub_mapdata;
     void baseReferenceCallback(const geometry_msgs::Twist::ConstPtr& msg);
     void openDoorCallback(const std_msgs::Empty::ConstPtr& msg);
     void speakCallback(const std_msgs::String::ConstPtr& msg);
