@@ -86,7 +86,7 @@ int main(int argc, char **argv){
 
     double cycle_freq = 30;
 
-    bool visualize = true;
+    bool visualize = false;
 
     // Load heightmap
     std::vector<Door> doors;
