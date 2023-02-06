@@ -43,14 +43,14 @@ void Virtualbase::applyTwistAndUpdate(const geometry_msgs::Twist& cmd, double dt
     geometry_msgs::Twist twist;
     if(disable_speedcap_ == false){
         twist.linear.x  = sgn<double>(cmd.linear.x)  * std::min(std::abs(cmd.linear.x),0.5);
-        twist.angular.z = sgn<double>(cmd.angular.z) * std::min(std::abs(cmd.angular.z),1.2);
         twist.linear.y  = sgn<double>(cmd.linear.y)  * std::min(std::abs(cmd.linear.y),0.5);
+        twist.angular.z = sgn<double>(cmd.angular.z) * std::min(std::abs(cmd.angular.z),1.2);
 
     }
     else{
         twist = cmd;
     }
-    
+
     // Disable holonomic operation if necessary
     if (!holonomic_operation_)
     {
