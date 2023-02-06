@@ -294,7 +294,6 @@ int main(int argc, char **argv){
             geo::Pose3D pose = world.object(robot.robot_id).pose;
             if (robot.mapconfig.mapInitialised)
             {
-                robot.sub_mapdata.shutdown();
                 robot.pubTransform(pose, robot.mapconfig);
             }
         }

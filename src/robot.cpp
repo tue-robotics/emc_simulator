@@ -36,6 +36,7 @@ void Robot::mapCallback(const nav_msgs::MapMetaData::ConstPtr& msg)
 
     mapconfig.mapOrientation = yaw + M_PI/2;
     mapconfig.mapInitialised = true;
+    sub_mapdata.shutdown();
 }
 
 // ----------------------------------------------------------------------------------------------------
