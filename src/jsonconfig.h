@@ -10,6 +10,8 @@
 #include <fstream>
 #include <boost/optional.hpp>
 
+#include <ros/console.h>
+
 #include <vector>
 
 class Config{
@@ -122,15 +124,15 @@ public:
     }
 
     void print(){
-        std::cout << "Simulator configuration settings:" << std::endl;
-        std::cout << "Uncertain odom: " << uncertain_odom.value() << std::endl;
-        std::cout << "Show full map: " << show_full_map.value() << std::endl;
-        std::cout << "disable_speedcap: " << disable_speedcap.value() << std::endl;
-        std::cout << "enable taco: " << enable_taco.value() << std::endl;
-        std::cout << "use pyro: " << use_pyro.value() << std::endl;
-        std::cout << "Spawn Location: "<< spawn.value().getOrigin()<< std::endl;
-        std::cout << "Spawn Rotation: " << spawn.value().getBasis() << std::endl; // Todo get yaw, geolib implm gives unexpected results.
-        std::cout << "imported " << moving_objects.value().size() << " moving objects" << std::endl;
+        ROS_INFO_STREAM("Simulator configuration settings:");
+        ROS_INFO_STREAM("Uncertain odom: " << uncertain_odom.value());
+        ROS_INFO_STREAM("Show full map: " << show_full_map.value());
+        ROS_INFO_STREAM("disable_speedcap: " << disable_speedcap.value());
+        ROS_INFO_STREAM("enable taco: " << enable_taco.value());
+        ROS_INFO_STREAM("use pyro: " << use_pyro.value());
+        ROS_INFO_STREAM("Spawn Location: "<< spawn.value().getOrigin());
+        ROS_INFO_STREAM("Spawn Rotation: " << spawn.value().getBasis());
+        ROS_INFO_STREAM("imported " << moving_objects.value().size() << " moving objects");
     }
 
 

@@ -198,7 +198,6 @@ visualization_msgs::MarkerArray create_rviz_objectmsg(const World &world, const 
 
     object.header.frame_id = "map";
     object.header.stamp = ros::Time::now();
-    object.ns = "geometry";
     object.action = visualization_msgs::Marker::MODIFY;
     object.pose.position.x = cos(mapconfig.mapOrientation) * mapconfig.mapOffsetX 
                            + sin(mapconfig.mapOrientation) * mapconfig.mapOffsetY;
@@ -213,10 +212,8 @@ visualization_msgs::MarkerArray create_rviz_objectmsg(const World &world, const 
     object.pose.orientation.y = q.y();
     object.pose.orientation.z = q.z();
     object.pose.orientation.w = q.w();
-    object.type = visualization_msgs::Marker::TRIANGLE_LIST;
-    object.scale.x = 1;
-    object.scale.y = 1;
-    object.scale.z = 1;
+    object.scale.y = 1.0;
+    object.scale.z = 1.0;
     object.color.a = 1.0;
     object.id = 0;
 
@@ -232,21 +229,25 @@ visualization_msgs::MarkerArray create_rviz_objectmsg(const World &world, const 
 
         if (obj.type == doortype)
         {
+            object.type = visualization_msgs::Marker::TRIANGLE_LIST;
+            object.scale.x = 1.0;
             object.color.r = 0.0;
             object.color.b = 0.0;
             object.color.g = 1.0;
+            object.ns = "doortype";
         }
         else if (obj.type == movingObjecttype)
         {
+            object.type = visualization_msgs::Marker::LINE_STRIP;
+            object.scale.x = 1.0;
             object.color.r = 1.0;
             object.color.b = 0.0;
             object.color.g = 0.0;
+            object.ns = "movingObjecttype";
         }
         else
         {
-            object.color.r = 0.0;
-            object.color.b = 0.0;
-            object.color.g = 0.0;
+            continue;
         }
 
         object.points.clear();
@@ -274,7 +275,7 @@ visualization_msgs::MarkerArray create_rviz_objectmsg(const World &world, const 
         }
 
         objects.markers.push_back(object);
-        object.id ++;
+        object.id++;
     }
     return objects;
     }

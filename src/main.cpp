@@ -52,11 +52,11 @@ int main(int argc, char **argv){
         std::string config_supplied("--config");
         std::string map_supplied("--map");
         if(config_supplied.compare(argv[i])==0){
-            std::cout << "User config file supplied!" << std::endl;
+            ROS_INFO_STREAM("User config file supplied!");
             config_filename = std::string(argv[i+1]);
         }
         if(map_supplied.compare(argv[i])==0){
-            std::cout << "User map file supplied!" << std::endl;
+            ROS_INFO_STREAM("User map file supplied!");
             heightmap_filename = std::string(argv[i+1]);
         }
     }
@@ -138,7 +138,7 @@ int main(int argc, char **argv){
         door.id = world.addObject(door.init_pose, door.shape, geo::Vector3(0, 1, 0), doortype);
     }
 
-    std::cout << "start cycle" << std::endl;
+    ROS_INFO_STREAM("start cycle");
     ros::Rate r(cycle_freq);
     double time_ = 0;
     double dt;
@@ -309,7 +309,7 @@ int main(int argc, char **argv){
         }
             
         if (collision)
-            std::cout << "\033[1;;7;33m" << "COLLISION!" << "\033[0m\n"  << std::endl;
+            ROS_WARN_STREAM("COLLISION!");
 
         r.sleep();
     }
