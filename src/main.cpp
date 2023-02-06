@@ -18,6 +18,8 @@
 #include <ros/package.h>
 #include <sensor_msgs/JointState.h>
 #include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/static_transform_broadcaster.h>
+#include <visualization_msgs/MarkerArray.h>
 
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
@@ -46,13 +48,6 @@ int main(int argc, char **argv){
     std::string config_filename;
     config_filename = ros::package::getPath("emc_simulator") + "/data/defaultconfig.json";
 
-    // Create jointstate publisher (for use with state_publisher node)
-    ros::NodeHandle nodehandle;
-    ros::Publisher JointPublisher = nodehandle.advertise<sensor_msgs::JointState>("joint_states", 10, false);
-
-    // Create location broadcaster
-    tf2_ros::TransformBroadcaster LocationBroadcaster;
-
     for(int i = 1; i < argc; i++){
         std::string config_supplied("--config");
         std::string map_supplied("--map");
@@ -65,6 +60,10 @@ int main(int argc, char **argv){
             heightmap_filename = std::string(argv[i+1]);
         }
     }
+
+    // Create jointstate publisher (for use with state_publisher node)
+    ros::NodeHandle nh;
+    ros::Publisher marker_pub = nh.advertise<visualization_msgs::MarkerArray>("geometry", 10);
 
     Config config(config_filename);
     config.print();
@@ -247,37 +246,6 @@ int main(int argc, char **argv){
             if(config.uncertain_odom.value() && time.sec%6 == 0 ){
                 robot.base.updateWheelUncertaintyFactors();
             }
-            // Publish robot position
-            sensor_msgs::JointState jointState;
-            jointState.header.stamp = time;
-
-            jointState.name.push_back("front_left_wheel_hinge");
-            jointState.position.push_back(0);
-            jointState.name.push_back("front_right_wheel_hinge");
-            jointState.position.push_back(0);
-            jointState.name.push_back("rear_left_wheel_hinge");
-            jointState.position.push_back(0);
-            jointState.name.push_back("rear_right_wheel_hinge");
-            jointState.position.push_back(0);
-
-            JointPublisher.publish(jointState);
-
-            geometry_msgs::TransformStamped LocationMsg;
-            LocationMsg.header.stamp = time;
-            LocationMsg.header.frame_id = "map";
-            LocationMsg.child_frame_id = "base_link";
-            LocationMsg.transform.translation.x = robot_pose.t.x;
-            LocationMsg.transform.translation.y = robot_pose.t.y;
-            LocationMsg.transform.translation.z = robot_pose.t.z+0.044;
-            tf2::Quaternion q;
-            q.setRPY(0, 0, robot_pose.getYaw());
-            LocationMsg.transform.rotation.x = q.x();
-            LocationMsg.transform.rotation.y = q.y();
-            LocationMsg.transform.rotation.z = q.z();
-            LocationMsg.transform.rotation.w = q.w();
-
-            LocationBroadcaster.sendTransform(LocationMsg);
-
         } // end iterate robots
 
         // Stop doors that have moved far enough
@@ -298,7 +266,7 @@ int main(int argc, char **argv){
             Robot& robot = **it;
             // Create laser data
             sensor_msgs::LaserScan scan_msg;
-            scan_msg.header.frame_id = "laserframe";
+            scan_msg.header.frame_id = "base_link";
             scan_msg.header.stamp = time;
             lrf.generateLaserData(world, robot, scan_msg);
             robot.pub_laser.publish(scan_msg);
@@ -322,12 +290,24 @@ int main(int argc, char **argv){
             odom_msg.header.frame_id = "odomframe";
 
             robot.pub_odom.publish(odom_msg);
+            // Write tf2 data
+            geo::Pose3D pose = world.object(robot.robot_id).pose;
+            if (robot.mapconfig.mapInitialised)
+            {
+                robot.pubTransform(pose, robot.mapconfig);
+            }
         }
 
         // Visualize             
         if (visualize)
             visualization::visualize(world, robots, collision, config.show_full_map.value(), bbox, robot_radius);
 
+        if (robots.size()>0 && robots[0]->mapconfig.mapInitialised)
+        {
+            auto objects = visualization::create_rviz_objectmsg(world, robots[0]->mapconfig);
+            marker_pub.publish(objects);
+        }
+            
         if (collision)
             std::cout << "\033[1;;7;33m" << "COLLISION!" << "\033[0m\n"  << std::endl;
 

@@ -191,4 +191,93 @@ void visualize(const World& world, const std::vector<RobotPtr>& robots, bool col
     cv::waitKey(3);
 }
 
+visualization_msgs::MarkerArray create_rviz_objectmsg(const World &world, const MapConfig &mapconfig)
+{
+    visualization_msgs::MarkerArray objects;
+    visualization_msgs::Marker object;
+
+    object.header.frame_id = "map";
+    object.header.stamp = ros::Time::now();
+    object.ns = "geometry";
+    object.action = visualization_msgs::Marker::MODIFY;
+    object.pose.position.x = cos(mapconfig.mapOrientation) * mapconfig.mapOffsetX 
+                           + sin(mapconfig.mapOrientation) * mapconfig.mapOffsetY;
+
+    object.pose.position.y = - sin(mapconfig.mapOrientation) * mapconfig.mapOffsetX
+                             + cos(mapconfig.mapOrientation) * mapconfig.mapOffsetY;
+                             
+    object.pose.position.z = 0.01;
+    tf2::Quaternion q;
+    q.setRPY(0, 0, mapconfig.mapOrientation);
+    object.pose.orientation.x = q.x();
+    object.pose.orientation.y = q.y();
+    object.pose.orientation.z = q.z();
+    object.pose.orientation.w = q.w();
+    object.type = visualization_msgs::Marker::TRIANGLE_LIST;
+    object.scale.x = 1;
+    object.scale.y = 1;
+    object.scale.z = 1;
+    object.color.a = 1.0;
+    object.id = 0;
+
+    for(std::vector<Object>::const_iterator it = world.objects().begin(); it != world.objects().end(); ++it)
+    {
+        const Object& obj = *it;
+        if (!obj.shape)
+            continue;
+        if (obj.type == robottype)
+            continue;
+        if (obj.type == walltype)
+            continue;
+
+        if (obj.type == doortype)
+        {
+            object.color.r = 0.0;
+            object.color.b = 0.0;
+            object.color.g = 1.0;
+        }
+        else if (obj.type == movingObjecttype)
+        {
+            object.color.r = 1.0;
+            object.color.b = 0.0;
+            object.color.g = 0.0;
+        }
+        else
+        {
+            object.color.r = 0.0;
+            object.color.b = 0.0;
+            object.color.g = 0.0;
+        }
+
+        object.points.clear();
+
+        const std::vector<geo::Vector3>& vertices = obj.shape->getMesh().getPoints();
+        const std::vector<geo::TriangleI>& triangles = obj.shape->getMesh().getTriangleIs();
+
+        for(std::vector<geo::TriangleI>::const_iterator it2 = triangles.begin(); it2 != triangles.end(); ++it2)
+        {
+            const geo::TriangleI& triangle = *it2;
+            geo::Vec2d p1vec = (obj.pose * vertices[triangle.i1_]).projectTo2d();
+            geo::Vec2d p2vec = (obj.pose * vertices[triangle.i2_]).projectTo2d();
+            geo::Vec2d p3vec = (obj.pose * vertices[triangle.i3_]).projectTo2d();
+
+            geometry_msgs::Point p1;
+            p1.x = p1vec.x; p1.y = p1vec.y; p1.z = 0;
+            geometry_msgs::Point p2;
+            p2.x = p2vec.x; p2.y = p2vec.y; p2.z = 0;
+            geometry_msgs::Point p3;
+            p3.x = p3vec.x; p3.y = p3vec.y; p3.z = 0;
+
+            object.points.push_back(p1);
+            object.points.push_back(p2);
+            object.points.push_back(p3);
+        }
+
+        objects.markers.push_back(object);
+        object.id ++;
+    }
+    return objects;
+    }
 }
+
+
