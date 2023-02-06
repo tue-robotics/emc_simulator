@@ -1,6 +1,8 @@
 #include "heightmap.h"
 #include "door.h"
 
+#include <ros/console.h>
+
 #include "polypartition/polypartition.h"
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -163,7 +165,7 @@ geo::ShapePtr createHeightMapShape(const std::string& filename, std::vector<Door
 
     if (!image.data)
     {
-        std::cout << "[PICO SIMULATOR] Loading heightmap '" << filename << "' failed." << std::endl;
+        ROS_ERROR_STREAM("[PICO SIMULATOR] Loading heightmap '" << filename << "' failed.");
         return geo::ShapePtr();
     }
 
@@ -362,7 +364,7 @@ geo::ShapePtr createHeightMapShape(const std::string& filename, std::vector<Door
 
                     if (!pp.Triangulate_EC(&testpolys, &result))
                     {
-                        std::cout << "[PICO SIMULATOR] Could not triangulate polygon." << std::endl;
+                        ROS_ERROR_STREAM("[PICO SIMULATOR] Could not triangulate polygon.");
                         return shape;
                     }
 

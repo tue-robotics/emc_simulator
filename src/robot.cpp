@@ -15,7 +15,7 @@ void Robot::openDoorCallback(const std_msgs::Empty::ConstPtr& /*msg*/)
 
 void Robot::speakCallback(const std_msgs::String::ConstPtr& msg)
 {
-    std::cout << robot_name << " says: " << "\033[1;31m" << msg->data << "\033[0m\n"  << std::endl;
+    ROS_WARN_STREAM(robot_name << " says: " << "\033[1;31m" << msg->data << "\033[0m\n");
 }
 
 void Robot::mapCallback(const nav_msgs::MapMetaData::ConstPtr& msg)
