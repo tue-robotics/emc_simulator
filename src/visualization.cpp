@@ -23,7 +23,7 @@ cv::Point2d worldToCanvas(const geo::Vector3& p)
 
 // ----------------------------------------------------------------------------------------------------
 
-void visualize(const World& world, const std::vector<RobotPtr>& robots, bool collision = false, bool show_full_map = false, Bbox centerframe = {-1e5, -1e5, 1e5, 1e5}, double robotRadius = 0.17)
+void visualize(const World& world, const Robot& robotobj, bool collision = false, bool show_full_map = false, Bbox centerframe = {-1e5, -1e5, 1e5, 1e5}, double robotRadius = 0.17)
 {
     int dim = 500;
     if(show_full_map){
@@ -36,7 +36,7 @@ void visualize(const World& world, const std::vector<RobotPtr>& robots, bool col
     // Determine camera pose
     geo::Pose3D frame_center_pose = geo::Pose3D::identity();
     if (!show_full_map){
-        frame_center_pose = world.object(robots[0]->robot_id).pose;
+        frame_center_pose = world.object(robotobj.robot_id).pose;
     }
 
     Bbox midpointframe; //maximum range for the midpoint of the view.
@@ -46,7 +46,7 @@ void visualize(const World& world, const std::vector<RobotPtr>& robots, bool col
     midpointframe.ymax = centerframe.ymax - dim*resolution/2 +0.5;
 
 
-    auto robot = world.object(robots[0]->robot_id);
+    auto robot = world.object(robotobj.robot_id);
     // check translation of world within bbox for sliding camera
     double xview, yview;
     xview = robot.pose.getOrigin().getX();
@@ -70,81 +70,78 @@ void visualize(const World& world, const std::vector<RobotPtr>& robots, bool col
 //    frame_center_pose.t.x = xview;
 //    frame_center_pose.t.y = yview;
 
-    // Draw robots
-    for (std::vector<RobotPtr>::const_iterator it = robots.begin(); it != robots.end(); ++it)
-    {
-        const Object& robot = world.object((*it)->robot_id);
-        cv::Scalar robot_color(0, 0, 255);
+    // Draw robot
+    cv::Scalar robot_color(0, 0, 255);
 
-        // scaling of the head and LRF (which should be drawn inside the circumference of the robot)
-        const double scaling = robotRadius/0.21;
+    // scaling of the head and LRF (which should be drawn inside the circumference of the robot)
+    const double scaling = robotRadius/0.21;
 
-        geo::Vector3 robot_center_point = geo::Vector3( 0.0, 0.0, 0);
-        geo::Vector3 lrf_point = scaling*geo::Vector3( 0.15, 0.0, 0);
-        std::vector<geo::Vector3> robot_head_points;
-        std::vector<geo::Vector3> eye_points;
-        std::vector<geo::Vector3> eye_pupil_points;
+    geo::Vector3 robot_center_point = geo::Vector3( 0.0, 0.0, 0);
+    geo::Vector3 lrf_point = scaling*geo::Vector3( 0.15, 0.0, 0);
+    std::vector<geo::Vector3> robot_head_points;
+    std::vector<geo::Vector3> eye_points;
+    std::vector<geo::Vector3> eye_pupil_points;
 
-        robot_head_points.push_back(scaling*geo::Vector3( 0.08, -0.16, 0));
-        robot_head_points.push_back(scaling*geo::Vector3( 0.08,  0.16, 0));
-        robot_head_points.push_back(scaling*geo::Vector3(-0.08,  0.16, 0));
-        robot_head_points.push_back(scaling*geo::Vector3(-0.08, -0.16, 0));
-        eye_points.push_back(scaling*geo::Vector3( 0.0,  0.07, 0));
-        eye_points.push_back(scaling*geo::Vector3( 0.0, -0.07, 0));
-        eye_pupil_points.push_back(scaling*geo::Vector3( 0.025,  0.07, 0));
-        eye_pupil_points.push_back(scaling*geo::Vector3( 0.025, -0.07, 0));
+    robot_head_points.push_back(scaling*geo::Vector3( 0.08, -0.16, 0));
+    robot_head_points.push_back(scaling*geo::Vector3( 0.08,  0.16, 0));
+    robot_head_points.push_back(scaling*geo::Vector3(-0.08,  0.16, 0));
+    robot_head_points.push_back(scaling*geo::Vector3(-0.08, -0.16, 0));
+    eye_points.push_back(scaling*geo::Vector3( 0.0,  0.07, 0));
+    eye_points.push_back(scaling*geo::Vector3( 0.0, -0.07, 0));
+    eye_pupil_points.push_back(scaling*geo::Vector3( 0.025,  0.07, 0));
+    eye_pupil_points.push_back(scaling*geo::Vector3( 0.025, -0.07, 0));
 
-        if(show_full_map == true) {
-            robot_center_point = (robot.pose * robot_center_point) + geo::Vector3(-xview, -yview, 0);
-            lrf_point = (robot.pose * lrf_point) + geo::Vector3(-xview, -yview, 0);
-            for (unsigned int i = 0; i < robot_head_points.size(); ++i) {
-                robot_head_points[i] = (robot.pose * robot_head_points[i]) + geo::Vector3(-xview, -yview, 0);
-            }
-            for (unsigned int i = 0; i < eye_points.size(); ++i) {
-                eye_points[i] = (robot.pose * eye_points[i]) + geo::Vector3(-xview, -yview, 0);
-            }
-            for (unsigned int i = 0; i < eye_pupil_points.size(); ++i) {
-                eye_pupil_points[i] = (robot.pose * eye_pupil_points[i]) + geo::Vector3(-xview, -yview, 0);
-            }
+    if(show_full_map == true) {
+        robot_center_point = (robot.pose * robot_center_point) + geo::Vector3(-xview, -yview, 0);
+        lrf_point = (robot.pose * lrf_point) + geo::Vector3(-xview, -yview, 0);
+        for (unsigned int i = 0; i < robot_head_points.size(); ++i) {
+            robot_head_points[i] = (robot.pose * robot_head_points[i]) + geo::Vector3(-xview, -yview, 0);
         }
-        else
-        {
-            robot_center_point = (frame_center_pose.inverse() * robot.pose * robot_center_point);
-            lrf_point = (frame_center_pose.inverse() * robot.pose * lrf_point);
-            for (unsigned int i = 0; i < robot_head_points.size(); ++i) {
-                robot_head_points[i] = (frame_center_pose.inverse() * robot.pose * robot_head_points[i]);
-            }
-            for (unsigned int i = 0; i < eye_points.size(); ++i) {
-                eye_points[i] = (frame_center_pose.inverse() * robot.pose * eye_points[i]);
-            }
-            for (unsigned int i = 0; i < eye_pupil_points.size(); ++i) {
-                eye_pupil_points[i] = (frame_center_pose.inverse() * robot.pose * eye_pupil_points[i]);
-            }
+        for (unsigned int i = 0; i < eye_points.size(); ++i) {
+            eye_points[i] = (robot.pose * eye_points[i]) + geo::Vector3(-xview, -yview, 0);
         }
-
-        cv::Point2d pLRF = worldToCanvas(lrf_point);
-        cv::circle(canvas, pLRF, scaling*2, robot_color, 2);
-        cv::Point2d pRobotCenter = worldToCanvas(robot_center_point);
-        cv::circle(canvas, pRobotCenter, robotRadius/resolution, robot_color, 2);
-
-        for(unsigned int i = 0; i < robot_head_points.size(); ++i)
-        {
-            unsigned int j = (i + 1) % robot_head_points.size();
-            cv::Point2d p1 = worldToCanvas(robot_head_points[i]);
-            cv::Point2d p2 = worldToCanvas(robot_head_points[j]);
-            cv::line(canvas, p1, p2, robot_color, 2);
-        }
-        for(unsigned int i = 0; i < eye_points.size(); ++i)
-        {
-            cv::Point2d pEye = worldToCanvas(eye_points[i]);
-            cv::circle(canvas, pEye, scaling*4, robot_color, 2);
-        }
-        for(unsigned int i = 0; i < eye_pupil_points.size(); ++i)
-        {
-            cv::Point2d pEyePupil = worldToCanvas(eye_pupil_points[i]);
-            cv::circle(canvas, pEyePupil, scaling*1.5, robot_color, 2);
+        for (unsigned int i = 0; i < eye_pupil_points.size(); ++i) {
+            eye_pupil_points[i] = (robot.pose * eye_pupil_points[i]) + geo::Vector3(-xview, -yview, 0);
         }
     }
+    else
+    {
+        robot_center_point = (frame_center_pose.inverse() * robot.pose * robot_center_point);
+        lrf_point = (frame_center_pose.inverse() * robot.pose * lrf_point);
+        for (unsigned int i = 0; i < robot_head_points.size(); ++i) {
+            robot_head_points[i] = (frame_center_pose.inverse() * robot.pose * robot_head_points[i]);
+        }
+        for (unsigned int i = 0; i < eye_points.size(); ++i) {
+            eye_points[i] = (frame_center_pose.inverse() * robot.pose * eye_points[i]);
+        }
+        for (unsigned int i = 0; i < eye_pupil_points.size(); ++i) {
+            eye_pupil_points[i] = (frame_center_pose.inverse() * robot.pose * eye_pupil_points[i]);
+        }
+    }
+
+    cv::Point2d pLRF = worldToCanvas(lrf_point);
+    cv::circle(canvas, pLRF, scaling*2, robot_color, 2);
+    cv::Point2d pRobotCenter = worldToCanvas(robot_center_point);
+    cv::circle(canvas, pRobotCenter, robotRadius/resolution, robot_color, 2);
+
+    for(unsigned int i = 0; i < robot_head_points.size(); ++i)
+    {
+        unsigned int j = (i + 1) % robot_head_points.size();
+        cv::Point2d p1 = worldToCanvas(robot_head_points[i]);
+        cv::Point2d p2 = worldToCanvas(robot_head_points[j]);
+        cv::line(canvas, p1, p2, robot_color, 2);
+    }
+    for(unsigned int i = 0; i < eye_points.size(); ++i)
+    {
+        cv::Point2d pEye = worldToCanvas(eye_points[i]);
+        cv::circle(canvas, pEye, scaling*4, robot_color, 2);
+    }
+    for(unsigned int i = 0; i < eye_pupil_points.size(); ++i)
+    {
+        cv::Point2d pEyePupil = worldToCanvas(eye_pupil_points[i]);
+        cv::circle(canvas, pEyePupil, scaling*1.5, robot_color, 2);
+    }
+    
 
     for(std::vector<Object>::const_iterator it = world.objects().begin(); it != world.objects().end(); ++it)
     {
@@ -159,7 +156,7 @@ void visualize(const World& world, const std::vector<RobotPtr>& robots, bool col
 
         cv::Scalar line_color(obj.color.x * 255, obj.color.y * 255, obj.color.z * 255);
 
-        auto robot = world.object(robots[0]->robot_id);
+        auto robot = world.object(robotobj.robot_id);
         geo::Transform t;
         if(show_full_map== false){
             t = robot.pose.inverse() * obj.pose;
@@ -239,7 +236,7 @@ visualization_msgs::MarkerArray create_rviz_objectmsg(const World &world, const 
         else if (obj.type == movingObjecttype)
         {
             object.type = visualization_msgs::Marker::LINE_STRIP;
-            object.scale.x = 0.05;
+            object.scale.x = 1.0;
             object.color.r = 1.0;
             object.color.b = 0.0;
             object.color.g = 0.0;
