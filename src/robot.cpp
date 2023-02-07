@@ -52,17 +52,28 @@ Robot::Robot(const std::string &name, Id id, bool disable_speedcap, bool uncerta
     laser_pose.t.z = 0.3;
 
     nh = ros::NodeHandle();
+    //parameters
+    std::string laser_param, odom_param, bumper_f_param, bumper_b_param, base_ref_param, open_door_param, speak_param, play_param;
+    if (!nh.getParam("laser_", laser_param)) {ROS_ERROR_STREAM("Parameter " << "laser_" << " not set");};
+    if (!nh.getParam("odom_", odom_param)) {ROS_ERROR_STREAM("Parameter " << "odom_" << " not set");};
+    if (!nh.getParam("bumper_f_", bumper_f_param)) {ROS_ERROR_STREAM("Parameter " << "bumper_f_" << " not set");};
+    if (!nh.getParam("bumper_b_", bumper_b_param)) {ROS_ERROR_STREAM("Parameter " << "bumper_b_" << " not set");};
+    //if (!nh.getParam("base_ref_", base_ref_param)) {ROS_ERROR_STREAM("Parameter " << "base_ref_" << " not set");};
+    if (!nh.getParam("open_door_", open_door_param)) {ROS_ERROR_STREAM("Parameter " << "open_door_" << " not set");};
+    if (!nh.getParam("speak_", speak_param)) {ROS_ERROR_STREAM("Parameter " << "speak_" << " not set");};
+    //if (!nh.getParam("play_", play_param)) {ROS_ERROR_STREAM("Parameter " << "play_" << " not set");};
+
     // Publishers
-    pub_bumperF = nh.advertise<std_msgs::Bool>("/" + robot_name + "/base_f_bumper_sensor", 1);
-    pub_bumperR = nh.advertise<std_msgs::Bool>("/" + robot_name + "/base_b_bumper_sensor", 1);
-    pub_laser = nh.advertise<sensor_msgs::LaserScan>("/transformed_scan", 1);
-    pub_odom = nh.advertise<nav_msgs::Odometry>("/odom", 1);
+    pub_bumperF = nh.advertise<std_msgs::Bool>(bumper_f_param, 1);
+    pub_bumperR = nh.advertise<std_msgs::Bool>(bumper_b_param, 1);
+    pub_laser = nh.advertise<sensor_msgs::LaserScan>(laser_param, 1);
+    pub_odom = nh.advertise<nav_msgs::Odometry>(odom_param, 1);
     pub_joints = nh.advertise<sensor_msgs::JointState>("/joint_states", 1);
 
     // Subscribers
     sub_base_ref = nh.subscribe<geometry_msgs::Twist>("/cmd_vel", 1, &Robot::baseReferenceCallback, this);
-    sub_open_door = nh.subscribe<std_msgs::Empty>("/" + robot_name + "/open_door", 1, &Robot::openDoorCallback, this);
-    sub_speak = nh.subscribe<std_msgs::String>("/" + robot_name + "/text_to_speech/input", 1, &Robot::speakCallback, this);
+    sub_open_door = nh.subscribe<std_msgs::Empty>(open_door_param, 1, &Robot::openDoorCallback, this);
+    sub_speak = nh.subscribe<std_msgs::String>(speak_param, 1, &Robot::speakCallback, this);
     sub_mapdata = nh.subscribe<nav_msgs::MapMetaData>("/map_metadata",1, &Robot::mapCallback, this);
 
 }   
