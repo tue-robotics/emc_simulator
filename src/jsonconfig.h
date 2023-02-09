@@ -96,14 +96,6 @@ public:
             disable_speedcap = false;
         }
 
-        //Check if taco enabled is in json
-        if(doc.find("enable_taco") != doc.end()){
-            enable_taco = doc.at("enable_taco");
-        }
-        else{
-            enable_taco = false;
-        }
-
         //Check if pyro is used in json
         if(doc.find("use_pyro") != doc.end()){
             use_pyro = doc.at("use_pyro");
@@ -128,7 +120,6 @@ public:
         ROS_INFO_STREAM("Uncertain odom: " << uncertain_odom.value());
         ROS_INFO_STREAM("Show full map: " << show_full_map.value());
         ROS_INFO_STREAM("disable_speedcap: " << disable_speedcap.value());
-        ROS_INFO_STREAM("enable taco: " << enable_taco.value());
         ROS_INFO_STREAM("use pyro: " << use_pyro.value());
         ROS_INFO_STREAM("Spawn Location: "<< spawn.value().getOrigin());
         ROS_INFO_STREAM("Spawn Rotation: " << spawn.value().getBasis());
@@ -142,7 +133,6 @@ public:
     boost::optional<bool> uncertain_odom;
     boost::optional<std::vector<MovingObject>> moving_objects;
     boost::optional<bool> disable_speedcap;
-    boost::optional<bool> enable_taco;
     boost::optional<bool> use_pyro;
     boost::optional<geo::Pose3D> spawn;
 };
