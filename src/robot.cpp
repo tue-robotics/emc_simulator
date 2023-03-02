@@ -85,7 +85,7 @@ void Robot::pubTransform(const geo::Pose3D &pose, const MapConfig &mapconfig)
                        "rear_right_wheel_hinge"};
     jointState.position = {0, 0, 0, 0};
     pub_joints_ground_truth.publish(jointState);
-    if (sendInternalPose_) {pub_joints_internal.publish(jointState);}
+    pub_joints_internal.publish(jointState);
 
     // Publish tf transform
     geometry_msgs::TransformStamped transformStamped;
@@ -116,5 +116,4 @@ void Robot::internalTransform()
     transformStamped.child_frame_id = "internal/base_link";
     transformStamped.transform.rotation.w = 1;
     pub_tf2static.sendTransform(transformStamped);
-    sendInternalPose_ = true;
 }

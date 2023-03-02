@@ -52,7 +52,6 @@ public:
 
     geometry_msgs::Twist::ConstPtr base_ref_;
     bool request_open_door_;
-    bool sendInternalPose_;
 
     // Publisher
     ros::Publisher pub_bumperF;
