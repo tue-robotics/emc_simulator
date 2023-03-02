@@ -305,7 +305,7 @@ Visualization Manager:
       Name: Current View
       Near Clip Distance: 0.009999999776482582
       Scale: 167.03480529785156
-      Target Frame: base_link
+      Target Frame: internal/base_link
       X: 0
       Y: 0
     Saved: ~

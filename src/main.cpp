@@ -123,6 +123,9 @@ int main(int argc, char **argv){
     Id pyro_id = world.addObject(spawnLocation, robot_shape, robot_color, robottype);
     Robot robot("pyro", pyro_id, config.disable_speedcap.value(), config.uncertain_odom.value());
 
+    // Add transform from ground truth to internal robot
+    if (config.provide_internal_pose.value()) {robot.internalTransform();}
+
     // Add door
     for(std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
     {
@@ -250,7 +253,7 @@ int main(int argc, char **argv){
         // create output
         // Create laser data
         sensor_msgs::LaserScan scan_msg;
-        scan_msg.header.frame_id = "base_link";
+        scan_msg.header.frame_id = "internal/base_link";
         scan_msg.header.stamp = time;
         lrf.generateLaserData(world, robot, scan_msg);
         robot.pub_laser.publish(scan_msg);
