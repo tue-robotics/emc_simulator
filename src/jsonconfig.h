@@ -51,6 +51,14 @@ public:
             show_full_map = false;
         }
 
+        // Read internal pose settings
+        if(doc.find("provide_internal_pose") != doc.end()){
+            provide_internal_pose = doc.at("provide_internal_pose");
+        }
+        else{
+            provide_internal_pose = false;
+        }
+
         // read moving objects
         std::vector<MovingObject> ms;
         if(doc.find("objects") != doc.end())
@@ -119,6 +127,7 @@ public:
         ROS_INFO_STREAM("Simulator configuration settings:");
         ROS_INFO_STREAM("Uncertain odom: " << uncertain_odom.value());
         ROS_INFO_STREAM("Show full map: " << show_full_map.value());
+        ROS_INFO_STREAM("provide_internal_pose: " << provide_internal_pose.value());
         ROS_INFO_STREAM("disable_speedcap: " << disable_speedcap.value());
         ROS_INFO_STREAM("use pyro: " << use_pyro.value());
         ROS_INFO_STREAM("Spawn Location: "<< spawn.value().getOrigin());
@@ -131,6 +140,7 @@ public:
 public:
     boost::optional<bool> show_full_map;
     boost::optional<bool> uncertain_odom;
+    boost::optional<bool> provide_internal_pose;
     boost::optional<std::vector<MovingObject>> moving_objects;
     boost::optional<bool> disable_speedcap;
     boost::optional<bool> use_pyro;

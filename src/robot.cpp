@@ -57,7 +57,8 @@ Robot::Robot(const std::string &name, Id id, bool disable_speedcap, bool uncerta
     pub_bumperR = nh.advertise<std_msgs::Bool>("/" + robot_name + "/base_b_bumper_sensor", 1);
     pub_laser = nh.advertise<sensor_msgs::LaserScan>("/transformed_scan", 1);
     pub_odom = nh.advertise<nav_msgs::Odometry>("/odom", 1);
-    pub_joints = nh.advertise<sensor_msgs::JointState>("/joint_states", 1);
+    pub_joints_ground_truth = nh.advertise<sensor_msgs::JointState>("/viz_ground_truth/joint_states", 1);
+    pub_joints_internal = nh.advertise<sensor_msgs::JointState>("/viz_internal/joint_states", 1);
 
     // Subscribers
     sub_base_ref = nh.subscribe<geometry_msgs::Twist>("/cmd_vel", 1, &Robot::baseReferenceCallback, this);
@@ -83,13 +84,14 @@ void Robot::pubTransform(const geo::Pose3D &pose, const MapConfig &mapconfig)
                        "rear_left_wheel_hinge", 
                        "rear_right_wheel_hinge"};
     jointState.position = {0, 0, 0, 0};
-    pub_joints.publish(jointState);
+    pub_joints_ground_truth.publish(jointState);
+    pub_joints_internal.publish(jointState);
 
     // Publish tf transform
     geometry_msgs::TransformStamped transformStamped;
     transformStamped.header.stamp = ros::Time::now();
     transformStamped.header.frame_id = "map";
-    transformStamped.child_frame_id = "/base_link";
+    transformStamped.child_frame_id = "ground_truth/base_link";
     transformStamped.transform.translation.x =   pose.t.x + cos(mapconfig.mapOrientation) * mapconfig.mapOffsetX 
                                                           + sin(mapconfig.mapOrientation) * mapconfig.mapOffsetY;
 
@@ -104,4 +106,14 @@ void Robot::pubTransform(const geo::Pose3D &pose, const MapConfig &mapconfig)
     transformStamped.transform.rotation.z = q.z();
     transformStamped.transform.rotation.w = q.w();
     pub_tf2.sendTransform(transformStamped);
+}
+
+void Robot::internalTransform()
+{
+    geometry_msgs::TransformStamped transformStamped;
+    transformStamped.header.stamp = ros::Time::now();
+    transformStamped.header.frame_id = "ground_truth/base_link";
+    transformStamped.child_frame_id = "internal/base_link";
+    transformStamped.transform.rotation.w = 1;
+    pub_tf2static.sendTransform(transformStamped);
 }
