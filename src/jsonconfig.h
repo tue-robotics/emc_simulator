@@ -56,7 +56,7 @@ public:
             provide_internal_pose = doc.at("provide_internal_pose");
         }
         else{
-            provide_internal_pose = false;
+            provide_internal_pose = true;
         }
 
         // read moving objects
