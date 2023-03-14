@@ -90,7 +90,12 @@ int main(int argc, char **argv){
 
     // Load heightmap
     std::vector<Door> doors;
-    geo::ShapePtr heightmap = createHeightMapShape(heightmap_filename, doors);
+    MapLoader loader;
+    cv::Mat mapImage;
+    nav_msgs::MapMetaData metadata;
+    loader.getMapImage(mapImage);
+    loader.getMapMetadata(metadata);
+    geo::ShapePtr heightmap = createHeightMapShape(mapImage, metadata.resolution, doors);
     if (!heightmap)
     {
         std::cout << "[pyro SIMULATOR] Heightmap could not be loaded" << std::endl;
