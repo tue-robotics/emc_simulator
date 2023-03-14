@@ -56,8 +56,7 @@ int main(int argc, char **argv){
             config_filename = std::string(argv[i+1]);
         }
         if(map_supplied.compare(argv[i])==0){
-            ROS_INFO_STREAM("User map file supplied!");
-            heightmap_filename = std::string(argv[i+1]);
+            ROS_ERROR_STREAM("User map file supplied, this is deprecated. Map file will be ignored");
         }
     }
 
