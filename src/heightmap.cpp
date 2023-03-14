@@ -47,7 +47,7 @@ void MapLoader::getMapImage(cv::Mat& imageRef)
 
 void MapLoader::load()
 {
-    ROS_INFO_STEAM("Waiting for map");
+    ROS_INFO_STREAM("Waiting for map");
     while(!initialized)
     {
         cb_map.callAvailable();
