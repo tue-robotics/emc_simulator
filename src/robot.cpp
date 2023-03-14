@@ -18,25 +18,26 @@ void Robot::speakCallback(const std_msgs::String::ConstPtr& msg)
     ROS_WARN_STREAM(robot_name << " says: " << "\033[1;31m" << msg->data << "\033[0m\n");
 }
 
-void Robot::mapCallback(const nav_msgs::MapMetaData::ConstPtr& msg)
+void Robot::importMetadata(const nav_msgs::MapMetaData& metadata)
 {
-    mapconfig.mapResolution = msg->resolution;
-    mapconfig.mapOffsetX =  ((msg->height)*msg->resolution)/2;
-    mapconfig.mapOffsetY = -((msg->width)*msg->resolution)/2;
-
-    tf2::Quaternion q(msg->origin.orientation.x, 
-                      msg->origin.orientation.y, 
-                      msg->origin.orientation.z, 
-                      msg->origin.orientation.w);
-
+    tf2::Quaternion q(metadata.origin.orientation.x,
+                      metadata.origin.orientation.y,
+                      metadata.origin.orientation.z,
+                      metadata.origin.orientation.w);
+    
     tf2::Matrix3x3 T(q);
 
     double roll, pitch, yaw;
     T.getRPY(roll, pitch, yaw);
 
     mapconfig.mapOrientation = yaw + M_PI/2;
+
+    mapconfig.mapResolution = metadata.resolution;
+
+    mapconfig.mapOffsetX = (metadata.width * mapconfig.mapResolution / 2) * cos(yaw)-(metadata.height * mapconfig.mapResolution / 2) * sin(yaw) + metadata.origin.position.x;
+    mapconfig.mapOffsetY = (metadata.width * mapconfig.mapResolution / 2) * sin(yaw)+(metadata.height * mapconfig.mapResolution / 2) * cos(yaw) + metadata.origin.position.y;
+
     mapconfig.mapInitialised = true;
-    sub_mapdata.shutdown();
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -64,7 +65,6 @@ Robot::Robot(const std::string &name, Id id, bool disable_speedcap, bool uncerta
     sub_base_ref = nh.subscribe<geometry_msgs::Twist>("/cmd_vel", 1, &Robot::baseReferenceCallback, this);
     sub_open_door = nh.subscribe<std_msgs::Empty>("/" + robot_name + "/open_door", 1, &Robot::openDoorCallback, this);
     sub_speak = nh.subscribe<std_msgs::String>("/" + robot_name + "/text_to_speech/input", 1, &Robot::speakCallback, this);
-    sub_mapdata = nh.subscribe<nav_msgs::MapMetaData>("/map_metadata",1, &Robot::mapCallback, this);
 
 }   
 
@@ -92,11 +92,8 @@ void Robot::pubTransform(const geo::Pose3D &pose, const MapConfig &mapconfig)
     transformStamped.header.stamp = ros::Time::now();
     transformStamped.header.frame_id = "map";
     transformStamped.child_frame_id = "ground_truth/base_link";
-    transformStamped.transform.translation.x =   pose.t.x + cos(mapconfig.mapOrientation) * mapconfig.mapOffsetX 
-                                                          + sin(mapconfig.mapOrientation) * mapconfig.mapOffsetY;
-
-    transformStamped.transform.translation.y =   pose.t.y - sin(mapconfig.mapOrientation) * mapconfig.mapOffsetX
-                                                          + cos(mapconfig.mapOrientation) * mapconfig.mapOffsetY;
+    transformStamped.transform.translation.x =   pose.t.x + mapconfig.mapOffsetX;
+    transformStamped.transform.translation.y =   pose.t.y + mapconfig.mapOffsetY;
 
     transformStamped.transform.translation.z =   pose.t.z + 0.044;
     tf2::Quaternion q;

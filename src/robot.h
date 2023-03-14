@@ -44,6 +44,8 @@ public:
 
     void internalTransform();
 
+    void importMetadata(const nav_msgs::MapMetaData& metadata);
+
     geo::Pose3D laser_pose;
     std::string robot_name;
     Id robot_id;
@@ -62,7 +64,6 @@ public:
     tf2_ros::StaticTransformBroadcaster pub_tf2static;
     ros::Publisher pub_joints_ground_truth;
     ros::Publisher pub_joints_internal;
-    ros::Subscriber sub_mapdata;
 
 private:
     ros::NodeHandle nh;
@@ -74,7 +75,6 @@ private:
     void baseReferenceCallback(const geometry_msgs::Twist::ConstPtr& msg);
     void openDoorCallback(const std_msgs::Empty::ConstPtr& msg);
     void speakCallback(const std_msgs::String::ConstPtr& msg);
-    void mapCallback(const nav_msgs::MapMetaData::ConstPtr& msg);
 };
 
 
