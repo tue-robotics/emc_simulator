@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 	<arg name="config" default="$(find emc_simulator)/data/defaultconfig.json"/>
-	<arg name="map" default="$(find emc_simulator)/data/heightmap.pgm"/>
+	<arg name="map" default="$(find emc_simulator)/data/heightmap_metadata.yaml"/>
 
 	<param name="robot_description" command="$(find xacro)/xacro '$(find rosbot_description)/urdf/rosbot.xacro'"/>
 	<rosparam command="load" file="$(find emc_simulator)/config/simbot_config.yaml" />
@@ -16,7 +16,7 @@
 		<node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher_internal"/>
 	</group>
 
-	<node pkg="map_server" type="map_server" name="map_server" args="$(find emc_simulator)/data/heightmap_metadata.yaml"/>
+	<node pkg="map_server" type="map_server" name="map_server" args="$(arg map)"/>
 	
-	<node pkg="emc_simulator" type="pico_simulator" name="simulator" args="--config $(arg config) --map $(arg map)" output="screen"/>
+	<node pkg="emc_simulator" type="pico_simulator" name="simulator" args="--config $(arg config)" output="screen"/>
 </launch>

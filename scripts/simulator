@@ -9,7 +9,7 @@ parser = argparse.ArgumentParser(description='Process some integers.')
 parser.add_argument('-c', '--config',
                     help='A configuration file provided in json format')
 parser.add_argument('-m', '--map',
-                    help='A heightmap provided in pgm format')
+                    help='Heightmap data provided in yaml format')
 
 args = parser.parse_args()
 
