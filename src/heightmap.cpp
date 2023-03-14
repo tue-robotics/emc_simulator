@@ -50,7 +50,7 @@ void MapLoader::load()
 {
     ros::Rate r(10);
     ROS_INFO_STREAM("Waiting for map");
-    while(!initialized)
+    while(!initialized && ros::ok())
     {
         cb_map.callAvailable();
         r.sleep();
