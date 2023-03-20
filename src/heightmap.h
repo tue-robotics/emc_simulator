@@ -24,6 +24,8 @@ class MapLoader
     void getMapMetadata(nav_msgs::MapMetaData& metadataRef);
 
     void getMapImage(cv::Mat& imageRef);
+    
+    bool isInitialized(){ return initialized; };
 
     private:
     ros::NodeHandle nh;
