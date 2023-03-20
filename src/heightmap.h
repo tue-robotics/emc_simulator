@@ -25,7 +25,7 @@ class MapLoader
 
     void getMapImage(cv::Mat& imageRef);
     
-    bool isInitialised(){ return initialized; };
+    bool isInitialized(){ return initialized; };
 
     private:
     ros::NodeHandle nh;
