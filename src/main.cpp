@@ -95,10 +95,15 @@ int main(int argc, char **argv){
     nav_msgs::MapMetaData metadata;
     loader.getMapImage(mapImage);
     loader.getMapMetadata(metadata);
+    if (!loader.initialized())
+    {
+        std::cout << "[pyro SIMULATOR] Heightmap could not be loaded from server" << std::endl;
+        return 1;
+    }
     geo::ShapePtr heightmap = createHeightMapShape(mapImage, metadata.resolution, doors);
     if (!heightmap)
     {
-        std::cout << "[pyro SIMULATOR] Heightmap could not be loaded" << std::endl;
+        std::cout << "[pyro SIMULATOR] Heightmap could not be converted to shape" << std::endl;
         return 1;
     }
     world.addObject(geo::Pose3D::identity(), heightmap, geo::Vector3(1, 1, 1), walltype);
