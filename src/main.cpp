@@ -95,7 +95,7 @@ int main(int argc, char **argv){
     nav_msgs::MapMetaData metadata;
     loader.getMapImage(mapImage);
     loader.getMapMetadata(metadata);
-    if (!loader.initialized())
+    if (!loader.isInitialized())
     {
         std::cout << "[pyro SIMULATOR] Heightmap could not be loaded from server" << std::endl;
         return 1;
