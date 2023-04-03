@@ -1,4 +1,4 @@
-laser_: "/scan"
+laser_: "/transformed_scan"
 odom_: "/odom"
 bumper_f_: "/base_f_bumper_sensor"
 bumper_b_: "/base_b_bumper_sensor"
