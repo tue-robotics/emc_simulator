@@ -12,7 +12,7 @@ namespace visualization
         double xmin, ymin, xmax, ymax;
     };
 
-void visualize(const World& world, const std::vector<RobotPtr>& robots, bool collision, bool show_full_map,Bbox bbox, double robotRadius);
+void visualize(const World& world, const Robot& robot, bool collision, bool show_full_map,Bbox bbox, double robot_radius);
 
 visualization_msgs::MarkerArray create_rviz_objectmsg(const World &world, const MapConfig &mapconfig);
 }

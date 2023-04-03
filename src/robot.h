@@ -42,6 +42,8 @@ public:
 
     void pubTransform(const geo::Pose3D &pose, const MapConfig &mapconfig);
 
+    void internalTransform();
+
     geo::Pose3D laser_pose;
     std::string robot_name;
     Id robot_id;
@@ -58,7 +60,8 @@ public:
     ros::Publisher pub_odom;
     tf2_ros::TransformBroadcaster pub_tf2;
     tf2_ros::StaticTransformBroadcaster pub_tf2static;
-    ros::Publisher pub_joints;
+    ros::Publisher pub_joints_ground_truth;
+    ros::Publisher pub_joints_internal;
     ros::Subscriber sub_mapdata;
 
 private:

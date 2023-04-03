@@ -2,6 +2,7 @@
 #include "door.h"
 
 #include <ros/console.h>
+#include <ros/rate.h>
 
 #include "polypartition/polypartition.h"
 #include <opencv2/highgui/highgui.hpp>
@@ -10,6 +11,72 @@
 #include <geolib/datatypes.h>
 
 #include <queue>
+
+
+MapLoader::MapLoader()
+{
+    ros::SubscribeOptions map_sub_options = ros::SubscribeOptions::create<nav_msgs::OccupancyGrid>("/map", 1, boost::bind(&MapLoader::mapCallback, this, _1), ros::VoidPtr(), &cb_map);
+    sub_map = nh.subscribe(map_sub_options);
+}
+
+void MapLoader::getMap(nav_msgs::OccupancyGrid& mapRef)
+{
+    if (!initialized)
+    {
+        load();
+    }
+    mapRef = map;
+}
+
+void MapLoader::getMapMetadata(nav_msgs::MapMetaData& metadataRef)
+{
+    if (!initialized)
+    {
+        load();
+    }
+    metadataRef = map.info;
+}
+
+void MapLoader::getMapImage(cv::Mat& imageRef)
+{
+    if (!initialized)
+    {
+        load();
+    }
+    imageRef = mapImage;
+}
+
+void MapLoader::load()
+{
+    ros::Rate r(10);
+    ROS_INFO_STREAM("Waiting for map");
+    while(!initialized && ros::ok())
+    {
+        cb_map.callAvailable();
+        r.sleep();
+    }
+}
+
+void MapLoader::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg)
+{
+    map = *msg;
+    //convert to image
+    mapImage = cv::Mat(map.info.height, map.info.width, CV_8UC1);
+    for (uint row = 0; row < map.info.height; ++row) {
+        for (uint col = 0; col < map.info.width; ++col) {
+            uint index = col + (map.info.height-row) * map.info.width;
+            if (map.data[index] == 0) {
+                mapImage.at<uchar>(row, col) = 255;  // free space
+            } else if (map.data[index] == 100) {
+                mapImage.at<uchar>(row, col) = 0;    // occupied space
+            } else {
+                mapImage.at<uchar>(row, col) = 127;  // door
+            }
+        }
+    }
+    initialized = true;
+    sub_map.shutdown();
+}
 
 // ----------------------------------------------------------------------------------------------------
 
@@ -152,20 +219,25 @@ void findContours(const cv::Mat& image, const geo::Vec2i& p, int d_start, std::v
 
 // ----------------------------------------------------------------------------------------------------
 
+
 geo::ShapePtr createHeightMapShape(const std::string& filename, std::vector<Door>& doors)
 {
-    double resolution = 0.025;
+    cv::Mat image = cv::imread(filename, cv::IMREAD_GRAYSCALE);   // Read the file
+    return createHeightMapShape(image, 0.025, doors);
+}
+
+geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, std::vector<Door>& doors)
+{
     double origin_z = 0;
     double blockheight = 1.0;
 
-    cv::Mat image_tmp = cv::imread(filename, cv::IMREAD_GRAYSCALE);   // Read the file
     cv::Mat image;
     // Pad Input image with a white border of 1 pixel around, to prevent indexing issues
     cv::copyMakeBorder(image_tmp, image, 1, 1, 1, 1, cv::BORDER_CONSTANT, cv::Scalar(255));
 
     if (!image.data)
     {
-        ROS_ERROR_STREAM("[PICO SIMULATOR] Loading heightmap '" << filename << "' failed.");
+        ROS_ERROR_STREAM("[PICO SIMULATOR] Loading heightmap failed.");
         return geo::ShapePtr();
     }
 
