@@ -286,21 +286,40 @@ geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, 
                 }
                 Q.pop();
             }
+            // Account for pixel thickness
+            p_max.x += 1;
+            p_max.y += 1;
 
+            // Find length in both directions
             int dx = p_max.x - p_min.x;
             int dy = p_max.y - p_min.y;
 
+            // Calculate thickness
             int thickness_pixels = n / (std::max(dx, dy));
+
+            // Calculate coordinates of one side of the door
             if (dy > dx)
                 p_max.x = std::max(p_min.x, p_max.x - thickness_pixels);
             else
                 p_max.y = std::max(p_min.y, p_max.y - thickness_pixels);
 
             // Convert to world coordinates
-            geo::Vector3 p_world_min((image.rows - p_min.y - 1) * resolution + origin_y, (image.cols - p_min.x - 1) * resolution + origin_x, 0);
-            geo::Vector3 p_world_max((image.rows - p_max.y - 1) * resolution + origin_y, (image.cols - p_max.x - 1) * resolution + origin_x, 0);
+            geo::Vector3 p_world_min((image.rows - p_min.y) * resolution + origin_y, (image.cols - p_min.x - 1) * resolution + origin_x, 0);
+            geo::Vector3 p_world_max((image.rows - p_max.y) * resolution + origin_y, (image.cols - p_max.x - 1) * resolution + origin_x, 0);
 
             double thickness = resolution * thickness_pixels;
+
+            // Move back to centre
+            if (dy > dx)
+            {
+                p_world_max.y -= thickness / 2.0;
+                p_world_min.y -= thickness / 2.0;
+            }
+            else
+            {
+                p_world_max.x -= thickness / 2.0;
+                p_world_min.x -= thickness / 2.0;
+            }
 
             doors.push_back(Door());
             Door& door = doors.back();
