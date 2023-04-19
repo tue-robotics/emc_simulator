@@ -20,6 +20,8 @@
 
   <exec_depend>rospy</exec_depend>
   
+  <doc_depend>doxygen</doc_depend>
+  
   <export>
     <rosdoc config="rosdoc.yaml" />
   </export>
