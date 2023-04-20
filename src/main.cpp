@@ -136,6 +136,9 @@ int main(int argc, char **argv){
     // Add transform from ground truth to internal robot
     if (config.provide_internal_pose.value()) {robot.internalTransform();}
 
+    // Provide the robot with metadata
+    robot.importMetadata(metadata);
+
     // Add door
     for(std::vector<Door>::iterator it = doors.begin(); it != doors.end(); ++it)
     {
