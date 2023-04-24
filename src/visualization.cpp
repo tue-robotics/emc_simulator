@@ -193,11 +193,9 @@ visualization_msgs::MarkerArray create_rviz_objectmsg(const World &world, const 
     object.header.frame_id = "map";
     object.header.stamp = ros::Time::now();
     object.action = visualization_msgs::Marker::MODIFY;
-    object.pose.position.x = cos(mapconfig.mapOrientation) * mapconfig.mapOffsetX 
-                           + sin(mapconfig.mapOrientation) * mapconfig.mapOffsetY;
+    object.pose.position.x = mapconfig.mapOffsetX;
 
-    object.pose.position.y = - sin(mapconfig.mapOrientation) * mapconfig.mapOffsetX
-                             + cos(mapconfig.mapOrientation) * mapconfig.mapOffsetY;
+    object.pose.position.y = mapconfig.mapOffsetY;
                              
     object.pose.position.z = 0.01;
     tf2::Quaternion q;
