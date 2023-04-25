@@ -64,7 +64,7 @@ void MapLoader::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg)
     mapImage = cv::Mat(map.info.height, map.info.width, CV_8UC1);
     for (uint row = 0; row < map.info.height; ++row) {
         for (uint col = 0; col < map.info.width; ++col) {
-            uint index = col + (map.info.height-row) * map.info.width;
+            uint index = col + (map.info.height-(row+1)) * map.info.width;
             if (map.data[index] == 0) {
                 mapImage.at<uchar>(row, col) = 255;  // free space
             } else if (map.data[index] == 100) {
@@ -241,8 +241,8 @@ geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, 
         return geo::ShapePtr();
     }
 
-    double origin_x = -(image.cols * resolution / 2);
-    double origin_y = -(image.rows * resolution / 2);
+    double origin_x = (-image.cols / 2.0) * resolution;
+    double origin_y = (-image.rows / 2.0) * resolution;
 
     // Find doors
     for(int y = 0; y < image.rows; ++y)
@@ -286,11 +286,18 @@ geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, 
                 }
                 Q.pop();
             }
+            // Account for pixel thickness
+            p_min.x -= 1;
+            p_min.y -= 1;
 
+            // Find length in both directions
             int dx = p_max.x - p_min.x;
             int dy = p_max.y - p_min.y;
 
+            // Calculate thickness
             int thickness_pixels = n / (std::max(dx, dy));
+
+            // Calculate coordinates of one side of the door
             if (dy > dx)
                 p_max.x = std::max(p_min.x, p_max.x - thickness_pixels);
             else
@@ -301,6 +308,18 @@ geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, 
             geo::Vector3 p_world_max((image.rows - p_max.y - 1) * resolution + origin_y, (image.cols - p_max.x - 1) * resolution + origin_x, 0);
 
             double thickness = resolution * thickness_pixels;
+
+            // Move back to centre
+            if (dy > dx)
+            {
+                p_world_max.y -= thickness / 2.0;
+                p_world_min.y -= thickness / 2.0;
+            }
+            else
+            {
+                p_world_max.x -= thickness / 2.0;
+                p_world_min.x -= thickness / 2.0;
+            }
 
             doors.push_back(Door());
             Door& door = doors.back();
@@ -364,7 +383,7 @@ geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, 
                         poly[i].y = points[i].y;
 
                         // Convert to world coordinates
-                        double wy = -(points[i].x * resolution + origin_x);
+                        double wy = (image.cols - points[i].x - 1) * resolution + origin_x;
                         double wx = (image.rows - points[i].y - 1) * resolution + origin_y;
 
                         vertex_index_map.at<int>(points[i].y, points[i].x) = mesh.addPoint(geo::Vector3(wx, wy, min_z));
@@ -407,7 +426,7 @@ geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, 
                                     poly_hole[j].y = hole_points[j].y;
 
                                     // Convert to world coordinates
-                                    double wy = -(hole_points[j].x * resolution + origin_x);
+                                    double wy = (image.cols - hole_points[j].x - 1) * resolution + origin_x;
                                     double wx = (image.rows - hole_points[j].y - 1) * resolution + origin_y;
 
                                     vertex_index_map.at<int>(hole_points[j].y, hole_points[j].x) = mesh.addPoint(geo::Vector3(wx, wy, min_z));
