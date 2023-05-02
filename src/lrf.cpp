@@ -93,7 +93,11 @@ void LRF::generateLaserData(const World& world, const Robot& robot, sensor_msgs:
     for(unsigned int i = 0; i < ranges.size(); ++i)
     {
         double r = ranges[i];
-        scan_msg.ranges[i] = r + randomUniform(-noise_level_, noise_level_);
+        if (r != 0)
+        {
+            r += randomUniform(-noise_level_, noise_level_);
+        }
+        scan_msg.ranges[i] = r;
     }
 
     // Stamp with current ROS time
