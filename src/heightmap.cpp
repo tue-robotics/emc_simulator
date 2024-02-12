@@ -241,8 +241,8 @@ geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, 
         return geo::ShapePtr();
     }
 
-    double origin_x = (-image.cols / 2.0) * resolution;
-    double origin_y = (-image.rows / 2.0) * resolution;
+    double origin_x = 0.0; // (-image.cols / 2.0) * resolution;
+    double origin_y = 0.0; // (-image.rows / 2.0) * resolution;
 
     // Find doors
     for(int y = 0; y < image.rows; ++y)
