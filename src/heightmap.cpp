@@ -237,9 +237,9 @@ void findContours(const cv::Mat& image, const geo::Vec2i& p, int d_start, std::v
  * @param image_width amount of columns the image has, or the 'width' in pixels
  * @return vector of the pose corresponding to the bottom left corner of the pixel. with coordinates (0,0) in the bottom left of the image.
  */ 
-geo::Vector3 pixel2world(cv::Point2i p, double resolution, int image_height, int image_width)
+geo::Vector3 pixel2world(cv::Point2i p, double resolution, int image_height)
 {
-    geo::Vector3 p_vec((image_height - p.y - 1) * resolution, (image_width - p.x - 1) * resolution, 0);
+    geo::Vector3 p_vec((p.x - 1) * resolution, (image_height - p.y - 1) * resolution, 0);
     return p_vec;
 }
 
@@ -311,46 +311,38 @@ geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, 
                 Q.pop();
             }
             // Account for pixel thickness
-            p_min.x -= 1;
-            p_min.y -= 1;
+            p_max.x += 1;
+            p_max.y += 1;
 
             // Find length in both directions
-            int dx = p_max.x - p_min.x;
-            int dy = p_max.y - p_min.y;
+            int dx = p_max.x - p_min.x; // number of pixels in x (columns) direction
+            int dy = p_max.y - p_min.y; // number of pixels in y (rows) direction
 
             // Calculate thickness
-            int thickness_pixels = n / (std::max(dx, dy));
-
-            // Calculate coordinates of one side of the door
-            if (dy > dx)
-                p_max.x = std::max(p_min.x, p_max.x - thickness_pixels);
-            else
-                p_max.y = std::max(p_min.y, p_max.y - thickness_pixels);
-
-            // Convert to world coordinates
-            geo::Vector3 p_world_min = pixel2world(p_min, resolution,  image.rows, image.cols);
-            geo::Vector3 p_world_max = pixel2world(p_max, resolution,  image.rows, image.cols);
-            //geo::Vector3 p_world_min((image.rows - p_min.y - 1) * resolution + origin_y, (image.cols - p_min.x - 1) * resolution + origin_x, 0);
-            //geo::Vector3 p_world_max((image.rows - p_max.y - 1) * resolution + origin_y, (image.cols - p_max.x - 1) * resolution + origin_x, 0);
-
+            int thickness_pixels = n / std::max(dx,dy); // width of the door //n / (std::max(dx, dy));
             double thickness = resolution * thickness_pixels;
 
-            // Move back to centre
-            if (dy > dx)
+            // Convert to world coordinates
+            geo::Vector3 p_world_min = pixel2world(p_min, resolution,  image.rows);
+            geo::Vector3 p_world_max = pixel2world(p_max, resolution,  image.rows);
+
+            // Calculate coordinates of points in the centerline of the door
+            geo::Vector3 p_center_min = p_world_min;
+            geo::Vector3 p_center_max = p_world_max;
+            if (dy > dx) // door is upright in image
             {
-                p_world_max.y -= thickness / 2.0;
-                p_world_min.y -= thickness / 2.0;
+                p_center_min.x = std::min(p_world_max.x, p_world_min.x + thickness/2);
+                p_center_max.x = std::max(p_world_min.x, p_world_max.x - thickness/2);
             }
-            else
+            else // door is horizontal in image
             {
-                p_world_max.x -= thickness / 2.0;
-                p_world_min.x -= thickness / 2.0;
+                p_center_min.y = std::min(p_world_max.y, p_world_min.y + thickness/2);
+                p_center_max.y = std::max(p_world_min.y, p_world_max.y - thickness/2);
             }
 
-            doors.push_back(Door());
-            Door& door = doors.back();
+            Door door;
 
-            geo::Vector3 v = p_world_max - p_world_min;
+            geo::Vector3 v = p_center_max - p_center_min; // movement axis of the door
 
             if (p_start.x > (p_max.x + p_min.x) / 2)
                 v.y = -v.y;
@@ -362,7 +354,7 @@ geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, 
                            v.y,  v.x, 0,
                            0,    0,   1);
 
-            door.init_pose = geo::Pose3D(m, (p_world_max + p_world_min) / 2);
+            door.init_pose = geo::Pose3D(m, (p_center_max + p_center_min) / 2);
             door.open_vel = geo::Vector3(0.3, 0, 0);
             if (c < 128)
                 door.open_vel = -door.open_vel;
@@ -370,6 +362,8 @@ geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, 
             door.open_distance = door.size;
             door.shape.reset(new geo::Box(geo::Vector3(-door.size / 2, -thickness / 2, 0), geo::Vector3(door.size / 2, thickness / 2, 1)));
             door.closed = true;
+
+            doors.push_back(door);
         }
     }
 
