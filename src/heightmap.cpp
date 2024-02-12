@@ -265,9 +265,6 @@ geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, 
         return geo::ShapePtr();
     }
 
-    double origin_x = 0.0; // (-image.cols / 2.0) * resolution;
-    double origin_y = 0.0; // (-image.rows / 2.0) * resolution;
-
     // Find doors
     for(int y = 0; y < image.rows; ++y)
     {
@@ -403,8 +400,10 @@ geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, 
                         poly[i].y = points[i].y;
 
                         // Convert to world coordinates
-                        double wy = (image.cols - points[i].x - 1) * resolution + origin_x;
-                        double wx = (image.rows - points[i].y - 1) * resolution + origin_y;
+                        cv::Point2i p(points[i].x, points[i].y);
+                        geo::Vector3 world_point = pixel2world(p, resolution, image.rows);
+                        double wy = world_point.y;
+                        double wx = world_point.x;
 
                         vertex_index_map.at<int>(points[i].y, points[i].x) = mesh.addPoint(geo::Vector3(wx, wy, min_z));
                         mesh.addPoint(geo::Vector3(wx, wy, max_z));
@@ -446,8 +445,10 @@ geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, 
                                     poly_hole[j].y = hole_points[j].y;
 
                                     // Convert to world coordinates
-                                    double wy = (image.cols - hole_points[j].x - 1) * resolution + origin_x;
-                                    double wx = (image.rows - hole_points[j].y - 1) * resolution + origin_y;
+                                    cv::Point2i p(points[i].x, points[i].y);
+                                    geo::Vector3 world_point = pixel2world(p, resolution, image.rows);
+                                    double wy = world_point.y;
+                                    double wx = world_point.x;
 
                                     vertex_index_map.at<int>(hole_points[j].y, hole_points[j].x) = mesh.addPoint(geo::Vector3(wx, wy, min_z));
                                     mesh.addPoint(geo::Vector3(wx, wy, max_z));
