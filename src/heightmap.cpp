@@ -217,7 +217,31 @@ void findContours(const cv::Mat& image, const geo::Vec2i& p, int d_start, std::v
     }
 }
 
-// ----------------------------------------------------------------------------------------------------
+/**
+     * @brief Send a path to be drawn in rviz.
+     * 
+     * @param path The sequence of points, between which the path will be drawn. The sequence must be provided as a vector of points, where each point is formatted as {x,y,z} or {x,y}. Coordinates are relative to the centre of the map (same as simulator coordinates).
+     * @param color The color in which the path will be drawn. Format is {r,g,b}, with each value between 0.0 and 1.0.
+     * @param width [m] Line width.
+     * @param id The id of this path. When drawing multiple paths, each sequence must have a unique id. Sending a new path with the same id will overwrite the previous path.
+     * 
+     * @return true Path is sent to rviz.
+     * @return false Path does not have enough valid points.
+     */
+
+/**  
+ * @brief convert a pixel in the map image into coordinates in the map frame.
+ * @param p the point in pixel coordinates. with (row=0, col=0) in the top left corner of the image.
+ * @param resolution resolution of the map in meters per pixel
+ * @param image_height amount of rows the image has, or the 'height' in pixels
+ * @param image_width amount of columns the image has, or the 'width' in pixels
+ * @return vector of the pose corresponding to the bottom left corner of the pixel. with coordinates (0,0) in the bottom left of the image.
+ */ 
+geo::Vector3 pixel2world(cv::Point2i p, double resolution, int image_height, int image_width)
+{
+    geo::Vector3 p_vec((image_height - p.y - 1) * resolution, (image_width - p.x - 1) * resolution, 0);
+    return p_vec;
+}
 
 
 geo::ShapePtr createHeightMapShape(const std::string& filename, std::vector<Door>& doors)
@@ -304,8 +328,10 @@ geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, 
                 p_max.y = std::max(p_min.y, p_max.y - thickness_pixels);
 
             // Convert to world coordinates
-            geo::Vector3 p_world_min((image.rows - p_min.y - 1) * resolution + origin_y, (image.cols - p_min.x - 1) * resolution + origin_x, 0);
-            geo::Vector3 p_world_max((image.rows - p_max.y - 1) * resolution + origin_y, (image.cols - p_max.x - 1) * resolution + origin_x, 0);
+            geo::Vector3 p_world_min = pixel2world(p_min, resolution,  image.rows, image.cols);
+            geo::Vector3 p_world_max = pixel2world(p_max, resolution,  image.rows, image.cols);
+            //geo::Vector3 p_world_min((image.rows - p_min.y - 1) * resolution + origin_y, (image.cols - p_min.x - 1) * resolution + origin_x, 0);
+            //geo::Vector3 p_world_max((image.rows - p_max.y - 1) * resolution + origin_y, (image.cols - p_max.x - 1) * resolution + origin_x, 0);
 
             double thickness = resolution * thickness_pixels;
 
