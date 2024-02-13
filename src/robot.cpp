@@ -69,7 +69,9 @@ void Robot::pubTransform(const geo::Pose3D &pose)
     tf2::Transform tf_robot;
 
     tf_robot.setOrigin(tf2::Vector3(pose.t.x, pose.t.y, pose.t.z + 0.044));
-    tf_robot.setRotation(tf2::Quaternion(0, 0, pose.getYaw()));
+    tf2::Quaternion q;
+    q.setRPY(0, 0, pose.getYaw());
+    tf_robot.setRotation(q);
 
     // Publish tf transform
     geometry_msgs::TransformStamped transformStamped;
