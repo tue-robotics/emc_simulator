@@ -110,7 +110,7 @@ void findContours(const cv::Mat& image, const geo::Vec2i& p, int d_start, std::v
                             // denotes the principle axis of the line
 
     if (add_first)
-        points.push_back(p - geo::Vec2i(1, 1));
+        points.push_back(p);
 
     int n_uninterrupted = 1;
     geo::Vec2i p_corner = p;
@@ -146,6 +146,8 @@ void findContours(const cv::Mat& image, const geo::Vec2i& p, int d_start, std::v
 
 
             geo::Vec2i q = p_current;
+            q.x++;
+            q.y++;
             if (d == 0 || d_current == 0) // right
                 --q.y;
             if (d == 3 || d_current == 3) // up
@@ -201,6 +203,8 @@ void findContours(const cv::Mat& image, const geo::Vec2i& p, int d_start, std::v
         if (d_current != d)
         {
             geo::Vec2i q = p_current;
+            q.x++;
+            q.y++;
             if (d == 0 || d_current == 0) // right
                 --q.y;
             if (d == 3 || d_current == 3) // up
