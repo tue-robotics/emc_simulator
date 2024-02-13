@@ -444,7 +444,7 @@ geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, 
                                     poly_hole[j].y = hole_points[j].y;
 
                                     // Convert to world coordinates
-                                    cv::Point2i p(points[i].x, points[i].y);
+                                    cv::Point2i p(hole_points[j].x, hole_points[j].y);
                                     geo::Vector3 world_point = pixel2world(p, resolution, image.rows);
                                     double wy = world_point.y;
                                     double wx = world_point.x;
