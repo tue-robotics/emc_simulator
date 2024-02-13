@@ -89,7 +89,7 @@ void MapLoader::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg)
  * @param line_starts[out] a set of 2d points in which the contour travels up. used to check for holes later.
  * @param countour_map[out] a map in which pixels belonging to the contour have value 1
  * @param add_first wether the first point should be added immediately. if false the algorithm will determine which point to add first.
-*/
+ */
 void findContours(const cv::Mat& image, const geo::Vec2i& p, int d_start, std::vector<geo::Vec2i>& points,
                   std::vector<geo::Vec2i>& line_starts, cv::Mat& contour_map, bool add_first)
 {
@@ -233,10 +233,10 @@ void findContours(const cv::Mat& image, const geo::Vec2i& p, int d_start, std::v
 
 /**  
  * @brief convert a pixel in the map image into coordinates in the map frame.
+ * (Note, this function assumes the pixel belongs to an image with a 1 pixel border w.r.t the original image)
  * @param p the point in pixel coordinates. with (row=0, col=0) in the top left corner of the image.
  * @param resolution resolution of the map in meters per pixel
  * @param image_height amount of rows the image has, or the 'height' in pixels
- * @param image_width amount of columns the image has, or the 'width' in pixels
  * @return vector of the pose corresponding to the bottom left corner of the pixel. with coordinates (0,0) in the bottom left of the image.
  */ 
 geo::Vector3 pixel2world(cv::Point2i p, double resolution, int image_height)

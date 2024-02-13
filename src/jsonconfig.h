@@ -120,7 +120,6 @@ public:
         }
         else{
             spawn_provided = false;
-            //spawn = geo::Pose3D::identity(); // [x,y,theta] = [0,0,0]
         }
 
     }
