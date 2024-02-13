@@ -79,7 +79,17 @@ void MapLoader::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 }
 
 // ----------------------------------------------------------------------------------------------------
-
+/**
+ * @brief find the countours in an image
+ * 
+ * @param image image in which to find the image
+ * @param p point from which to start the search
+ * @param d_start direction in which to start the search (0=right, 1=down, 2=left, 3=up) wraps above 3.
+ * @param points[out] vector of 2d points corresponding to the contour points in pixel coordinates.
+ * @param line_starts[out] a set of 2d points in which the contour travels up. used to check for holes later.
+ * @param countour_map[out] a map in which pixels belonging to the contour have value 1
+ * @param add_first wether the first point should be added immediately. if false the algorithm will determine which point to add first.
+*/
 void findContours(const cv::Mat& image, const geo::Vec2i& p, int d_start, std::vector<geo::Vec2i>& points,
                   std::vector<geo::Vec2i>& line_starts, cv::Mat& contour_map, bool add_first)
 {
@@ -216,18 +226,6 @@ void findContours(const cv::Mat& image, const geo::Vec2i& p, int d_start, std::v
         d_current = d;
     }
 }
-
-/**
-     * @brief Send a path to be drawn in rviz.
-     * 
-     * @param path The sequence of points, between which the path will be drawn. The sequence must be provided as a vector of points, where each point is formatted as {x,y,z} or {x,y}. Coordinates are relative to the centre of the map (same as simulator coordinates).
-     * @param color The color in which the path will be drawn. Format is {r,g,b}, with each value between 0.0 and 1.0.
-     * @param width [m] Line width.
-     * @param id The id of this path. When drawing multiple paths, each sequence must have a unique id. Sending a new path with the same id will overwrite the previous path.
-     * 
-     * @return true Path is sent to rviz.
-     * @return false Path does not have enough valid points.
-     */
 
 /**  
  * @brief convert a pixel in the map image into coordinates in the map frame.
@@ -419,6 +417,7 @@ geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, 
                         mesh.addTriangle(i * 2 + 1, j * 2 + 1, j * 2);
                     }
 
+                    // check for open space inside the contour
                     for(unsigned int i = 0; i < line_starts.size(); ++i)
                     {
                         int x2 = line_starts[i].x;
@@ -427,7 +426,7 @@ geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, 
                         while(image.at<unsigned char>(y2, x2) == v)
                             ++x2;
 
-                        if (contour_map.at<unsigned char>(y2, x2 - 1) == 0)
+                        if (contour_map.at<unsigned char>(y2, x2 - 1) == 0) // check if the last point that still had value v is not part of the contour.
                         {
                             // found a hole, so find the contours of this hole
                             std::vector<geo::Vec2i> hole_points;
