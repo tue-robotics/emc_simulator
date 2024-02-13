@@ -129,7 +129,15 @@ int main(int argc, char **argv){
     geo::createCylinder(*robot_shape, robot_radius, 1, 32); // height = 1, nvertices = 32;
     geo::Vector3 robot_color(0, 0, 1);
     
-    geo::Pose3D spawnLocation = config.spawn.value();
+    geo::Pose3D spawnLocation;
+    if (config.spawn_provided.value())
+        spawnLocation = config.spawn.value();
+    else // no init position specified. spawn robot in the middle of the map.
+    {
+        double map_width = mapImage.cols * metadata.resolution;
+        double map_height = mapImage.rows * metadata.resolution;
+        spawnLocation = geo::Pose3D(map_width / 2, map_height / 2, 0,0,0, 1.57);
+    }
     Id pyro_id = world.addObject(spawnLocation, robot_shape, robot_color, robottype);
     Robot robot("pyro", pyro_id, config.disable_speedcap.value(), config.uncertain_odom.value());
 
