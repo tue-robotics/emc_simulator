@@ -41,7 +41,7 @@ public:
 
     ~Robot();
 
-    void pubTransform(const geo::Pose3D &pose, const MapConfig &mapconfig);
+    void pubTransform(const geo::Pose3D &pose);
 
     void internalTransform();
 

@@ -106,7 +106,7 @@ int main(int argc, char **argv){
         std::cout << "[pyro SIMULATOR] Heightmap could not be converted to shape" << std::endl;
         return 1;
     }
-    world.addObject(geo::Pose3D::identity(), heightmap, geo::Vector3(1, 1, 1), walltype);
+    world.addObject(geo::Pose3D::identity(), heightmap, geo::Vector3(0, 0, 1), walltype);
 
     // Get centerbox for height map (the visualization is constraining canvas within this box)
     visualization::Bbox bbox; bbox.xmin = -1; bbox.xmax = 1; bbox.ymin=-1; bbox.ymax = 1;
@@ -129,7 +129,15 @@ int main(int argc, char **argv){
     geo::createCylinder(*robot_shape, robot_radius, 1, 32); // height = 1, nvertices = 32;
     geo::Vector3 robot_color(0, 0, 1);
     
-    geo::Pose3D spawnLocation = config.spawn.value();
+    geo::Pose3D spawnLocation;
+    if (config.spawn_provided.value())
+        spawnLocation = config.spawn.value();
+    else // no init position specified. spawn robot in the middle of the map.
+    {
+        double map_width = mapImage.cols * metadata.resolution;
+        double map_height = mapImage.rows * metadata.resolution;
+        spawnLocation = geo::Pose3D(map_width / 2, map_height / 2, 0,0,0, 1.57);
+    }
     Id pyro_id = world.addObject(spawnLocation, robot_shape, robot_color, robottype);
     Robot robot("pyro", pyro_id, config.disable_speedcap.value(), config.uncertain_odom.value());
 
@@ -292,21 +300,15 @@ int main(int argc, char **argv){
         robot.pub_odom.publish(odom_msg);
         // Write tf2 data
         geo::Pose3D pose = world.object(robot.robot_id).pose;
-        if (robot.mapconfig.mapInitialised)
-        {
-            robot.pubTransform(pose, robot.mapconfig);
-        }
+        robot.pubTransform(pose);
         
         // Visualize             
         if (visualize)
             visualization::visualize(world, robot, collision, config.show_full_map.value(), bbox, robot_radius);
 
-        if (robot.mapconfig.mapInitialised)
-        {
-            auto objects = visualization::create_rviz_objectmsg(world, robot.mapconfig);
-            marker_pub.publish(objects);
-        }
-            
+        auto objects = visualization::create_rviz_objectmsg(world);
+        marker_pub.publish(objects);
+
         if (collision)
             ROS_WARN_STREAM("COLLISION!");
 

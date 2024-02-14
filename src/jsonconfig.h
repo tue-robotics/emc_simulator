@@ -116,9 +116,10 @@ public:
             std::vector<double> spawn_location = doc.at("initial_pose");
             assert(spawn_location.size()==3);
             spawn = geo::Pose3D(spawn_location[0],spawn_location[1],0,0,0,spawn_location[2]); // config value is [x,y,theta] = [x,y,0,0,0,yaw]
+            spawn_provided = true;
         }
         else{
-            spawn = geo::Pose3D::identity(); // [x,y,theta] = [0,0,0]
+            spawn_provided = false;
         }
 
     }
@@ -130,8 +131,13 @@ public:
         ROS_INFO_STREAM("provide_internal_pose: " << provide_internal_pose.value());
         ROS_INFO_STREAM("disable_speedcap: " << disable_speedcap.value());
         ROS_INFO_STREAM("use pyro: " << use_pyro.value());
-        ROS_INFO_STREAM("Spawn Location: "<< spawn.value().getOrigin());
-        ROS_INFO_STREAM("Spawn Rotation: " << spawn.value().getBasis());
+        if (spawn_provided.value())
+        {
+            ROS_INFO_STREAM("Spawn Location: " << spawn.value().getOrigin());
+            ROS_INFO_STREAM("Spawn Rotation: " << spawn.value().getBasis());
+        }
+        else
+            ROS_INFO_STREAM("No spawn Location provided, will spawn robot in the middle of the map.");
         ROS_INFO_STREAM("imported " << moving_objects.value().size() << " moving objects");
     }
 
@@ -145,6 +151,7 @@ public:
     boost::optional<bool> disable_speedcap;
     boost::optional<bool> use_pyro;
     boost::optional<geo::Pose3D> spawn;
+    boost::optional<bool> spawn_provided;
 };
 
 #endif //PROJECT_JSONCONFIG_H

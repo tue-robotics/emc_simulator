@@ -79,7 +79,17 @@ void MapLoader::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 }
 
 // ----------------------------------------------------------------------------------------------------
-
+/**
+ * @brief find the countours in an image
+ * 
+ * @param image image in which to find the image
+ * @param p point from which to start the search
+ * @param d_start direction in which to start the search (0=right, 1=down, 2=left, 3=up) wraps above 3.
+ * @param points[out] vector of 2d points corresponding to the contour points in pixel coordinates.
+ * @param line_starts[out] a set of 2d points in which the contour travels up. used to check for holes later.
+ * @param countour_map[out] a map in which pixels belonging to the contour have value 1
+ * @param add_first wether the first point should be added immediately. if false the algorithm will determine which point to add first.
+ */
 void findContours(const cv::Mat& image, const geo::Vec2i& p, int d_start, std::vector<geo::Vec2i>& points,
                   std::vector<geo::Vec2i>& line_starts, cv::Mat& contour_map, bool add_first)
 {
@@ -100,7 +110,7 @@ void findContours(const cv::Mat& image, const geo::Vec2i& p, int d_start, std::v
                             // denotes the principle axis of the line
 
     if (add_first)
-        points.push_back(p - geo::Vec2i(1, 1));
+        points.push_back(p);
 
     int n_uninterrupted = 1;
     geo::Vec2i p_corner = p;
@@ -136,6 +146,8 @@ void findContours(const cv::Mat& image, const geo::Vec2i& p, int d_start, std::v
 
 
             geo::Vec2i q = p_current;
+            q.x++;
+            q.y++;
             if (d == 0 || d_current == 0) // right
                 --q.y;
             if (d == 3 || d_current == 3) // up
@@ -191,6 +203,8 @@ void findContours(const cv::Mat& image, const geo::Vec2i& p, int d_start, std::v
         if (d_current != d)
         {
             geo::Vec2i q = p_current;
+            q.x++;
+            q.y++;
             if (d == 0 || d_current == 0) // right
                 --q.y;
             if (d == 3 || d_current == 3) // up
@@ -217,7 +231,19 @@ void findContours(const cv::Mat& image, const geo::Vec2i& p, int d_start, std::v
     }
 }
 
-// ----------------------------------------------------------------------------------------------------
+/**  
+ * @brief convert a pixel in the map image into coordinates in the map frame.
+ * (Note, this function assumes the pixel belongs to an image with a 1 pixel border w.r.t the original image)
+ * @param p the point in pixel coordinates. with (row=0, col=0) in the top left corner of the image.
+ * @param resolution resolution of the map in meters per pixel
+ * @param image_height amount of rows the image has, or the 'height' in pixels
+ * @return vector of the pose corresponding to the bottom left corner of the pixel. with coordinates (0,0) in the bottom left of the image.
+ */ 
+geo::Vector3 pixel2world(cv::Point2i p, double resolution, int image_height)
+{
+    geo::Vector3 p_vec((p.x - 1) * resolution, (image_height - p.y - 1) * resolution, 0);
+    return p_vec;
+}
 
 
 geo::ShapePtr createHeightMapShape(const std::string& filename, std::vector<Door>& doors)
@@ -240,9 +266,6 @@ geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, 
         ROS_ERROR_STREAM("[PICO SIMULATOR] Loading heightmap failed.");
         return geo::ShapePtr();
     }
-
-    double origin_x = (-image.cols / 2.0) * resolution;
-    double origin_y = (-image.rows / 2.0) * resolution;
 
     // Find doors
     for(int y = 0; y < image.rows; ++y)
@@ -287,44 +310,38 @@ geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, 
                 Q.pop();
             }
             // Account for pixel thickness
-            p_min.x -= 1;
-            p_min.y -= 1;
+            p_max.x += 1;
+            p_max.y += 1;
 
             // Find length in both directions
-            int dx = p_max.x - p_min.x;
-            int dy = p_max.y - p_min.y;
+            int dx = p_max.x - p_min.x; // number of pixels in x (columns) direction
+            int dy = p_max.y - p_min.y; // number of pixels in y (rows) direction
 
             // Calculate thickness
-            int thickness_pixels = n / (std::max(dx, dy));
-
-            // Calculate coordinates of one side of the door
-            if (dy > dx)
-                p_max.x = std::max(p_min.x, p_max.x - thickness_pixels);
-            else
-                p_max.y = std::max(p_min.y, p_max.y - thickness_pixels);
-
-            // Convert to world coordinates
-            geo::Vector3 p_world_min((image.rows - p_min.y - 1) * resolution + origin_y, (image.cols - p_min.x - 1) * resolution + origin_x, 0);
-            geo::Vector3 p_world_max((image.rows - p_max.y - 1) * resolution + origin_y, (image.cols - p_max.x - 1) * resolution + origin_x, 0);
-
+            int thickness_pixels = n / std::max(dx,dy); // width of the door //n / (std::max(dx, dy));
             double thickness = resolution * thickness_pixels;
 
-            // Move back to centre
-            if (dy > dx)
+            // Convert to world coordinates
+            geo::Vector3 p_world_min = pixel2world(p_min, resolution,  image.rows);
+            geo::Vector3 p_world_max = pixel2world(p_max, resolution,  image.rows);
+
+            // Calculate coordinates of points in the centerline of the door
+            geo::Vector3 p_center_min = p_world_min;
+            geo::Vector3 p_center_max = p_world_max;
+            if (dy > dx) // door is upright in image
             {
-                p_world_max.y -= thickness / 2.0;
-                p_world_min.y -= thickness / 2.0;
+                p_center_min.x = std::min(p_world_max.x, p_world_min.x + thickness/2);
+                p_center_max.x = std::max(p_world_min.x, p_world_max.x - thickness/2);
             }
-            else
+            else // door is horizontal in image
             {
-                p_world_max.x -= thickness / 2.0;
-                p_world_min.x -= thickness / 2.0;
+                p_center_min.y = std::min(p_world_max.y, p_world_min.y + thickness/2);
+                p_center_max.y = std::max(p_world_min.y, p_world_max.y - thickness/2);
             }
 
-            doors.push_back(Door());
-            Door& door = doors.back();
+            Door door;
 
-            geo::Vector3 v = p_world_max - p_world_min;
+            geo::Vector3 v = p_center_max - p_center_min; // movement axis of the door
 
             if (p_start.x > (p_max.x + p_min.x) / 2)
                 v.y = -v.y;
@@ -336,7 +353,7 @@ geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, 
                            v.y,  v.x, 0,
                            0,    0,   1);
 
-            door.init_pose = geo::Pose3D(m, (p_world_max + p_world_min) / 2);
+            door.init_pose = geo::Pose3D(m, (p_center_max + p_center_min) / 2);
             door.open_vel = geo::Vector3(0.3, 0, 0);
             if (c < 128)
                 door.open_vel = -door.open_vel;
@@ -344,6 +361,8 @@ geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, 
             door.open_distance = door.size;
             door.shape.reset(new geo::Box(geo::Vector3(-door.size / 2, -thickness / 2, 0), geo::Vector3(door.size / 2, thickness / 2, 1)));
             door.closed = true;
+
+            doors.push_back(door);
         }
     }
 
@@ -383,8 +402,10 @@ geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, 
                         poly[i].y = points[i].y;
 
                         // Convert to world coordinates
-                        double wy = (image.cols - points[i].x - 1) * resolution + origin_x;
-                        double wx = (image.rows - points[i].y - 1) * resolution + origin_y;
+                        cv::Point2i p(points[i].x, points[i].y);
+                        geo::Vector3 world_point = pixel2world(p, resolution, image.rows);
+                        double wy = world_point.y;
+                        double wx = world_point.x;
 
                         vertex_index_map.at<int>(points[i].y, points[i].x) = mesh.addPoint(geo::Vector3(wx, wy, min_z));
                         mesh.addPoint(geo::Vector3(wx, wy, max_z));
@@ -400,6 +421,7 @@ geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, 
                         mesh.addTriangle(i * 2 + 1, j * 2 + 1, j * 2);
                     }
 
+                    // check for open space inside the contour
                     for(unsigned int i = 0; i < line_starts.size(); ++i)
                     {
                         int x2 = line_starts[i].x;
@@ -408,7 +430,7 @@ geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, 
                         while(image.at<unsigned char>(y2, x2) == v)
                             ++x2;
 
-                        if (contour_map.at<unsigned char>(y2, x2 - 1) == 0)
+                        if (contour_map.at<unsigned char>(y2, x2 - 1) == 0) // check if the last point that still had value v is not part of the contour.
                         {
                             // found a hole, so find the contours of this hole
                             std::vector<geo::Vec2i> hole_points;
@@ -426,8 +448,10 @@ geo::ShapePtr createHeightMapShape(const cv::Mat& image_tmp, double resolution, 
                                     poly_hole[j].y = hole_points[j].y;
 
                                     // Convert to world coordinates
-                                    double wy = (image.cols - hole_points[j].x - 1) * resolution + origin_x;
-                                    double wx = (image.rows - hole_points[j].y - 1) * resolution + origin_y;
+                                    cv::Point2i p(hole_points[j].x, hole_points[j].y);
+                                    geo::Vector3 world_point = pixel2world(p, resolution, image.rows);
+                                    double wy = world_point.y;
+                                    double wx = world_point.x;
 
                                     vertex_index_map.at<int>(hole_points[j].y, hole_points[j].x) = mesh.addPoint(geo::Vector3(wx, wy, min_z));
                                     mesh.addPoint(geo::Vector3(wx, wy, max_z));

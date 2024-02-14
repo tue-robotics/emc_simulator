@@ -74,7 +74,7 @@ Robot::~Robot()
 {
 }
 
-void Robot::pubTransform(const geo::Pose3D &pose, const MapConfig &mapconfig)
+void Robot::pubTransform(const geo::Pose3D &pose)
 {
     // Publish jointstate
     sensor_msgs::JointState jointState;
@@ -88,31 +88,24 @@ void Robot::pubTransform(const geo::Pose3D &pose, const MapConfig &mapconfig)
     pub_joints_internal.publish(jointState);
 
     // Calculate tf transform
-    tf2::Transform tf_map, tf_robot, tf_total;
+    tf2::Transform tf_robot;
 
     tf_robot.setOrigin(tf2::Vector3(pose.t.x, pose.t.y, pose.t.z + 0.044));
     tf_robot.setRotation(tf2::Quaternion(0, 0, pose.getYaw()));
-
-    tf_map.setOrigin(tf2::Vector3(mapconfig.mapOffsetX, mapconfig.mapOffsetY, 0));
-    tf_map.setRotation(tf2::Quaternion(0, 0, mapconfig.mapOrientation));
-
-
-
-    tf_total = tf_map * tf_robot;
 
     // Publish tf transform
     geometry_msgs::TransformStamped transformStamped;
     transformStamped.header.stamp = ros::Time::now();
     transformStamped.header.frame_id = "map";
     transformStamped.child_frame_id = "ground_truth/base_link";
-    transformStamped.transform.translation.x =   tf_total.getOrigin().x();
-    transformStamped.transform.translation.y =   tf_total.getOrigin().y();
-    transformStamped.transform.translation.z =   tf_total.getOrigin().z();
+    transformStamped.transform.translation.x =   tf_robot.getOrigin().x();
+    transformStamped.transform.translation.y =   tf_robot.getOrigin().y();
+    transformStamped.transform.translation.z =   tf_robot.getOrigin().z();
 
-    transformStamped.transform.rotation.x = tf_total.getRotation().x();
-    transformStamped.transform.rotation.y = tf_total.getRotation().y();
-    transformStamped.transform.rotation.z = tf_total.getRotation().z();
-    transformStamped.transform.rotation.w = tf_total.getRotation().w();
+    transformStamped.transform.rotation.x = tf_robot.getRotation().x();
+    transformStamped.transform.rotation.y = tf_robot.getRotation().y();
+    transformStamped.transform.rotation.z = tf_robot.getRotation().z();
+    transformStamped.transform.rotation.w = tf_robot.getRotation().w();
     pub_tf2.sendTransform(transformStamped);
 }
 
