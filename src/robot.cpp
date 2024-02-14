@@ -18,28 +18,6 @@ void Robot::speakCallback(const std_msgs::String::ConstPtr& msg)
     ROS_WARN_STREAM(robot_name << " says: " << "\033[1;31m" << msg->data << "\033[0m\n");
 }
 
-void Robot::importMetadata(const nav_msgs::MapMetaData& metadata)
-{
-    tf2::Quaternion q(metadata.origin.orientation.x,
-                      metadata.origin.orientation.y,
-                      metadata.origin.orientation.z,
-                      metadata.origin.orientation.w);
-    
-    tf2::Matrix3x3 T(q);
-
-    double roll, pitch, yaw;
-    T.getRPY(roll, pitch, yaw);
-
-    mapconfig.mapOrientation = yaw + M_PI/2;
-
-    mapconfig.mapResolution = metadata.resolution;
-
-    mapconfig.mapOffsetX = (metadata.width * mapconfig.mapResolution / 2) * cos(yaw)-(metadata.height * mapconfig.mapResolution / 2) * sin(yaw) + metadata.origin.position.x;
-    mapconfig.mapOffsetY = (metadata.width * mapconfig.mapResolution / 2) * sin(yaw)+(metadata.height * mapconfig.mapResolution / 2) * cos(yaw) + metadata.origin.position.y;
-
-    mapconfig.mapInitialised = true;
-}
-
 // ----------------------------------------------------------------------------------------------------
 
 Robot::Robot(const std::string &name, Id id, bool disable_speedcap, bool uncertain_odom) : base(disable_speedcap, uncertain_odom)
@@ -91,7 +69,9 @@ void Robot::pubTransform(const geo::Pose3D &pose)
     tf2::Transform tf_robot;
 
     tf_robot.setOrigin(tf2::Vector3(pose.t.x, pose.t.y, pose.t.z + 0.044));
-    tf_robot.setRotation(tf2::Quaternion(0, 0, pose.getYaw()));
+    tf2::Quaternion q;
+    q.setRPY(0, 0, pose.getYaw());
+    tf_robot.setRotation(q);
 
     // Publish tf transform
     geometry_msgs::TransformStamped transformStamped;

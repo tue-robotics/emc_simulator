@@ -51,7 +51,6 @@ public:
     std::string robot_name;
     Id robot_id;
     Virtualbase base;
-    MapConfig mapconfig;
 
     geometry_msgs::Twist::ConstPtr base_ref_;
     bool request_open_door_;
