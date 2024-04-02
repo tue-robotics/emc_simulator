@@ -36,8 +36,6 @@ Robot::Robot(const std::string &name, Id id, bool disable_speedcap, bool uncerta
     pub_bumperR = nh.advertise<std_msgs::Bool>("/" + robot_name + "/base_b_bumper_sensor", 1);
     pub_laser = nh.advertise<sensor_msgs::LaserScan>("/transformed_scan", 1);
     pub_odom = nh.advertise<nav_msgs::Odometry>("/odom", 1);
-    pub_joints_ground_truth = nh.advertise<sensor_msgs::JointState>("/viz_ground_truth/joint_states", 1);
-    pub_joints_internal = nh.advertise<sensor_msgs::JointState>("/viz_internal/joint_states", 1);
 
     // Subscribers
     sub_base_ref = nh.subscribe<geometry_msgs::Twist>("/cmd_vel", 1, &Robot::baseReferenceCallback, this);
@@ -54,17 +52,6 @@ Robot::~Robot()
 
 void Robot::pubTransform(const geo::Pose3D &pose)
 {
-    // Publish jointstate
-    sensor_msgs::JointState jointState;
-    jointState.header.stamp = ros::Time::now();
-    jointState.name = {"front_left_wheel_hinge", 
-                       "front_right_wheel_hinge", 
-                       "rear_left_wheel_hinge", 
-                       "rear_right_wheel_hinge"};
-    jointState.position = {0, 0, 0, 0};
-    pub_joints_ground_truth.publish(jointState);
-    pub_joints_internal.publish(jointState);
-
     // Calculate tf transform
     tf2::Transform tf_robot;
 
