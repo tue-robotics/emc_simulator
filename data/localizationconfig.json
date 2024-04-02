@@ -1,0 +1,6 @@
+{
+  "uncertain_odom":false,
+  "show_full_map":false,
+  "provide_internal_pose":false,
+  "objects":[]
+}
