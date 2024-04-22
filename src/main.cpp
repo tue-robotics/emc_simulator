@@ -271,8 +271,7 @@ int main(int argc, char **argv){
         // create output
         // Create laser data
         sensor_msgs::LaserScan scan_msg;
-        scan_msg.header.frame_id = "internal/base_link";
-        scan_msg.header.stamp = time;
+        scan_msg.header.frame_id = "base_link";
         lrf.generateLaserData(world, robot, scan_msg);
         robot.pub_laser.publish(scan_msg);
 

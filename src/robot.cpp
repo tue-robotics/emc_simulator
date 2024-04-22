@@ -64,7 +64,7 @@ void Robot::pubTransform(const geo::Pose3D &pose)
     geometry_msgs::TransformStamped transformStamped;
     transformStamped.header.stamp = ros::Time::now();
     transformStamped.header.frame_id = "map";
-    transformStamped.child_frame_id = "ground_truth/base_link";
+    transformStamped.child_frame_id = "robot_pose";
     transformStamped.transform.translation.x =   tf_robot.getOrigin().x();
     transformStamped.transform.translation.y =   tf_robot.getOrigin().y();
     transformStamped.transform.translation.z =   tf_robot.getOrigin().z();
@@ -80,8 +80,8 @@ void Robot::internalTransform()
 {
     geometry_msgs::TransformStamped transformStamped;
     transformStamped.header.stamp = ros::Time::now();
-    transformStamped.header.frame_id = "ground_truth/base_link";
-    transformStamped.child_frame_id = "internal/base_link";
+    transformStamped.header.frame_id = "robot_pose";
+    transformStamped.child_frame_id = "base_link";
     transformStamped.transform.rotation.w = 1;
     pub_tf2static.sendTransform(transformStamped);
 }

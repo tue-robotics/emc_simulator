@@ -5,22 +5,9 @@
 
 	<param name="robot_description" command="$(find xacro)/xacro '$(find rosbot_description)/urdf/rosbot.xacro'"/>
 	<rosparam command="load" file="$(find emc_simulator)/config/simbot_config.yaml" />
-	
-	<group ns="viz_ground_truth">
-		<param name="tf_prefix" value="ground_truth"/>
-		<node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher_ground_truth"/>
-	</group>
-	<node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher_ground_truth">
-		<remap from="joint_states" to="viz_ground_truth/joint_states"/>
-		<param name="rate" type="int" value="30"/>
-	</node>
 
-	<group ns="viz_internal">
-		<param name="tf_prefix" value="internal"/>
-		<node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher_internal"/>
-	</group>
-	<node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher_internal">
-		<remap from="joint_states" to="viz_internal/joint_states"/>
+	<node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher"/>
+	<node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher">
 		<param name="rate" type="int" value="30"/>
 	</node>
 
