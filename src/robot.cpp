@@ -36,12 +36,12 @@ Robot::Robot(const std::string &name, Id id, bool disable_speedcap, bool uncerta
     pub_bumperR = nh.advertise<std_msgs::Bool>("/" + robot_name + "/base_b_bumper_sensor", 1);
     pub_laser = nh.advertise<sensor_msgs::LaserScan>("/transformed_scan", 1);
     pub_odom = nh.advertise<nav_msgs::Odometry>("/odom", 1);
+    pub_pose = nh.advertise<geometry_msgs::PoseStamped>("/pose", 1);
 
     // Subscribers
     sub_base_ref = nh.subscribe<geometry_msgs::Twist>("/cmd_vel", 1, &Robot::baseReferenceCallback, this);
     sub_open_door = nh.subscribe<std_msgs::Empty>("/" + robot_name + "/open_door", 1, &Robot::openDoorCallback, this);
     sub_speak = nh.subscribe<std_msgs::String>("/" + robot_name + "/text_to_speech/input", 1, &Robot::speakCallback, this);
-
 }   
 
 // ----------------------------------------------------------------------------------------------------
@@ -74,6 +74,20 @@ void Robot::pubTransform(const geo::Pose3D &pose)
     transformStamped.transform.rotation.z = tf_robot.getRotation().z();
     transformStamped.transform.rotation.w = tf_robot.getRotation().w();
     pub_tf2.sendTransform(transformStamped);
+
+    // Publish posestamped
+    geometry_msgs::PoseStamped poseStamped;
+    poseStamped.header.stamp = ros::Time::now();
+    poseStamped.header.frame_id = "map";
+    poseStamped.pose.position.x =   tf_robot.getOrigin().x();
+    poseStamped.pose.position.y =   tf_robot.getOrigin().y();
+    poseStamped.pose.position.z =   tf_robot.getOrigin().z();
+
+    poseStamped.pose.orientation.x = tf_robot.getRotation().x();
+    poseStamped.pose.orientation.y = tf_robot.getRotation().y();
+    poseStamped.pose.orientation.z = tf_robot.getRotation().z();
+    poseStamped.pose.orientation.w = tf_robot.getRotation().w();
+    pub_pose.publish(poseStamped);
 }
 
 void Robot::internalTransform()

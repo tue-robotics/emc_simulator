@@ -1,5 +1,6 @@
 laser_: "/transformed_scan"
 odom_: "/odom"
+pose_: "/pose"
 bumper_f_: "/pyro/base_f_bumper_sensor"
 bumper_b_: "/pyro/base_b_bumper_sensor"
 base_ref_: "/cmd_vel"
