@@ -10,6 +10,7 @@
 #include <ros/publisher.h>
 #include <ros/subscriber.h>
 #include <geometry_msgs/Twist.h>
+#include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/Odometry.h>
 #include <std_msgs/Empty.h>
 #include <std_msgs/String.h>
@@ -60,6 +61,7 @@ public:
     ros::Publisher pub_bumperR;
     ros::Publisher pub_laser;
     ros::Publisher pub_odom;
+    ros::Publisher pub_pose;
     tf2_ros::TransformBroadcaster pub_tf2;
     tf2_ros::StaticTransformBroadcaster pub_tf2static;
     ros::Publisher pub_joints_ground_truth;
