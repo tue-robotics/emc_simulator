@@ -60,7 +60,7 @@ void LRF::generateLaserData(const World& world, const Robot& robot, sensor_msgs:
     geo::Pose3D laser_pose = robot_obj.pose * robot.laser_pose;
     geo::Pose3D laser_pose_inv = laser_pose.inverse();
 
-    std::vector<double> ranges(lrf_.getNumBeams(), INFINITY);
+    std::vector<double> ranges(lrf_.getNumBeams(), 10.0); // max range of lrf = 10.0 m
     for(std::vector<Object>::const_iterator it = world.objects().begin(); it != world.objects().end(); ++it)
     {
         const Object& obj = *it;
