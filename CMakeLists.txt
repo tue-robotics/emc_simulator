@@ -20,8 +20,8 @@ find_package(shape_msgs REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(nav2_map_server REQUIRED)
 
-set(GEOLIB2_INCLUDE_DIR "/home/wiktor/Desktop/mrc/geolib2/install/geolib2/include")
-set(GEOLIB2_LIBRARY "/home/wiktor/Desktop/mrc/geolib2/install/geolib2/lib/libgeolib.a")
+set(GEOLIB2_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/../geolib2/install/geolib2/include")
+set(GEOLIB2_LIBRARY "${CMAKE_SOURCE_DIR}/../geolib2/install/geolib2/lib/libgeolib.a")
 
 # Include directories
 include_directories(
