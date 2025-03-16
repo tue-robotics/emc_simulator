@@ -33,7 +33,6 @@
 
 #include <vector>
 
-
 int main(int argc, char **argv){
 
     std::string config_filename;
@@ -168,6 +167,7 @@ int main(int argc, char **argv){
     while(rclcpp::ok())
     {
         rclcpp::spin_some(node);
+        rclcpp::spin_some(robot.get_node_base_interface()); // Ensure the Robot node is also spun
         rclcpp::Time time = node->now();
 
         if(time_==0){
@@ -184,11 +184,13 @@ int main(int argc, char **argv){
         {
             // Set robot velocity
             geometry_msgs::msg::Twist cmd = *robot.base_ref_;
+            // std::cout << "Updating base ref from the queue" << std::endl;
             robot.base.applyTwistAndUpdate(cmd, dt);
             robot.base_ref_.reset();
         }
         else{ // apply previous one again
             robot.base.update(dt);
+            // std::cout << "Applying previous twist" << std::endl;
         }
         geometry_msgs::msg::Twist actual_twist = robot.base.getActualTwist();
         world.setVelocity(robot.robot_id, geo::Vector3(actual_twist.linear.x, actual_twist.linear.y, 0), actual_twist.angular.z);
