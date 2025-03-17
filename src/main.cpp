@@ -49,19 +49,18 @@ int main(int argc, char **argv){
         }
     }
 
-    // REMEMBER TO CHANGE THE DEFAULT PATHS
+    std::string package_share_directory = ament_index_cpp::get_package_share_directory("emc_simulator");
+
     if (config_filename.empty()) {
-        config_filename = "/home/wiktor/Desktop/mrc/emc_simulator/data/defaultconfig.json";
+        config_filename = package_share_directory + "/data/defaultconfig.json";
     }
     if (heightmap_filename.empty()) {
-        heightmap_filename = "/home/wiktor/Desktop/mrc/emc_simulator/data/heightmap.pgm";
+        heightmap_filename = package_share_directory + "/data/heightmap.pgm";
     }
 
-    // Debug prints to check file paths
     std::cout << "Config file path: " << config_filename << std::endl;
     std::cout << "Heightmap file path: " << heightmap_filename << std::endl;
 
-    // Check if the config file exists
     std::ifstream config_file(config_filename);
     if (!config_file.good()) {
         std::cerr << "Config file not found or not accessible: " << config_filename << std::endl;
