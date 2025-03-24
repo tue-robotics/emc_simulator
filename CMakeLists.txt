@@ -92,6 +92,11 @@ install(DIRECTORY data/
   DESTINATION share/${PROJECT_NAME}/data
 )
 
+install(DIRECTORY rviz/
+  DESTINATION share/${PROJECT_NAME}/rviz
+)
+
+
 install(DIRECTORY simconfig/
   DESTINATION share/${PROJECT_NAME}/simconfig
 )
