@@ -56,6 +56,10 @@ add_executable(pico_simulator
   src/bumper.cpp
 )
 
+add_executable(global_parameter_server 
+  src/global_parameter_server.cpp
+)
+
 # Link libraries
 target_link_libraries(pico_simulator
   polypartition
@@ -73,12 +77,18 @@ target_link_libraries(pico_simulator
 )
 
 ament_target_dependencies(pico_simulator tf2 tf2_ros rclcpp nav_msgs visualization_msgs geometry_msgs OpenCV image_geometry shape_msgs ament_index_cpp)
+ament_target_dependencies(global_parameter_server rclcpp)
 
 
 # Install targets
 install(TARGETS pico_simulator
   DESTINATION lib/${PROJECT_NAME}
 )
+
+install(TARGETS
+  global_parameter_server
+  DESTINATION lib/${PROJECT_NAME}
+  )
 
 # install(DIRECTORY include/
 #   DESTINATION include/
@@ -94,6 +104,10 @@ install(DIRECTORY data/
 
 install(DIRECTORY rviz/
   DESTINATION share/${PROJECT_NAME}/rviz
+)
+
+install(DIRECTORY config/
+  DESTINATION share/${PROJECT_NAME}/config
 )
 
 

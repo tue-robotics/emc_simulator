@@ -21,6 +21,12 @@ def generate_launch_description():
         description="Path to the map file"
     )
 
+    robot_config = os.path.join(
+        emc_simulator_share_dir,
+        'config',
+        'simbot_config.yaml'
+    )
+    
     # Node for the map server
     map_server = Node(
         package="nav2_map_server",
@@ -28,6 +34,15 @@ def generate_launch_description():
         name="map_server",
         parameters=[{"yaml_filename": LaunchConfiguration("map")}],
         output="screen"
+    )
+
+
+    # Global parameter server node
+    global_param_node= Node(
+        package="emc_simulator",
+        executable="global_parameter_server",
+        name="global_parameter_server",
+        parameters= [robot_config]
     )
 
     # Simulator node
@@ -63,5 +78,6 @@ def generate_launch_description():
         map_arg,
         map_server,
         delayed_lifecycle_manager,
+        global_param_node,
         simulator
     ])
