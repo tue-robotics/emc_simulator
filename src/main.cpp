@@ -308,6 +308,7 @@ int main(int argc, char **argv){
         // Write tf2 data
         geo::Pose3D pose = world.object(robot.robot_id).pose;
         robot.pubTransform(pose);
+        robot.pubMarker(pose);
         
         // Visualize             
         if (visualize)

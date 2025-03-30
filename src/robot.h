@@ -14,6 +14,7 @@
 #include <std_msgs/msg/bool.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
 #include <nav_msgs/msg/map_meta_data.hpp>
+#include <visualization_msgs/msg/marker.hpp>
 
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
@@ -41,6 +42,8 @@ public:
 
     void pubTransform(const geo::Pose3D &pose);
 
+    void pubMarker(const geo::Pose3D &pose);
+
     void internalTransform();
 
     void importMetadata(const nav_msgs::msg::MapMetaData& metadata);
@@ -59,6 +62,7 @@ public:
     rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr pub_laser;
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_odom;
     rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pub_pose;
+    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr pub_marker;
     tf2_ros::TransformBroadcaster pub_tf2;
     tf2_ros::StaticTransformBroadcaster pub_tf2static;
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr pub_joints_ground_truth;

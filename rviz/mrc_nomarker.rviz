@@ -139,19 +139,6 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /geometry
       Value: true
-    - Class: rviz_default_plugins/Marker
-      Enabled: true
-      Name: Marker
-      Namespaces:
-        robot_marker: true
-      Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        Filter size: 10
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /robot_marker
-      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -234,5 +221,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1854
-  X: 3731
-  Y: 142
+  X: 66
+  Y: 32

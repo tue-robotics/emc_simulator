@@ -16,6 +16,7 @@ Robot::Robot(const std::string &name, Id id, bool disable_speedcap, bool uncerta
     pub_laser = this->create_publisher<sensor_msgs::msg::LaserScan>("/transformed_scan", 10);
     pub_odom = this->create_publisher<nav_msgs::msg::Odometry>("/odom", 10);
     pub_pose = this->create_publisher<geometry_msgs::msg::PoseStamped>("/pose", 10);
+    pub_marker = this->create_publisher<visualization_msgs::msg::Marker>("/robot_marker", 10);
 
     // Subscribers
     sub_base_ref = this->create_subscription<geometry_msgs::msg::Twist>(
@@ -44,6 +45,40 @@ void Robot::speakCallback(const std::shared_ptr<const std_msgs::msg::String>& ms
 {
     RCLCPP_WARN(this->get_logger(), "%s says: %s", robot_name.c_str(), msg->data.c_str());
 }
+
+void Robot::pubMarker(const geo::Pose3D &pose)
+{
+    visualization_msgs::msg::Marker marker;
+    marker.header.frame_id = "map";
+    marker.header.stamp = this->now();
+    marker.ns = "robot_marker";
+    marker.id = 0;
+    marker.type = visualization_msgs::msg::Marker::CUBE;
+    marker.action = visualization_msgs::msg::Marker::ADD;
+
+    marker.pose.position.x = pose.t.x;
+    marker.pose.position.y = pose.t.y;
+    marker.pose.position.z = pose.t.z + 0.044;
+
+    tf2::Quaternion q;
+    q.setRPY(0, 0, pose.getYaw());
+    marker.pose.orientation.x = q.x();
+    marker.pose.orientation.y = q.y();
+    marker.pose.orientation.z = q.z();
+    marker.pose.orientation.w = q.w();
+
+
+    marker.scale.x = 0.21; 
+    marker.scale.y = 0.25;
+    marker.scale.z = 0.2;
+    marker.color.r = 0.2; 
+    marker.color.g = 0.2;
+    marker.color.b = 0.2;
+    marker.color.a = 1.0; 
+
+    pub_marker->publish(marker);
+}
+
 
 void Robot::pubTransform(const geo::Pose3D &pose)
 {
