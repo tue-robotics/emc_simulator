@@ -1,0 +1,12 @@
+global_parameter_server:
+  ros__parameters:
+    laser_: "/transformed_scan"
+    odom_: "/odom"
+    pose_: "/vrpn_client_node/ROSbot_Coco/pose" # Not available in the simulation, readPoseData will return false
+    bumper_f_: "/base_f_bumper_sensor"
+    bumper_b_: "/base_b_bumper_sensor"
+    base_ref_: "/cmd_vel"
+    open_door_: "/open_door"
+    speak_: "/text_to_speech/input"
+    play_: "/text_to_speech/file"
+    base_link_: "base_link"

@@ -1,0 +1,11 @@
+global_parameter_server:
+  ros__parameters:
+    laser_: "/hero/base_scan"
+    odom_: "/hero/base/measurements"
+    bumper_f_: "/hero/base_f_bumper_sensor"
+    bumper_b_: "/hero/base_b_bumper_sensor"
+    base_ref_: "/hero/base/references"
+    open_door_: "/hero/open_door"
+    speak_: "/hero/text_to_speech/input"
+    play_: "/hero/text_to_speech/file"
+    base_link_: "base_link"
