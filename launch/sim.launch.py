@@ -21,6 +21,12 @@ def generate_launch_description():
         description="Path to the map file"
     )
 
+    robot_arg = DeclareLaunchArgument(
+        "robot",
+        default_value=os.path.join(emc_simulator_share_dir, "config", "simbot_config.yaml"),
+        description="Path to the robot configuration file"
+    )
+
     robot_config = os.path.join(
         emc_simulator_share_dir,
         'config',
@@ -38,11 +44,11 @@ def generate_launch_description():
 
 
     # Global parameter server node
-    global_param_node= Node(
+    global_param_node = Node(
         package="emc_simulator",
         executable="global_parameter_server",
         name="global_parameter_server",
-        parameters= [robot_config]
+        parameters=[LaunchConfiguration("robot")]
     )
 
     # Simulator node
