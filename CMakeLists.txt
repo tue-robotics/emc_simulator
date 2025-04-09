@@ -19,16 +19,17 @@ find_package(image_geometry REQUIRED)
 find_package(shape_msgs REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(nav2_map_server REQUIRED)
+find_package(geolib2 REQUIRED)
 
-set(GEOLIB2_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/../geolib2/install/geolib2/include")
-set(GEOLIB2_LIBRARY "${CMAKE_SOURCE_DIR}/../geolib2/install/geolib2/lib/libgeolib.a")
+#set(GEOLIB2_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/../geolib2/install/geolib2/include")
+#set(GEOLIB2_LIBRARY "${CMAKE_SOURCE_DIR}/../geolib2/install/geolib2/lib/libgeolib.a")
 
 # Include directories
 include_directories(
   include
   SYSTEM
   3rdparty
-  ${GEOLIB2_INCLUDE_DIR}
+  ${geolib2_INCLUDE_DIR}
   ${tf2_INCLUDE_DIRS}
   ${tf2_ros_INCLUDE_DIRS}
   ${nav_msgs_INCLUDE_DIRS}
@@ -64,7 +65,7 @@ add_executable(global_parameter_server
 target_link_libraries(pico_simulator
   polypartition
   ${rclcpp_LIBRARIES}
-  ${GEOLIB2_LIBRARY} 
+  ${geolib2_LIBRARY} 
   ${tf2_LIBRARIES}
   ${tf2_ros_LIBRARIES}
   ${nav_msgs_LIBRARIES}
@@ -76,7 +77,7 @@ target_link_libraries(pico_simulator
   ${ament_index_cpp_LIBRARIES}
 )
 
-ament_target_dependencies(pico_simulator tf2 tf2_ros rclcpp nav_msgs visualization_msgs geometry_msgs OpenCV image_geometry shape_msgs ament_index_cpp)
+ament_target_dependencies(pico_simulator geolib2 tf2 tf2_ros rclcpp nav_msgs visualization_msgs geometry_msgs OpenCV image_geometry shape_msgs ament_index_cpp)
 ament_target_dependencies(global_parameter_server rclcpp)
 
 
